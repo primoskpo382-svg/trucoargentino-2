@@ -49,6 +49,26 @@
             background-repeat: no-repeat;
         }
 
+        /* PARCHE PARA TAPAR EL 1300 ESTÁTICO DE LA IMAGEN */
+        .caja-saldo-custom {
+            position: absolute;
+            top: 2.2vh;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 28vw;
+            max-width: 120px;
+            height: 4.5vh;
+            max-height: 35px;
+            background-color: #0d2547;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            z-index: 30;
+            pointer-events: none;
+        }
+
         .mesa-blyts {
             background: #0d2847;
             background-image: 
@@ -167,33 +187,24 @@
     <!-- MARCO CONTENEDOR TIPO CELULAR ADAPTABLE -->
     <div id="contenedor-app">
 
-        <!-- LOBBY CON LA IMAGEN DE FONDO COMPLETA -->
-        <div id="pantalla-inicio" class="fondo-lobby-real w-full h-full relative flex flex-col justify-between items-center p-4">
+        <!-- LOBBY CON LA IMAGEN DE FONDO COMPLETA Y BOTONES ORIGINALES CLICKEABLES -->
+        <div id="pantalla-inicio" class="fondo-lobby-real w-full h-full relative flex flex-col justify-between items-center p-3">
             
-            <!-- CABECERA: COMPRAR, SALDO Y RETIRAR -->
-            <div class="w-full flex justify-between items-center pt-2 z-40 gap-2">
-                <button onclick="toggleModal('modalComprar')" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs py-2 px-3 rounded-xl shadow-lg border border-amber-300 cursor-pointer transition active:scale-95 flex items-center gap-1">
-                    💳 Comprar
-                </button>
-                
-                <div class="bg-slate-900/90 border-2 border-amber-500/50 px-3 py-1.5 rounded-xl shadow-md flex items-center gap-1.5">
-                    <span class="text-sm">🪙</span>
-                    <span id="saldoFichas" class="text-sm font-black text-amber-300 tracking-wide">0</span>
-                </div>
-
-                <button onclick="toggleModal('modalRetirar')" class="bg-rose-600 hover:bg-rose-500 text-white font-black text-xs py-2 px-3 rounded-xl shadow-lg border border-rose-400 cursor-pointer transition active:scale-95 flex items-center gap-1">
-                    🏦 Retirar
-                </button>
+            <!-- PARCHE SUPERIOR PARA MOSTRAR FICHAS REALES -->
+            <div class="caja-saldo-custom">
+                <span id="saldoFichas" class="text-sm font-black text-amber-300 tracking-wide">0</span>
             </div>
 
-            <!-- BOTONES PRINCIPALES INFERIORES -->
-            <div class="w-full max-w-xs space-y-3 mb-8 z-20 flex flex-col items-center">
-                <button onclick="mostrarLobbySalas()" class="w-64 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black rounded-2xl shadow-2xl uppercase tracking-wider text-sm cursor-pointer transition active:scale-95 border-2 border-amber-300">
-                    🎮 Jugar Partida
-                </button>
-                <button onclick="cerrarSesion()" class="w-48 py-2 bg-slate-900/80 hover:bg-slate-800 text-slate-300 font-bold rounded-xl shadow-md text-xs cursor-pointer transition border border-slate-700">
-                    Cerrar Sesión
-                </button>
+            <!-- ÁREAS TÁCTILES SUPERIORES EXACTAS SOBRE LOS BOTONES DE LA FOTO -->
+            <div class="w-full flex justify-between items-center pt-2 px-6 z-40">
+                <button onclick="toggleModal('modalComprar')" class="w-28 h-10 opacity-0 cursor-pointer" title="Comprar"></button>
+                <button onclick="toggleModal('modalRetirar')" class="w-28 h-10 opacity-0 cursor-pointer" title="Retirar"></button>
+            </div>
+
+            <!-- ÁREAS TÁCTILES INFERIORES EXACTAS SOBRE LOS CARTELITOS "JUGAR" Y "SALIR" DE LA FOTO -->
+            <div class="w-full flex flex-col items-center mb-6 z-30 gap-6">
+                <button onclick="mostrarLobbySalas()" class="w-56 h-16 opacity-0 cursor-pointer" title="Jugar"></button>
+                <button onclick="cerrarSesion()" class="w-56 h-12 opacity-0 cursor-pointer" title="Salir"></button>
             </div>
         </div>
 
