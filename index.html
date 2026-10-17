@@ -67,6 +67,7 @@
             gap: 6px;
             z-index: 30;
             box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+            pointer-events: none;
         }
 
         .mesa-blyts {
@@ -143,30 +144,42 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center select-none bg-slate-950 p-0 sm:p-2">
 
-    <!-- MODAL DE LOGIN / REGISTRO OBLIGATORIO -->
+    <!-- MODAL DE LOGIN / REGISTRO CON EMAIL Y GOOGLE -->
     <div id="modal-auth" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="card-trucox rounded-3xl p-6 sm:p-8 w-full max-w-md border-2 border-amber-500/40 text-center space-y-5">
-            <div class="text-4xl">🃏</div>
-            <h1 class="text-3xl font-black text-amber-400 uppercase tracking-wider drop-shadow-md">Truco Argentino</h1>
-            <p class="text-xs text-slate-400">Ingresá tu nombre de usuario para empezar</p>
+        <div class="card-trucox rounded-3xl p-6 sm:p-8 w-full max-w-md border-2 border-amber-500/40 text-center space-y-4">
+            <div class="text-3xl">🃏</div>
+            <h1 class="text-2xl font-black text-amber-400 uppercase tracking-wider drop-shadow-md">Truco Argentino</h1>
+            <p class="text-xs text-slate-400">Ingresá con tu cuenta para empezar a jugar</p>
 
             <div id="auth-alert" class="hidden text-xs p-3 rounded-xl"></div>
 
+            <!-- BOTÓN DE GOOGLE -->
+            <button onclick="iniciarSesionGoogle()" class="w-full bg-white hover:bg-slate-100 text-slate-900 font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-3 text-sm shadow-md cursor-pointer">
+                <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.95H1.2v3.15C3.16 21.32 7.24 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.25c-.25-.72-.38-1.5-.38-2.25s.13-1.53.38-2.25V6.6H1.2C.44 8.14 0 9.87 0 12s.44 3.86 1.2 5.4l4.08-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.24 0 3.16 2.68 1.2 6.6l4.08 3.15c.95-2.84 3.6-4.95 6.72-4.95z"/></svg>
+                Continuar con Google
+            </button>
+
+            <div class="flex items-center my-2">
+                <div class="flex-grow border-t border-slate-700"></div>
+                <span class="px-3 text-[10px] text-slate-500 uppercase font-bold">o con email</span>
+                <div class="flex-grow border-t border-slate-700"></div>
+            </div>
+
             <form onsubmit="procesarAuth(event)" class="space-y-3 text-left">
                 <div>
-                    <label class="block text-xs font-bold text-amber-300 mb-1">Nombre de Usuario (Obligatorio)</label>
-                    <input type="text" id="user-name" required placeholder="Ej: CampeónTruco" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+                    <label class="block text-xs font-bold text-amber-300 mb-1">Nombre de Usuario</label>
+                    <input type="text" id="user-name" placeholder="Ej: CampeónTruco" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1">Correo electrónico</label>
-                    <input type="email" id="user-email" required placeholder="tu@email.com" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+                    <input type="email" id="user-email" required placeholder="tu@email.com" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1">Contraseña</label>
-                    <input type="password" id="user-password" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+                    <input type="password" id="user-password" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
                 </div>
-                <button type="submit" id="btn-action" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl transition shadow-lg cursor-pointer">
-                    Entrar a Jugar
+                <button type="submit" id="btn-action" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl transition shadow-lg cursor-pointer text-sm">
+                    Entrar / Registrarse
                 </button>
             </form>
         </div>
@@ -184,16 +197,16 @@
                 <span id="saldoFichas" class="text-base sm:text-lg font-black text-white tracking-wide">0</span>
             </div>
 
-            <!-- BOTONES SUPERIORES: IZQUIERDA COMPRAR / DERECHA RETIRAR -->
-            <div class="w-full flex justify-between items-center pt-3 px-10 z-40">
-                <button onclick="toggleModal('modalComprar')" class="w-24 h-10 opacity-0 cursor-pointer" title="Comprar"></button>
-                <button onclick="toggleModal('modalRetirar')" class="w-24 h-10 opacity-0 cursor-pointer" title="Retirar"></button>
+            <!-- BOTONES SUPERIORES CLICKEABLES CORREGIDOS -->
+            <div class="w-full flex justify-between items-center pt-3 px-8 z-40">
+                <button onclick="toggleModal('modalComprar')" class="w-28 h-12 bg-transparent hover:bg-white/10 rounded-xl cursor-pointer active:scale-95 transition" title="Comprar Fichas"></button>
+                <button onclick="toggleModal('modalRetirar')" class="w-28 h-12 bg-transparent hover:bg-white/10 rounded-xl cursor-pointer active:scale-95 transition" title="Retirar Fichas"></button>
             </div>
 
             <!-- BOTONES INFERIORES SOBRE LA FOTO (Jugar / Salir) -->
             <div class="w-full max-w-xs space-y-3 mb-6 z-20 flex flex-col items-center">
-                <button onclick="mostrarLobbySalas()" class="w-64 h-16 opacity-0 cursor-pointer" title="Jugar"></button>
-                <button onclick="cerrarSesion()" class="w-64 h-12 opacity-0 cursor-pointer" title="Salir"></button>
+                <button onclick="mostrarLobbySalas()" class="w-64 h-16 bg-transparent hover:bg-white/10 rounded-2xl cursor-pointer active:scale-95 transition" title="Jugar"></button>
+                <button onclick="cerrarSesion()" class="w-64 h-12 bg-transparent hover:bg-white/10 rounded-2xl cursor-pointer active:scale-95 transition" title="Salir"></button>
             </div>
         </div>
 
@@ -208,7 +221,7 @@
             <div id="esperando-rival" class="hidden card-trucox p-4 rounded-2xl border-2 border-amber-500/80 text-center">
                 <div class="text-lg font-black text-amber-400">⏳ Buscando Oponente…</div>
                 <p id="esperando-sala-info" class="text-xs text-slate-300 mt-1"></p>
-                <button onclick="window.cancelarSala(false)" class="mt-3 bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-xs font-bold">Cancelar</button>
+                <button onclick="window.cancelarSala(false)" class="mt-3 bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer">Cancelar</button>
             </div>
 
             <div class="card-trucox p-4 rounded-2xl border border-slate-700 space-y-3">
@@ -358,7 +371,7 @@
             <button onclick="comprarFichasMP()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl text-sm transition cursor-pointer mb-2">
                 Pagar con Mercado Pago
             </button>
-            <button onclick="toggleModal('modalComprar')" class="text-xs text-slate-500 hover:text-white">Cerrar</button>
+            <button onclick="toggleModal('modalComprar')" class="text-xs text-slate-500 hover:text-white cursor-pointer">Cerrar</button>
             <div id="msgComprar" class="text-xs mt-2"></div>
         </div>
     </div>
@@ -378,7 +391,7 @@
                 </div>
             </div>
             <button onclick="solicitarRetiroFichas()" class="w-full bg-rose-700 hover:bg-rose-600 text-white font-bold py-2.5 rounded-xl text-sm transition cursor-pointer mb-2">Solicitar Retiro</button>
-            <button onclick="toggleModal('modalRetirar')" class="text-xs text-slate-500 hover:text-white">Cerrar</button>
+            <button onclick="toggleModal('modalRetirar')" class="text-xs text-slate-500 hover:text-white cursor-pointer">Cerrar</button>
             <div id="msgRetirar" class="text-xs mt-2"></div>
         </div>
     </div>
@@ -594,18 +607,27 @@
             }
         }
 
+        // INICIAR SESIÓN CON GOOGLE
+        async function iniciarSesionGoogle() {
+            if (!supabaseClient) return;
+            const { error } = await supabaseClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin
+                }
+            });
+            if (error) {
+                mostrarAlertaAuth(error.message, true);
+            }
+        }
+
         async function procesarAuth(e) {
             e.preventDefault();
             const nombreIngresado = document.getElementById('user-name').value.trim();
             const email = document.getElementById('user-email').value;
             const password = document.getElementById('user-password').value;
 
-            if (!nombreIngresado) {
-                mostrarAlertaAuth('El nombre de usuario es obligatorio.', true);
-                return;
-            }
-
-            nombreUsuario = nombreIngresado;
+            nombreUsuario = nombreIngresado || email.split('@')[0];
 
             const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (error) {
@@ -777,7 +799,7 @@
                     </div>
                     <div class="text-right space-y-1">
                         <div class="text-sm font-black text-amber-400">$${s.apuesta || 0}</div>
-                        <button onclick="window.unirseADeterminadaSala(${s.id}, ${s.apuesta || 0}, ${s.meta || 30})" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-xs py-1.5 px-4 rounded-xl transition shadow-md uppercase">
+                        <button onclick="window.unirseADeterminadaSala(${s.id}, ${s.apuesta || 0}, ${s.meta || 30})" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-xs py-1.5 px-4 rounded-xl transition shadow-md uppercase cursor-pointer">
                             UNIRSE
                         </button>
                     </div>
