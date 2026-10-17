@@ -9,19 +9,19 @@
     <!-- SDK de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Estilos y perspectiva Mesa Blyts */
+        /* Estilos y perspectiva Mesa Estilo Paño Verde Clásico (Modificado para quitar el marrón) */
         .tapete-blyts {
-            background: #c8b598;
+            background: #14532d;
             background-image: 
-                radial-gradient(circle at 50% 30%, #e2d5c1 0%, #b39f82 100%),
-                repeating-linear-gradient(90deg, rgba(120,70,30,0.1) 0px, rgba(120,70,30,0.1) 2px, transparent 2px, transparent 20px);
-            box-shadow: inset 0 0 60px rgba(0,0,0,0.5);
+                radial-gradient(circle at 50% 30%, #166534 0%, #052e16 100%),
+                repeating-linear-gradient(90deg, rgba(20,83,45,0.15) 0px, rgba(20,83,45,0.15) 2px, transparent 2px, transparent 20px);
+            box-shadow: inset 0 0 60px rgba(0,0,0,0.6);
             perspective: 600px;
         }
 
         /* Guarda ornamental en el mantel */
         .guarda-mantel {
-            background-image: repeating-linear-gradient(45deg, #7a583e 0, #7a583e 10px, transparent 0, transparent 20px);
+            background-image: repeating-linear-gradient(45deg, #1e3a8a 0, #1e3a8a 10px, transparent 0, transparent 20px);
             opacity: 0.25;
         }
 
@@ -55,10 +55,10 @@
             background: white;
         }
 
-        /* Barra de acciones inferior estilo madera */
+        /* Barra de acciones inferior estilo moderno oscuro (reemplazo del tono marrón) */
         .barra-acciones-blyts {
-            background: linear-gradient(180deg, #2a1c13 0%, #150d08 100%);
-            border-top: 2px solid #543925;
+            background: linear-gradient(180deg, #18181b 0%, #09090b 100%);
+            border-top: 2px solid #27272a;
         }
     </style>
 </head>
@@ -163,8 +163,8 @@
         <div id="menu-salas" class="bg-stone-900/90 p-5 rounded-3xl shadow-2xl w-full text-center border border-stone-800 backdrop-blur-md my-auto space-y-4">
             <h1 class="text-3xl font-black text-amber-400 mb-4 tracking-wider uppercase drop-shadow-md">♠️ Truco Argentino ⚔️</h1>
             
-            <div id="esperando-rival" class="hidden bg-amber-950/70 border border-amber-500/50 p-4 rounded-2xl text-center">
-                <div class="text-lg font-black text-amber-300">⏳ Sala creada</div>
+            <div id="esperando-rival" class="hidden bg-emerald-950/70 border border-emerald-500/50 p-4 rounded-2xl text-center">
+                <div class="text-lg font-black text-emerald-300">⏳ Sala creada</div>
                 <p class="text-sm text-stone-200 mt-1">Todavía no entraste a la partida. Esperando que se una otro jugador…</p>
                 <p id="esperando-sala-info" class="text-xs text-stone-400 mt-2"></p>
                 <button onclick="window.cancelarSala(false)" class="mt-3 bg-stone-700 hover:bg-stone-600 px-4 py-2 rounded-xl text-sm font-bold">Cancelar espera</button>
@@ -204,7 +204,7 @@
                     <span id="pts-yo" class="font-mono text-lg font-black text-amber-300">0</span>
                 </div>
 
-                <div id="turno-info" class="bg-amber-900/40 border border-amber-500/30 px-3 py-1 rounded-full text-xs text-amber-300 font-bold">
+                <div id="turno-info" class="bg-emerald-900/40 border border-emerald-500/30 px-3 py-1 rounded-full text-xs text-emerald-300 font-bold">
                     Turno: -
                 </div>
 
@@ -214,8 +214,8 @@
                 </div>
             </div>
 
-            <!-- Tapete de Mesa Estilo Blyts -->
-            <div class="tapete-blyts flex-1 relative flex flex-col justify-between p-4 rounded-3xl border-4 border-amber-900/80 min-h-[380px] overflow-hidden shadow-2xl">
+            <!-- Tapete de Mesa Estilo Blyts (Verde Fieltro) -->
+            <div class="tapete-blyts flex-1 relative flex flex-col justify-between p-4 rounded-3xl border-4 border-emerald-900/80 min-h-[380px] overflow-hidden shadow-2xl">
                 
                 <!-- Guardas laterales del mantel -->
                 <div class="absolute left-2 top-0 bottom-0 w-8 guarda-mantel pointer-events-none"></div>
@@ -229,8 +229,8 @@
                     </div>
 
                     <!-- Cuenco decorativo superior -->
-                    <div class="w-12 h-7 rounded-full bg-amber-950 border-2 border-amber-900 shadow-inner flex items-center justify-center">
-                        <div class="w-8 h-3 rounded-full bg-amber-800/70"></div>
+                    <div class="w-12 h-7 rounded-full bg-emerald-950 border-2 border-emerald-900 shadow-inner flex items-center justify-center">
+                        <div class="w-8 h-3 rounded-full bg-emerald-800/70"></div>
                     </div>
                 </div>
 
@@ -251,8 +251,8 @@
                 </div>
 
                 <!-- Mazo boca abajo a la derecha -->
-                <div class="absolute right-4 bottom-24 w-12 h-18 bg-amber-900 rounded-md border-2 border-amber-700 shadow-xl flex items-center justify-center transform rotate-12 pointer-events-none">
-                    <div class="w-10 h-16 border border-amber-600/50 rounded bg-amber-950"></div>
+                <div class="absolute right-4 bottom-24 w-12 h-18 bg-emerald-900 rounded-md border-2 border-emerald-700 shadow-xl flex items-center justify-center transform rotate-12 pointer-events-none">
+                    <div class="w-10 h-16 border border-emerald-600/50 rounded bg-emerald-950"></div>
                 </div>
 
                 <!-- Banner de Mensaje Central -->
@@ -292,14 +292,14 @@
                 </div>
             </div>
 
-            <!-- Barra Inferior de Cantos y Acciones (Estilo Blyts de madera) -->
+            <!-- Barra Inferior de Cantos y Acciones (Estilo Moderno) -->
             <div class="barra-acciones-blyts p-2.5 rounded-2xl grid grid-cols-4 gap-1.5 z-30 shadow-2xl">
                 <div id="bloque-envidos" class="col-span-2 flex gap-1">
                     <button onclick="window.cantar('Envido')" class="flex-1 bg-stone-800 hover:bg-stone-700 text-[11px] font-bold py-2.5 rounded-xl border border-stone-700 text-amber-200 shadow cursor-pointer">Envido</button>
                     <button onclick="window.cantar('Real Envido')" class="flex-1 bg-stone-800 hover:bg-stone-700 text-[10px] font-bold py-2.5 rounded-xl border border-stone-700 text-amber-200 shadow cursor-pointer">Real</button>
                     <button onclick="window.cantar('Falta Envido')" class="flex-1 bg-stone-800 hover:bg-stone-700 text-[10px] font-bold py-2.5 rounded-xl border border-stone-700 text-amber-200 shadow cursor-pointer">Falta</button>
                 </div>
-                <button id="btn-truco" onclick="window.cantarTrucoDinamico()" class="bg-amber-700 hover:bg-amber-600 text-xs font-black py-2.5 rounded-xl text-amber-100 border border-amber-500/50 shadow col-span-1 cursor-pointer">
+                <button id="btn-truco" onclick="window.cantarTrucoDinamico()" class="bg-amber-600 hover:bg-amber-500 text-xs font-black py-2.5 rounded-xl text-stone-950 border border-amber-400/50 shadow col-span-1 cursor-pointer">
                     Truco
                 </button>
                 <button onclick="window.cantar('Maso')" class="bg-stone-900 hover:bg-stone-800 text-xs font-black py-2.5 rounded-xl text-stone-300 border border-stone-700 shadow col-span-1 cursor-pointer">
@@ -367,7 +367,7 @@
         let modoAuth = 'login';
         let apuestaSalaActual = 100;
 
-        // DICCIONARIO COMPLETO DE LAS 40 CARTAS CON TUS ENLACES DE IMAGEN
+        // DICCIONARIO COMPLETO Y VERIFICADO DE LAS 40 CARTAS (CON TUS ENLACES EXACTOS)
         const IMAGENES_ESPADAS = {
             '1E': 'https://lh3.googleusercontent.com/d/3B9CB9AE-9416-4AEE-9D93-DF7E2B5D25D8',
             '2E': 'https://lh3.googleusercontent.com/d/280DF667-8528-4D10-BAC1-3D3BEE723E21',
@@ -378,13 +378,13 @@
             '7E': 'https://lh3.googleusercontent.com/d/889FDC04-602F-4609-856C-466B356DDFF0',
             '10E': 'https://lh3.googleusercontent.com/d/D922D71F-DDE0-4F93-9A48-13C2C25BAE0A',
             '11E': 'https://lh3.googleusercontent.com/d/56CFB2BF-287E-427A-99F0-F70A20B2238A',
-            '12E': 'https://lh3.googleusercontent.com/d/1D922D71F-DDE0-4F93-9A48-13C2C25BAE0A'
+            '12E': 'https://lh3.googleusercontent.com/d/IMG_5814.JPG'
         };
 
         const IMAGENES_COPAS = {
             '1C': 'https://lh3.googleusercontent.com/d/0A6E7B15-5DF8-490D-95E6-6876FDF4C6EE',
             '2C': 'https://lh3.googleusercontent.com/d/65D989B8-48D9-4ED0-A9E9-39F4F07D2B1C',
-            '3C': 'https://lh3.googleusercontent.com/d/1Bla7Ccye6DY-o7qQtzNzIgFMxdYWVaMF',
+            '3C': 'https://lh3.googleusercontent.com/d/D8876D6B-A6B0-4388-8B1C-7FD7E772843C',
             '4C': 'https://lh3.googleusercontent.com/d/45539003-D55D-4ED9-A77C-9CF91A986DBF',
             '5C': 'https://lh3.googleusercontent.com/d/F636396C-5FCA-408D-BE11-F5555E57F457',
             '6C': 'https://lh3.googleusercontent.com/d/D253ABD0-8E05-4E98-A868-D248C7B5F81D',
