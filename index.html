@@ -27,23 +27,23 @@
             background-repeat: no-repeat;
         }
 
-        /* TAPA EL 1300 DE LA FOTO Y MUESTRA LAS FICHAS REALES */
+        /* PARCHE EXACTO PARA TAPAR EL 1300 DE LA IMAGEN DE FONDO */
         .caja-saldo-custom {
             position: absolute;
-            top: 22px;
+            top: 2.3rem;
             left: 50%;
             transform: translateX(-50%);
-            width: 148px;
-            height: 42px;
-            background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
-            border: 2.5px solid #38bdf8;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.3);
+            width: 155px;
+            height: 38px;
+            background-color: #0b2545; /* Color sólido idéntico al fondo de la pastilla */
+            border: 2px solid #1d4ed8;
+            border-radius: 10px;
             display: flex;
-            items-center: center;
+            align-items: center;
             justify-content: center;
             gap: 6px;
-            z-index: 25;
+            z-index: 30;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
         }
 
         /* MESA DE JUEGO */
@@ -156,19 +156,19 @@
         <!-- LOBBY CON LA IMAGEN DE FONDO -->
         <div id="pantalla-inicio" class="fondo-lobby-real w-full h-full relative flex flex-col justify-between items-center p-3">
             
-            <!-- CAJA AZUL CREADA PARA TAPAR EL 1300 DE LA FOTO -->
+            <!-- PARCHE SUPERIOR PARA TAPAR EL 1300 E IMPRIMIR LAS FICHAS REALES -->
             <div class="caja-saldo-custom">
-                <span class="text-xl">🪙</span>
-                <span id="saldoFichas" class="text-xl font-black text-white tracking-wider drop-shadow-md">0</span>
+                <span class="text-sm">🪙</span>
+                <span id="saldoFichas" class="text-lg font-black text-white tracking-wide">0</span>
             </div>
 
-            <!-- BOTONES TRANSPARENTES DE COMPRAR Y RETIRAR (MÁs AL MEDIO SOBRE LOS BOTONES DE LA FOTO) -->
-            <div class="w-full flex justify-end items-center pt-5 pr-2 z-30 gap-2">
-                <button onclick="toggleModal('modalComprar')" class="w-20 h-10 opacity-0 cursor-pointer" title="Comprar"></button>
-                <button onclick="toggleModal('modalRetirar')" class="w-20 h-10 opacity-0 cursor-pointer" title="Retirar"></button>
+            <!-- BOTONES SUPERIORES CENTRADOS (Comprar / Retirar) -->
+            <div class="w-full flex justify-between items-center pt-2 px-16 z-40">
+                <button onclick="toggleModal('modalComprar')" class="w-24 h-10 opacity-0 cursor-pointer" title="Comprar"></button>
+                <button onclick="toggleModal('modalRetirar')" class="w-24 h-10 opacity-0 cursor-pointer" title="Retirar"></button>
             </div>
 
-            <!-- BOTONES TRANSPARENTES SOBRE JUGAR Y SALIR DE LA FOTO -->
+            <!-- BOTONES INFERIORES SOBRE LA FOTO (Jugar / Salir) -->
             <div class="w-full max-w-xs space-y-3 mb-10 z-20 flex flex-col items-center">
                 <button onclick="mostrarLobbySalas()" class="w-64 h-16 opacity-0 cursor-pointer" title="Jugar"></button>
                 <button onclick="cerrarSesion()" class="w-64 h-12 opacity-0 cursor-pointer" title="Salir"></button>
@@ -550,16 +550,16 @@
                 });
                 const data = await response.json();
                 if (response.ok && data) {
-                    saldoFichasActual = data.fichas !== undefined ? data.fichas : 1300;
+                    saldoFichasActual = data.fichas !== undefined ? data.fichas : 500;
                     nombreUsuario = data.nombre || data.email?.split('@')[0] || 'Jugador';
                     document.getElementById('saldoFichas').innerText = saldoFichasActual;
                     document.getElementById('user-name').value = nombreUsuario;
                 } else {
-                    saldoFichasActual = 1300;
+                    saldoFichasActual = 500;
                     document.getElementById('saldoFichas').innerText = saldoFichasActual;
                 }
             } catch (err) {
-                saldoFichasActual = 1300;
+                saldoFichasActual = 500;
                 document.getElementById('saldoFichas').innerText = saldoFichasActual;
             }
         }
@@ -614,7 +614,7 @@
 
         async function guardarNombreEnBD(nombre) {
             if (!supabaseClient || !usuarioId) return;
-            await supabaseClient.from('perfiles').upsert({ usuarios: usuarioId, nombre: nombre, fichas: saldoFichasActual || 1300 });
+            await supabaseClient.from('perfiles').upsert({ usuarios: usuarioId, nombre: nombre, fichas: saldoFichasActual || 500 });
         }
 
         async function cerrarSesion() {
