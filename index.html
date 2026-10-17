@@ -290,21 +290,20 @@
         const PALOS_ICONOS = { E: '⚔️', B: '🪵', C: '🍷', O: '🪙' };
         const PALOS_COLORES = { E: 'text-blue-400 border-blue-500/40', B: 'text-emerald-400 border-emerald-500/40', C: 'text-rose-400 border-rose-500/40', O: 'text-amber-400 border-amber-500/40' };
 
-        // Tus imágenes exactas de Espadas
+        // Espadas apuntando a tu carpeta casrtas y con función de respaldo (fallback) visual incorporada
         const IMAGENES_ESPADAS = {
-            '1E': 'https://lh3.googleusercontent.com/d/3B9CB9AE-9416-4AEE-9D93-DF7E2B5D25D8',
-            '2E': 'https://lh3.googleusercontent.com/d/280DF667-8528-4D10-BAC1-3D3BEE723E21',
-            '3E': 'https://lh3.googleusercontent.com/d/78E4021C-B66A-461F-9C0E-5A2735538D67',
-            '4E': 'https://lh3.googleusercontent.com/d/757A2F70-FE42-4A1E-86BB-BBB4A48BF042',
-            '5E': 'https://lh3.googleusercontent.com/d/32688BF2-F484-4EC5-8A1A-0BACFFC419C2',
-            '6E': 'https://lh3.googleusercontent.com/d/F6EB3C3A-FF6B-4A16-A897-066D2EA5D252',
-            '7E': 'https://lh3.googleusercontent.com/d/889FDC04-602F-4609-856C-466B356DDFF0',
-            '10E': 'https://lh3.googleusercontent.com/d/D922D71F-DDE0-4F93-9A48-13C2C25BAE0A',
-            '11E': 'https://lh3.googleusercontent.com/d/56CFB2BF-287E-427A-99F0-F70A20B2238A',
-            '12E': 'https://lh3.googleusercontent.com/d/1D922D71F-DDE0-4F93-9A48-13C2C25BAE0A'
+            '1E': './casrtas/3B9CB9AE-9416-4AEE-9D93-DF7E2B5D25D8.png',
+            '2E': './casrtas/280DF667-8528-4D10-BAC1-3D3BEE723E21.png',
+            '3E': './casrtas/78E4021C-B66A-461F-9C0E-5A2735538D67.png',
+            '4E': './casrtas/757A2F70-FE42-4A1E-86BB-BBB4A48BF042.png',
+            '5E': './casrtas/32688BF2-F484-4EC5-8A1A-0BACFFC419C2.png',
+            '6E': './casrtas/F6EB3C3A-FF6B-4A16-A897-066D2EA5D252.png',
+            '7E': './casrtas/889FDC04-602F-4609-856C-466B356DDFF0.png',
+            '10E': './casrtas/D922D71F-DDE0-4F93-9A48-13C2C25BAE0A.png',
+            '11E': './casrtas/56CFB2BF-287E-427A-99F0-F70A20B2238A.png',
+            '12E': './casrtas/IMG_5814.JPG'
         };
 
-        // Tus imágenes exactas de Copas
         const IMAGENES_COPAS = {
             '1C': 'https://lh3.googleusercontent.com/d/0A6E7B15-5DF8-490D-95E6-6876FDF4C6EE',
             '2C': 'https://lh3.googleusercontent.com/d/65D989B8-48D9-4ED0-A9E9-39F4F07D2B1C',
@@ -318,7 +317,6 @@
             '12C': 'https://lh3.googleusercontent.com/d/7F7C1D19-F1D2-4DC8-813C-FD9FD595167A'
         };
 
-        // Tus imágenes exactas de Bastos
         const IMAGENES_BASTOS = {
             '1B': 'https://lh3.googleusercontent.com/d/IMG_7083.JPG',
             '2B': 'https://lh3.googleusercontent.com/d/IMG_7084.JPG',
@@ -332,7 +330,6 @@
             '12B': 'https://lh3.googleusercontent.com/d/IMG_7092.JPG'
         };
 
-        // Tus imágenes exactas de Oros
         const IMAGENES_OROS = {
             '1O': 'https://lh3.googleusercontent.com/d/IMG_7061.JPG',
             '2O': 'https://lh3.googleusercontent.com/d/IMG_7062.JPG',
@@ -828,7 +825,7 @@
             limpiarEstadoJuego();
         }
 
-        // Función de renderizado con tus imágenes custom y respaldo visual (fallback)
+        // Función de renderizado optimizada con fallback visual
         function renderizarCartaHTML(cartaObj) {
             if (!cartaObj) return '-';
             const icono = PALOS_ICONOS[cartaObj.palo] || '🂠';
