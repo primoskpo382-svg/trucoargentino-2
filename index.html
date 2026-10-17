@@ -9,12 +9,86 @@
     <!-- SDK de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        .carta-truco {
-            transition: all 0.2s ease-in-out;
+        :root { --cw: min(24vw, 100px, 13vh); --hw: min(33vw, 165px, 22vh); }
+
+        .vista-full { position: fixed; inset: 0; height: 100dvh; }
+
+        /* Mesa tipo tapete con guardas laterales */
+        .mesa-fondo {
+            background-color: #8f8872;
+            background-image:
+                repeating-linear-gradient(45deg, rgba(255,255,255,.32) 0 3px, transparent 3px 12px),
+                repeating-linear-gradient(-45deg, rgba(255,255,255,.32) 0 3px, transparent 3px 12px),
+                repeating-linear-gradient(45deg, rgba(255,255,255,.32) 0 3px, transparent 3px 12px),
+                repeating-linear-gradient(-45deg, rgba(255,255,255,.32) 0 3px, transparent 3px 12px),
+                radial-gradient(ellipse at 50% 38%, rgba(255,255,255,.16), transparent 65%);
+            background-size: 20px 100%, 20px 100%, 20px 100%, 20px 100%, 100% 100%;
+            background-position: left top, left top, right top, right top, center;
+            background-repeat: no-repeat;
         }
-        .carta-truco:hover:not(:disabled) {
-            transform: translateY(-6px) scale(1.05);
+
+        /* Rondas en el centro de la mesa */
+        .col-ronda { position: relative; width: var(--cw); height: calc(var(--cw) * 2.5); }
+        .col-ronda::before {
+            content: attr(data-r); position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            font-size: calc(var(--cw) * .9); font-weight: 900; color: rgba(255,255,255,.14); pointer-events: none;
         }
+        .slot { position: absolute; left: 0; width: 100%; }
+        .slot-el { top: 0; z-index: 1; }
+        .slot-yo { top: calc(var(--cw) * .95); z-index: 2; }
+        .slot img, .slot .carta-texto { filter: drop-shadow(0 4px 6px rgba(0,0,0,.45)); }
+
+        /* Cartas */
+        .carta-img { width: 100%; height: auto; display: block; border-radius: 9px; background: #fff; }
+        .carta-texto {
+            width: 100%; aspect-ratio: 1 / 1.55; background: #fdf8ec; border: 3px solid var(--c, #333); border-radius: 10px;
+            color: var(--c, #333); display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+            padding: 6%; font-weight: 900; line-height: 1;
+        }
+        .carta-texto .n { font-size: clamp(18px, 5vw, 32px); }
+        .carta-texto .n.inv { transform: rotate(180deg); }
+        .carta-texto .i { font-size: clamp(28px, 9vw, 56px); }
+
+        .carta-mano {
+            width: var(--hw); margin: 0 calc(var(--hw) * -.06); padding: 0; border: 0; background: none; cursor: pointer;
+            transform: translateY(var(--dy, 0)) rotate(var(--rot, 0deg)); transform-origin: 50% 100%;
+            transition: transform .18s ease-in-out, filter .18s;
+            filter: drop-shadow(0 8px 10px rgba(0,0,0,.5));
+        }
+        .carta-mano:hover:not(:disabled) { transform: translateY(-18px) rotate(var(--rot, 0deg)) scale(1.05); }
+        .carta-mano:disabled { cursor: not-allowed; filter: drop-shadow(0 8px 10px rgba(0,0,0,.5)) brightness(.7); }
+
+        .dorso {
+            width: calc(var(--cw) * .42); aspect-ratio: 1 / 1.55; border-radius: 6px; border: 2px solid #f3e9d2;
+            background: repeating-linear-gradient(45deg, #7b2a3a 0 5px, #5a1d2a 5px 10px);
+            box-shadow: 0 3px 5px rgba(0,0,0,.4);
+        }
+
+        /* Barra inferior de cantos */
+        .barra-inf {
+            display: grid; grid-template-columns: repeat(4, 1fr); background: #2a1f17; border-top: 2px solid #4a3728;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .btn-barra {
+            color: #f5ead2; font-weight: 800; font-size: 16px; padding: 18px 4px; text-align: center; width: 100%;
+            border-right: 1px solid rgba(255,255,255,.08); transition: background .15s;
+        }
+        .btn-barra:last-child { border-right: 0; }
+        .btn-barra:hover:not(:disabled) { background: rgba(255,255,255,.08); }
+        .btn-barra:disabled { color: #8b8170; cursor: not-allowed; }
+
+        .submenu-envido {
+            position: absolute; bottom: 100%; left: 0; display: flex; flex-direction: column; gap: 4px; padding: 6px;
+            background: #2a1f17; border: 2px solid #4a3728; border-radius: 12px 12px 0 0; min-width: 130px; z-index: 30;
+        }
+        .submenu-envido button { color: #f5ead2; font-weight: 800; font-size: 14px; padding: 10px 12px; border-radius: 8px; background: #4a3728; text-align: left; }
+        .submenu-envido button:hover { background: #6b4f38; }
+
+        .marcador { background: rgba(0,0,0,.45); border: 1px solid rgba(255,255,255,.2); border-radius: 10px; padding: 3px 12px; font-weight: 900; }
+        .circ-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,.5); color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+
+        .spinner { width: 56px; height: 56px; border-radius: 50%; border: 5px solid rgba(255,255,255,.25); border-top-color: #fbbf24; animation: giro 1s linear infinite; }
+        @keyframes giro { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-center p-3 select-none">
@@ -142,96 +216,103 @@
             </div>
         </div>
 
-        <!-- Panel de Juego -->
-        <div id="panel-juego" class="hidden space-y-4">
-            
-            <!-- Encabezado de Estado -->
-            <div class="flex justify-between items-center text-xs text-slate-400 font-mono border-b border-slate-800 pb-2 px-1">
-                <span id="sala-info" class="bg-slate-800 px-2 py-1 rounded-md">Sala: -</span>
-                <span id="apuesta-info" class="text-amber-400 font-bold">Apuesta: -</span>
-                <span id="turno-info" class="text-amber-400 font-bold bg-amber-950/40 px-2.5 py-1 rounded-md border border-amber-500/30">Turno: -</span>
+    </div>
+
+    <!-- PANTALLA DE ESPERA (el creador de la sala no entra a la mesa hasta que llegue el rival) -->
+    <div id="panel-espera" class="hidden vista-full mesa-fondo z-40 flex flex-col items-center justify-center text-center p-6 gap-5">
+        <div class="spinner"></div>
+        <h2 class="text-xl font-black text-amber-300 uppercase tracking-wider drop-shadow">Esperando rival...</h2>
+        <p class="text-sm text-stone-100 max-w-xs drop-shadow">La partida empieza apenas se una otro jugador a tu mesa.</p>
+        <div class="bg-black/45 rounded-2xl px-5 py-3 text-sm font-mono text-stone-100">
+            <span id="espera-mesa">Mesa #-</span> · <span id="espera-apuesta" class="text-amber-300 font-bold">Apuesta: $0</span>
+        </div>
+        <button onclick="window.cancelarSala(false)" class="bg-black/55 hover:bg-black/75 text-stone-100 font-bold text-sm py-3 px-6 rounded-xl border border-white/20 cursor-pointer">
+            Cancelar sala
+        </button>
+    </div>
+
+    <!-- MESA DE JUEGO -->
+    <div id="panel-juego" class="hidden vista-full mesa-fondo z-40 flex flex-col select-none">
+
+        <!-- Barra superior: salir + marcador -->
+        <div class="flex items-center justify-between gap-2 px-3 py-2 bg-black/55 text-white">
+            <button onclick="window.salirDePartida()" class="circ-btn cursor-pointer" aria-label="Salir">←</button>
+            <div class="flex items-center gap-2 text-sm">
+                <div class="marcador text-indigo-200">Yo: <span id="pts-yo">0</span></div>
+                <div class="marcador text-rose-200">Él: <span id="pts-el">0</span></div>
+                <span class="text-[11px] text-stone-300 font-bold">a 30</span>
             </div>
-
-            <!-- Marcador de Puntos -->
-            <div class="grid grid-cols-2 gap-3 bg-slate-950 p-2.5 rounded-2xl border border-slate-800 shadow-inner">
-                <div class="bg-indigo-950/40 border border-indigo-800/40 p-2.5 rounded-xl">
-                    <div class="text-[11px] font-black text-indigo-400 uppercase tracking-widest">YO</div>
-                    <div id="pts-yo" class="text-4xl font-black text-indigo-200">0</div>
-                </div>
-                <div class="bg-rose-950/40 border border-rose-800/40 p-2.5 rounded-xl">
-                    <div class="text-[11px] font-black text-rose-400 uppercase tracking-widest">ÉL</div>
-                    <div id="pts-el" class="text-4xl font-black text-rose-200">0</div>
-                </div>
-            </div>
-
-            <!-- Mesa de Juego estilo Tapete Verde -->
-            <div class="bg-gradient-to-b from-emerald-900 to-emerald-950 border-4 border-emerald-800 rounded-3xl p-4 min-h-[220px] flex flex-col justify-between relative shadow-2xl shadow-emerald-950/80">
-                <div id="estado-mensaje" class="text-xs font-bold text-emerald-200 text-center mb-2 bg-emerald-950/80 py-1.5 px-3 rounded-full border border-emerald-700/50 shadow">
-                    Esperando jugador...
-                </div>
-
-                <!-- Historial de las 3 Rondas -->
-                <div class="grid grid-cols-3 gap-2 text-center text-xs">
-                    <div class="bg-slate-950/70 p-2 rounded-xl border border-emerald-700/30 backdrop-blur-sm">
-                        <div class="text-[10px] text-slate-400 font-black border-b border-slate-800 pb-1 mb-1.5">1ª RONDA</div>
-                        <div id="r1-yo" class="text-indigo-300 font-bold min-h-[60px] flex items-center justify-center">-</div>
-                        <div id="r1-el" class="text-rose-300 font-bold min-h-[60px] flex items-center justify-center border-t border-slate-800/50 mt-1 pt-1">-</div>
-                    </div>
-                    <div class="bg-slate-950/70 p-2 rounded-xl border border-emerald-700/30 backdrop-blur-sm">
-                        <div class="text-[10px] text-slate-400 font-black border-b border-slate-800 pb-1 mb-1.5">2ª RONDA</div>
-                        <div id="r2-yo" class="text-indigo-300 font-bold min-h-[60px] flex items-center justify-center">-</div>
-                        <div id="r2-el" class="text-rose-300 font-bold min-h-[60px] flex items-center justify-center border-t border-slate-800/50 mt-1 pt-1">-</div>
-                    </div>
-                    <div class="bg-slate-950/70 p-2 rounded-xl border border-emerald-700/30 backdrop-blur-sm">
-                        <div class="text-[10px] text-slate-400 font-black border-b border-slate-800 pb-1 mb-1.5">3ª RONDA</div>
-                        <div id="r3-yo" class="text-indigo-300 font-bold min-h-[60px] flex items-center justify-center">-</div>
-                        <div id="r3-el" class="text-rose-300 font-bold min-h-[60px] flex items-center justify-center border-t border-slate-800/50 mt-1 pt-1">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Panel de Respuesta a Cantos -->
-            <div id="panel-respuesta" class="bg-amber-950/95 border-2 border-amber-500/80 p-3.5 rounded-2xl hidden shadow-2xl animate-pulse">
-                <div id="texto-canto-rival" class="text-xs font-black text-amber-200 mb-2.5 uppercase tracking-wide">¡Te cantaron!</div>
-                <div class="flex gap-2 justify-center flex-wrap">
-                    <button onclick="window.responder(true)" class="bg-emerald-600 hover:bg-emerald-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md">¡Quiero!</button>
-                    
-                    <div id="botones-recanto-envido" class="flex gap-1 hidden">
-                        <button onclick="window.cantar('Envido')" class="bg-amber-600 hover:bg-amber-500 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Envido</button>
-                        <button onclick="window.cantar('Real Envido')" class="bg-amber-700 hover:bg-amber-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Real Envido</button>
-                        <button onclick="window.cantar('Falta Envido')" class="bg-red-700 hover:bg-red-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Falta Envido</button>
-                    </div>
-
-                    <button id="btn-recantar-truco" onclick="window.recantarTruco()" class="bg-amber-600 hover:bg-amber-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer hidden shadow-md">Subir Apuesta</button>
-                    
-                    <button onclick="window.responder(false)" class="bg-rose-700 hover:bg-rose-600 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md">No quiero</button>
-                </div>
-            </div>
-
-            <!-- Botones de Canto Principal -->
-            <div id="panel-cantos" class="grid grid-cols-3 gap-2">
-                <div id="bloque-envidos" class="flex gap-1 col-span-1">
-                    <button onclick="window.cantar('Envido')" class="w-full bg-amber-600 hover:bg-amber-500 text-[11px] font-bold py-2 px-1 rounded-xl transition cursor-pointer shadow">Envido</button>
-                    <button onclick="window.cantar('Real Envido')" class="w-full bg-amber-700 hover:bg-amber-600 text-[11px] font-bold py-2 px-1 rounded-xl transition cursor-pointer shadow">Real</button>
-                    <button onclick="window.cantar('Falta Envido')" class="w-full bg-red-700 hover:bg-red-600 text-[11px] font-bold py-2 px-1 rounded-xl transition cursor-pointer shadow">Falta</button>
-                </div>
-                <button id="btn-truco" onclick="window.cantarTrucoDinamico()" class="bg-orange-600 hover:bg-orange-500 text-xs font-extrabold py-2 px-2 rounded-xl transition cursor-pointer shadow">¡Truco!</button>
-                <button onclick="window.cantar('Maso')" class="bg-rose-800 hover:bg-rose-700 text-xs font-extrabold py-2 px-2 rounded-xl transition cursor-pointer shadow">Irse al Maso</button>
-            </div>
-
-            <!-- Mis Cartas en Mano -->
-            <div class="text-left bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
-                <div class="text-[11px] text-slate-400 font-black mb-2.5 uppercase tracking-wider">Tus Cartas:</div>
-                <div id="contenedor-mano" class="flex gap-3 justify-center min-h-[110px] items-center">
-                    <span class="text-xs text-slate-500 italic">Esperando que se reparta la mano...</span>
-                </div>
-            </div>
-
-            <button onclick="window.cancelarSala(true)" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs py-2.5 px-4 rounded-xl transition cursor-pointer">
-                Salir de la Partida
-            </button>
+            <span id="sala-info" class="text-[10px] font-mono text-stone-300 w-9 text-right">#-</span>
         </div>
 
+        <!-- Zona central -->
+        <div class="relative flex-1 min-h-0 flex flex-col px-2 pt-2 pb-1">
+            <div class="flex justify-between items-start gap-2">
+                <div class="flex flex-col gap-1 items-start">
+                    <span id="apuesta-info" class="text-[11px] font-black text-amber-200 bg-black/45 px-2 py-0.5 rounded-md">Apuesta: -</span>
+                    <span id="turno-info" class="text-[11px] font-black text-amber-100 bg-black/45 px-2 py-0.5 rounded-md border border-amber-500/30">Turno: -</span>
+                </div>
+                <div class="flex flex-col items-end gap-1">
+                    <div class="flex items-center gap-2 bg-black/60 rounded-full pl-3 pr-1 py-1 border border-white/20">
+                        <span class="text-xs font-bold text-white">Rival</span>
+                        <span class="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-lg">🧔</span>
+                    </div>
+                    <div id="cartas-rival" class="flex gap-1"></div>
+                </div>
+            </div>
+
+            <div id="estado-mensaje" class="self-center mt-1 text-xs font-bold text-white text-center bg-black/55 py-1.5 px-4 rounded-full border border-white/15 max-w-full">
+                Esperando jugador...
+            </div>
+
+            <!-- Rondas: arriba la carta del rival, abajo la mía -->
+            <div class="flex-1 min-h-0 flex items-center justify-center gap-[4vw]">
+                <div class="col-ronda" data-r="1"><div id="r1-el" class="slot slot-el"></div><div id="r1-yo" class="slot slot-yo"></div></div>
+                <div class="col-ronda" data-r="2"><div id="r2-el" class="slot slot-el"></div><div id="r2-yo" class="slot slot-yo"></div></div>
+                <div class="col-ronda" data-r="3"><div id="r3-el" class="slot slot-el"></div><div id="r3-yo" class="slot slot-yo"></div></div>
+            </div>
+        </div>
+
+        <!-- Panel de respuesta a cantos -->
+        <div id="panel-respuesta" class="hidden absolute left-2 right-2 z-30 bg-amber-950/95 border-2 border-amber-500/80 p-3.5 rounded-2xl shadow-2xl" style="bottom: 76px;">
+            <div id="texto-canto-rival" class="text-xs font-black text-amber-200 mb-2.5 uppercase tracking-wide text-center">¡Te cantaron!</div>
+            <div class="flex gap-2 justify-center flex-wrap">
+                <button onclick="window.responder(true)" class="bg-emerald-600 hover:bg-emerald-500 text-sm font-black py-2.5 px-5 rounded-xl cursor-pointer shadow-md">¡Quiero!</button>
+
+                <div id="botones-recanto-envido" class="flex gap-1 hidden">
+                    <button onclick="window.cantar('Envido')" class="bg-amber-600 hover:bg-amber-500 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Envido</button>
+                    <button onclick="window.cantar('Real Envido')" class="bg-amber-700 hover:bg-amber-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Real Envido</button>
+                    <button onclick="window.cantar('Falta Envido')" class="bg-red-700 hover:bg-red-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Falta Envido</button>
+                </div>
+
+                <button id="btn-recantar-truco" onclick="window.recantarTruco()" class="bg-amber-600 hover:bg-amber-500 text-sm font-black py-2.5 px-4 rounded-xl cursor-pointer hidden shadow-md">Subir Apuesta</button>
+
+                <button onclick="window.responder(false)" class="bg-rose-700 hover:bg-rose-600 text-sm font-black py-2.5 px-5 rounded-xl cursor-pointer shadow-md">No quiero</button>
+            </div>
+        </div>
+
+        <!-- Mis cartas, bien grandes -->
+        <div class="relative flex justify-center items-end overflow-visible" style="height: calc(var(--hw) * 1.62);">
+            <div class="absolute left-2 bottom-2 w-11 h-11 rounded-full bg-stone-200 border-[3px] border-lime-500 flex items-center justify-center text-xl shadow-lg">🧑</div>
+            <div id="contenedor-mano" class="flex justify-center items-end">
+                <span class="text-xs text-stone-100 italic mb-10">Repartiendo...</span>
+            </div>
+        </div>
+
+        <!-- Barra inferior de cantos -->
+        <div id="panel-cantos" class="barra-inf relative">
+            <button id="btn-truco" onclick="window.cantarTrucoDinamico()" class="btn-barra cursor-pointer">Truco</button>
+            <div class="relative">
+                <button id="btn-envido" onclick="window.toggleSubmenuEnvido()" class="btn-barra cursor-pointer">Envido</button>
+                <div id="bloque-envidos" class="hidden submenu-envido">
+                    <button onclick="window.cantar('Envido')">Envido</button>
+                    <button onclick="window.cantar('Real Envido')">Real Envido</button>
+                    <button onclick="window.cantar('Falta Envido')">Falta Envido</button>
+                </div>
+            </div>
+            <button class="btn-barra" disabled>Flor</button>
+            <button onclick="window.cantar('Maso')" class="btn-barra cursor-pointer">Mazo</button>
+        </div>
     </div>
 
     <!-- MODAL COMPRAR FICHAS (MERCADO PAGO) -->
@@ -286,22 +367,22 @@
         let canalLobby = null;
         let modoAuth = 'login';
         let apuestaSalaActual = 100;
+        let partidaIniciada = false;
 
-        const PALOS_ICONOS = { E: '⚔️', B: '🪵', C: '🍷', O: '🪙' };
+        const PALOS_ICONOS = { E: '⚔️', B: '🪵', C: '🏆', O: '🪙' };
         const PALOS_COLORES = { E: 'text-blue-400 border-blue-500/40', B: 'text-emerald-400 border-emerald-500/40', C: 'text-rose-400 border-rose-500/40', O: 'text-amber-400 border-amber-500/40' };
 
-        // Espadas apuntando a tu carpeta casrtas y con función de respaldo (fallback) visual incorporada
         const IMAGENES_ESPADAS = {
-            '1E': './casrtas/3B9CB9AE-9416-4AEE-9D93-DF7E2B5D25D8.png',
-            '2E': './casrtas/280DF667-8528-4D10-BAC1-3D3BEE723E21.png',
-            '3E': './casrtas/78E4021C-B66A-461F-9C0E-5A2735538D67.png',
-            '4E': './casrtas/757A2F70-FE42-4A1E-86BB-BBB4A48BF042.png',
-            '5E': './casrtas/32688BF2-F484-4EC5-8A1A-0BACFFC419C2.png',
-            '6E': './casrtas/F6EB3C3A-FF6B-4A16-A897-066D2EA5D252.png',
-            '7E': './casrtas/889FDC04-602F-4609-856C-466B356DDFF0.png',
-            '10E': './casrtas/D922D71F-DDE0-4F93-9A48-13C2C25BAE0A.png',
-            '11E': './casrtas/56CFB2BF-287E-427A-99F0-F70A20B2238A.png',
-            '12E': './casrtas/IMG_5814.JPG'
+            '1E': 'https://lh3.googleusercontent.com/d/3B9CB9AE-9416-4AEE-9D93-DF7E2B5D25D8',
+            '2E': 'https://lh3.googleusercontent.com/d/280DF667-8528-4D10-BAC1-3D3BEE723E21',
+            '3E': 'https://lh3.googleusercontent.com/d/78E4021C-B66A-461F-9C0E-5A2735538D67',
+            '4E': 'https://lh3.googleusercontent.com/d/757A2F70-FE42-4A1E-86BB-BBB4A48BF042',
+            '5E': 'https://lh3.googleusercontent.com/d/32688BF2-F484-4EC5-8A1A-0BACFFC419C2',
+            '6E': 'https://lh3.googleusercontent.com/d/F6EB3C3A-FF6B-4A16-A897-066D2EA5D252',
+            '7E': 'https://lh3.googleusercontent.com/d/889FDC04-602F-4609-856C-466B356DDFF0',
+            '10E': 'https://lh3.googleusercontent.com/d/D922D71F-DDE0-4F93-9A48-13C2C25BAE0A',
+            '11E': 'https://lh3.googleusercontent.com/d/56CFB2BF-287E-427A-99F0-F70A20B2238A',
+            '12E': 'https://lh3.googleusercontent.com/d/1D922D71F-DDE0-4F93-9A48-13C2C25BAE0A'
         };
 
         const IMAGENES_COPAS = {
@@ -471,10 +552,12 @@
                     saldoFichasActual = data.fichas !== undefined ? data.fichas : 10000;
                     document.getElementById('saldoFichas').innerText = saldoFichasActual;
                 } else {
+                    console.error("Error al obtener usuario del backend:", data);
                     saldoFichasActual = 10000;
                     document.getElementById('saldoFichas').innerText = saldoFichasActual;
                 }
             } catch (err) {
+                console.error("Error de conexión al cargar saldo:", err);
                 saldoFichasActual = 10000;
                 document.getElementById('saldoFichas').innerText = saldoFichasActual;
             }
@@ -581,7 +664,9 @@
 
                 const response = await fetch(`${API_URL}/crear-preferencia`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({ 
                         cantidad: cantidad,
                         precio: cantidad,
@@ -594,12 +679,14 @@
                 if (data.init_point) {
                     window.location.href = data.init_point;
                 } else {
+                    console.error("Respuesta del servidor:", data);
                     if (msg) {
                         msg.className = 'text-xs mt-2 text-rose-400';
                         msg.innerText = data.error || "Error al generar el pago.";
                     }
                 }
             } catch (error) {
+                console.error("Error de conexión:", error);
                 if (msg) {
                     msg.className = 'text-xs mt-2 text-rose-400';
                     msg.innerText = "Error al conectar con el servidor.";
@@ -687,6 +774,49 @@
                 .subscribe();
         }
 
+        function mostrarVista(vista) {
+            document.getElementById('menu-salas').classList.toggle('hidden', vista !== 'menu');
+            document.getElementById('panel-espera').classList.toggle('hidden', vista !== 'espera');
+            document.getElementById('panel-juego').classList.toggle('hidden', vista !== 'juego');
+            document.body.classList.toggle('overflow-hidden', vista !== 'menu');
+        }
+
+        function reiniciarEstadoJuego() {
+            Object.assign(estadoJuego, {
+                ptsJ1: 0, ptsJ2: 0, rondaActual: 1, manoJugador: 'J1', turnoActual: 'J1',
+                cartasJ1: [], cartasJ2: [],
+                mesaR1: { J1: null, J2: null }, mesaR2: { J1: null, J2: null }, mesaR3: { J1: null, J2: null },
+                cantosPendientes: null, nivelTruco: 1, puntosTrucoAceptado: 1, ultimoQueCantoTruco: null,
+                puntosEnvidoEnJuego: 0, puntosEnvidoRechazo: 1, envidoCantado: false, historialEnvido: [],
+                mensajeEstado: 'Esperando conexiones...'
+            });
+            ['r1', 'r2', 'r3'].forEach(r => {
+                document.getElementById(r + '-yo').innerHTML = '';
+                document.getElementById(r + '-el').innerHTML = '';
+            });
+            document.getElementById('pts-yo').innerText = 0;
+            document.getElementById('pts-el').innerText = 0;
+            document.getElementById('cartas-rival').innerHTML = '';
+            document.getElementById('contenedor-mano').innerHTML = '<span class="text-xs text-stone-100 italic mb-10">Repartiendo...</span>';
+            document.getElementById('panel-respuesta').classList.add('hidden');
+            cerrarSubmenuEnvido();
+        }
+
+        window.toggleSubmenuEnvido = function() {
+            if (document.getElementById('btn-envido').disabled) return;
+            document.getElementById('bloque-envidos').classList.toggle('hidden');
+        };
+
+        function cerrarSubmenuEnvido() {
+            document.getElementById('bloque-envidos').classList.add('hidden');
+        }
+
+        window.salirDePartida = function() {
+            if (confirm('¿Querés salir de la partida? Si abandonás, gana tu rival.')) {
+                window.cancelarSala(true);
+            }
+        };
+
         window.crearSala = async function() {
             if (!supabaseClient) return;
             const montoApuesta = Number(document.getElementById('select-apuesta').value);
@@ -708,12 +838,16 @@
             salaId = data.id;
             soyJ1 = true;
             apuestaSalaActual = montoApuesta;
+            partidaIniciada = false;
 
-            document.getElementById('menu-salas').classList.add('hidden');
-            document.getElementById('panel-juego').classList.remove('hidden');
-            document.getElementById('sala-info').innerText = `Mesa: #${salaId}`;
+            reiniciarEstadoJuego();
+            document.getElementById('sala-info').innerText = `#${salaId}`;
             document.getElementById('apuesta-info').innerText = `Apuesta: $${apuestaSalaActual}`;
+            document.getElementById('espera-mesa').innerText = `Mesa #${salaId}`;
+            document.getElementById('espera-apuesta').innerText = `Apuesta: $${apuestaSalaActual}`;
 
+            // Se queda en la pantalla de espera hasta que llegue J2_UNIDO
+            mostrarVista('espera');
             escucharCanalRealtime();
         };
 
@@ -723,15 +857,25 @@
                 return;
             }
 
+            // Verificar que la sala siga esperando rival
+            const { data: sala, error } = await supabaseClient
+                .from('salas').select('estado').eq('id', idElegida).maybeSingle();
+            if (error || !sala || sala.estado !== 'ESPERANDO_J2') {
+                alert('Esa sala ya no está disponible.');
+                window.cargarLobbySalas();
+                return;
+            }
+
             salaId = idElegida;
             soyJ1 = false;
             apuestaSalaActual = montoApuesta;
+            partidaIniciada = true;
 
-            document.getElementById('menu-salas').classList.add('hidden');
-            document.getElementById('panel-juego').classList.remove('hidden');
-            document.getElementById('sala-info').innerText = `Mesa: #${salaId}`;
+            reiniciarEstadoJuego();
+            document.getElementById('sala-info').innerText = `#${salaId}`;
             document.getElementById('apuesta-info').innerText = `Apuesta: $${apuestaSalaActual}`;
 
+            mostrarVista('juego');
             escucharCanalRealtime();
             await enviarAccionSupabase('J2_UNIDO', {});
         };
@@ -796,6 +940,9 @@
             }
 
             if (tipo === 'J2_UNIDO' && soyJ1) {
+                // Llegó el rival: recién ahora entra a la mesa
+                partidaIniciada = true;
+                mostrarVista('juego');
                 repartirNuevaMano('J1');
                 return;
             }
@@ -807,7 +954,7 @@
         }
 
         function procesarAbandonoRival() {
-            if (!salaId) return;
+            if (!salaId || !partidaIniciada) return;
             
             if (apuestaSalaActual > 0) {
                 const pozoTotal = apuestaSalaActual * 2;
@@ -825,29 +972,31 @@
             limpiarEstadoJuego();
         }
 
-        // Función de renderizado optimizada con fallback visual
-        function renderizarCartaHTML(cartaObj) {
-            if (!cartaObj) return '-';
-            const icono = PALOS_ICONOS[cartaObj.palo] || '🂠';
-            return `
-                <div class="relative w-12 h-18 flex flex-col items-center justify-between rounded shadow border border-slate-700 mx-auto bg-white overflow-hidden select-none">
-                    <img src="${cartaObj.img}" alt="${cartaObj.txt}" class="absolute inset-0 w-full h-full object-cover z-10" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" />
-                    <div class="hidden absolute inset-0 w-full h-full bg-white flex flex-col justify-between p-1 text-center font-bold text-slate-900">
-                        <div class="flex justify-between items-center text-[10px]">
-                            <span>${cartaObj.num}</span>
-                            <span>${icono}</span>
-                        </div>
-                        <div class="my-auto flex flex-col items-center justify-center">
-                            <span class="text-sm">${icono}</span>
-                            <span class="text-xs font-black">${cartaObj.num}</span>
-                        </div>
-                        <div class="flex justify-between items-center text-[10px] rotate-180">
-                            <span>${cartaObj.num}</span>
-                            <span>${icono}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
+        const PALOS_HEX = { E: '#1d4ed8', B: '#15803d', C: '#b91c1c', O: '#b45309' };
+
+        function cartaTextoHTML(carta) {
+            return `<div class="carta-texto" style="--c:${PALOS_HEX[carta.palo]}">
+                <div class="n">${carta.num}</div>
+                <div class="i">${PALOS_ICONOS[carta.palo]}</div>
+                <div class="n inv">${carta.num}</div>
+            </div>`;
+        }
+
+        // Si la imagen no carga, se reemplaza por una carta dibujada
+        window.reemplazarPorCartaTexto = function(img) {
+            const c = MAZO.find(x => x.id === img.dataset.id);
+            if (!c) return;
+            const tmp = document.createElement('div');
+            tmp.innerHTML = cartaTextoHTML(c);
+            img.replaceWith(tmp.firstElementChild);
+        };
+
+        function cartaCaraHTML(carta) {
+            if (!carta) return '';
+            if (carta.img) {
+                return `<img src="${carta.img}" alt="${carta.txt}" data-id="${carta.id}" draggable="false" class="carta-img" onerror="reemplazarPorCartaTexto(this)" />`;
+            }
+            return cartaTextoHTML(carta);
         }
 
         function actualizarInterfaz() {
@@ -866,81 +1015,69 @@
             }
 
             const miTurno = estadoJuego.turnoActual === miRol;
-            
+
             document.getElementById('turno-info').innerText = `Turno: ${miTurno ? 'TUYO' : 'DEL RIVAL'} ${estadoJuego.manoJugador === miRol ? '(Mano)' : '(Pie)'}`;
 
-            document.getElementById('r1-yo').innerHTML = renderizarCartaHTML(estadoJuego.mesaR1[miRol]);
-            document.getElementById('r1-el').innerHTML = renderizarCartaHTML(estadoJuego.mesaR1[rivalRol]);
-            document.getElementById('r2-yo').innerHTML = renderizarCartaHTML(estadoJuego.mesaR2[miRol]);
-            document.getElementById('r2-el').innerHTML = renderizarCartaHTML(estadoJuego.mesaR2[rivalRol]);
-            document.getElementById('r3-yo').innerHTML = renderizarCartaHTML(estadoJuego.mesaR3[miRol]);
-            document.getElementById('r3-el').innerHTML = renderizarCartaHTML(estadoJuego.mesaR3[rivalRol]);
+            // Cartas jugadas en la mesa
+            for (let n = 1; n <= 3; n++) {
+                document.getElementById(`r${n}-yo`).innerHTML = cartaCaraHTML(estadoJuego[`mesaR${n}`][miRol]);
+                document.getElementById(`r${n}-el`).innerHTML = cartaCaraHTML(estadoJuego[`mesaR${n}`][rivalRol]);
+            }
 
+            // Cartas del rival (dorso)
+            const cartasRival = soyJ1 ? estadoJuego.cartasJ2 : estadoJuego.cartasJ1;
+            document.getElementById('cartas-rival').innerHTML = '<div class="dorso"></div>'.repeat(cartasRival.length);
+
+            // Mi mano: cartas grandes en abanico
             const misCartasActuales = soyJ1 ? estadoJuego.cartasJ1 : estadoJuego.cartasJ2;
             const contenedor = document.getElementById('contenedor-mano');
             contenedor.innerHTML = '';
+            const puedoJugar = miTurno && !estadoJuego.cantosPendientes;
 
-            misCartasActuales.forEach((carta) => {
+            misCartasActuales.forEach((carta, i) => {
+                const centro = (misCartasActuales.length - 1) / 2;
+                const rot = (i - centro) * 7;
+                const dy = Math.abs(i - centro) * 6;
                 const btn = document.createElement('button');
-                const icono = PALOS_ICONOS[carta.palo] || '🂠';
-                btn.className = `carta-truco bg-slate-900 border-2 border-slate-700 flex items-center justify-center w-16 h-24 rounded-xl p-1 shadow-lg cursor-pointer overflow-hidden ${miTurno && !estadoJuego.cantosPendientes ? 'opacity-100' : 'opacity-40 cursor-not-allowed'}`;
-                btn.disabled = !miTurno || estadoJuego.cantosPendientes !== null;
+                btn.className = 'carta-mano';
+                btn.style.setProperty('--rot', `${rot}deg`);
+                btn.style.setProperty('--dy', `${dy}px`);
+                btn.disabled = !puedoJugar;
                 btn.onclick = () => tirarcarta(carta);
-
-                btn.innerHTML = `
-                    <div class="relative w-full h-full flex flex-col items-center justify-between rounded-lg bg-white overflow-hidden">
-                        <img src="${carta.img}" alt="${carta.txt}" class="absolute inset-0 w-full h-full object-cover z-10" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');" />
-                        <div class="hidden absolute inset-0 w-full h-full bg-white flex flex-col justify-between p-1.5 text-center font-bold text-slate-900 border-2 border-amber-600/40">
-                            <div class="flex justify-between items-center text-xs">
-                                <span>${carta.num}</span>
-                                <span>${icono}</span>
-                            </div>
-                            <div class="my-auto flex flex-col items-center justify-center">
-                                <span class="text-2xl">${icono}</span>
-                                <span class="text-sm font-black">${carta.num}</span>
-                            </div>
-                            <div class="flex justify-between items-center text-xs rotate-180">
-                                <span>${carta.num}</span>
-                                <span>${icono}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                btn.innerHTML = cartaCaraHTML(carta);
                 contenedor.appendChild(btn);
             });
 
+            // Botón Truco / Retruco / Vale 4
             const btnTruco = document.getElementById('btn-truco');
-            if (!miTurno || estadoJuego.ultimoQueCantoTruco === miRol || estadoJuego.nivelTruco >= 4) {
-                btnTruco.classList.add('hidden');
-            } else {
-                btnTruco.classList.remove('hidden');
-                if (estadoJuego.nivelTruco === 1) btnTruco.innerText = '¡Truco!';
-                else if (estadoJuego.nivelTruco === 2) btnTruco.innerText = '¡Retruco!';
-                else if (estadoJuego.nivelTruco === 3) btnTruco.innerText = '¡Vale Cuatro!';
-            }
+            const puedeTruco = miTurno && !estadoJuego.cantosPendientes && estadoJuego.ultimoQueCantoTruco !== miRol && estadoJuego.nivelTruco < 4;
+            btnTruco.disabled = !puedeTruco;
+            if (estadoJuego.nivelTruco === 1) btnTruco.innerText = 'Truco';
+            else if (estadoJuego.nivelTruco === 2) btnTruco.innerText = 'Retruco';
+            else btnTruco.innerText = 'Vale 4';
 
-            const bloqueEnvidos = document.getElementById('bloque-envidos');
+            // Botón Envido
             const cartaManoMesa = estadoJuego.mesaR1[estadoJuego.manoJugador];
             const cartaPieMesa = estadoJuego.mesaR1[estadoJuego.manoJugador === 'J1' ? 'J2' : 'J1'];
 
             let puedeCantarEnvido = false;
-            if (estadoJuego.rondaActual === 1 && !estadoJuego.envidoCantado && miTurno) {
+            if (estadoJuego.rondaActual === 1 && !estadoJuego.envidoCantado && miTurno && !estadoJuego.cantosPendientes) {
                 if (!cartaManoMesa && estadoJuego.manoJugador === miRol) {
                     puedeCantarEnvido = true;
                 } else if (cartaManoMesa && !cartaPieMesa && estadoJuego.manoJugador !== miRol) {
                     puedeCantarEnvido = true;
                 }
             }
+            document.getElementById('btn-envido').disabled = !puedeCantarEnvido;
+            if (!puedeCantarEnvido) cerrarSubmenuEnvido();
 
-            if (puedeCantarEnvido) bloqueEnvidos.classList.remove('hidden');
-            else bloqueEnvidos.classList.add('hidden');
-
+            // Cantos pendientes
             if (estadoJuego.cantosPendientes) {
                 const paraMi = estadoJuego.cantosPendientes.para === miRol;
                 if (paraMi) {
                     document.getElementById('texto-canto-rival').innerText = `¡Él te cantó ${estadoJuego.cantosPendientes.tipo}!`;
                     document.getElementById('panel-respuesta').classList.remove('hidden');
-                    
+
                     const recantoEnvido = document.getElementById('botones-recanto-envido');
                     const recantoTruco = document.getElementById('btn-recantar-truco');
 
@@ -999,8 +1136,7 @@
 
         function cerrarFinPartida() {
             document.getElementById('modal-fin-partida').classList.add('hidden');
-            document.getElementById('panel-juego').classList.add('hidden');
-            document.getElementById('menu-salas').classList.remove('hidden');
+            mostrarVista('menu');
             window.cargarLobbySalas();
         }
 
@@ -1094,6 +1230,7 @@
         window.cantar = async function(tipo) {
             const miRol = soyJ1 ? 'J1' : 'J2';
             const rival = soyJ1 ? 'J2' : 'J1';
+            cerrarSubmenuEnvido();
 
             if (tipo === 'Maso') {
                 const ptsNoQuiero = estadoJuego.puntosTrucoAceptado || 1;
@@ -1228,8 +1365,7 @@
                 await supabaseClient.from('salas').delete().eq('id', salaId);
             }
             limpiarEstadoJuego();
-            document.getElementById('panel-juego').classList.add('hidden');
-            document.getElementById('menu-salas').classList.remove('hidden');
+            mostrarVista('menu');
             window.cargarLobbySalas();
         };
 
@@ -1237,6 +1373,7 @@
             if (canal) supabaseClient.removeChannel(canal);
             salaId = null;
             soyJ1 = false;
+            partidaIniciada = false;
         }
     </script>
 </body>
