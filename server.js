@@ -61,13 +61,12 @@ app.post('/obtener-usuario', async (req, res) => {
     }
 });
 
-// NUEVO: Endpoint para partidas de 0 fichas o modo gratuito
+// Endpoint para partidas de 0 fichas o modo gratuito
 const jugarGratisHandler = async (req, res) => {
     try {
         const { usuarioId } = req.body;
         if (!usuarioId) return res.status(400).json({ error: 'Falta usuarioId' });
 
-        // Permitir jugar por 0 fichas validando que el usuario exista
         const { data: userData, error } = await supabase
             .from('perfiles')
             .select('*')
@@ -75,7 +74,6 @@ const jugarGratisHandler = async (req, res) => {
             .single();
 
         if (!userData) {
-            // Si no existe, lo creamos con las 10000 iniciales por defecto
             await supabase.from('perfiles').upsert([{ usuarios: usuarioId, fichas: FICHAS_INICIALES }]);
         }
 
@@ -114,9 +112,9 @@ const crearPreferenciaHandler = async (req, res) => {
                     }
                 ],
                 back_urls: {
-                    success: 'https://app.netlify.com',
-                    failure: 'https://app.netlify.com',
-                    pending: 'https://app.netlify.com'
+                    success: 'https://trucoargentino.site',
+                    failure: 'https://trucoargentino.site',
+                    pending: 'https://trucoargentino.site'
                 },
                 auto_return: 'approved',
                 external_reference: String(usuarioId)
@@ -131,10 +129,13 @@ const crearPreferenciaHandler = async (req, res) => {
     }
 };
 
+// Rutas múltiples para evitar errores 404 de compatibilidad en el frontend
 app.post('/crear-preferencia', crearPreferenciaHandler);
 app.post('/api/crear-preferencia', crearPreferenciaHandler);
+app.post('/crear-preferencia-mp', crearPreferenciaHandler);
+app.post('/api/crear-preferencia-mp', crearPreferenciaHandler);
 
-// WEBHOOK DE MERCADO PAGO CORREGIDO (Evita acreditar 0 fichas)
+// WEBHOOK DE MERCADO PAGO
 const webhookHandler = async (req, res) => {
     try {
         const body = req.body;
@@ -161,7 +162,6 @@ const webhookHandler = async (req, res) => {
                     if (match) fichasCompradas = Number(match[1]);
                 }
                 
-                // Fallback seguro: si el título no trae número, usa el monto o asigna un mínimo garantizado
                 if (!fichasCompradas || fichasCompradas <= 0) {
                     const montoPagado = Number(paymentData.transaction_amount || 0);
                     fichasCompradas = montoPagado > 0 ? montoPagado : 1000;
