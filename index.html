@@ -167,31 +167,31 @@
     <!-- MARCO CONTENEDOR TIPO CELULAR ADAPTABLE -->
     <div id="contenedor-app">
 
-        <!-- LOBBY CON LA NUEVA IMAGEN DE FONDO Y BOTONES EN BLANCO CON BORDE FINO NEGRO -->
+        <!-- LOBBY CON LA NUEVA IMAGEN DE FONDO Y BOTONES AMARILLOS -->
         <div id="pantalla-inicio" class="fondo-lobby-real w-full h-full relative flex flex-col justify-between items-center p-4">
             
-            <!-- CABECERA: COMPRAR, SALDO Y RETIRAR -->
+            <!-- CABECERA: COMPRAR, SALDO Y RETIRAR (AMARILLOS CON BORDE FINO NEGRO) -->
             <div class="w-full flex justify-between items-center pt-2 z-40 gap-2">
-                <button onclick="toggleModal('modalComprar')" class="bg-white text-slate-900 border border-black font-black text-xs py-2 px-3.5 rounded-xl shadow-lg cursor-pointer transition active:scale-95 flex items-center gap-1">
+                <button onclick="toggleModal('modalComprar')" class="bg-amber-400 text-slate-950 border border-black font-black text-xs py-2 px-3.5 rounded-xl shadow-lg cursor-pointer transition active:scale-95 flex items-center gap-1">
                     💳 Comprar
                 </button>
                 
-                <div class="bg-white text-slate-900 border border-black px-3.5 py-1.5 rounded-xl shadow-md flex items-center gap-1.5">
+                <div class="bg-amber-400 text-slate-950 border border-black px-3.5 py-1.5 rounded-xl shadow-md flex items-center gap-1.5 font-black">
                     <span class="text-sm">🪙</span>
-                    <span id="saldoFichas" class="text-sm font-black tracking-wide">0</span>
+                    <span id="saldoFichas" class="text-sm tracking-wide">0</span>
                 </div>
 
-                <button onclick="toggleModal('modalRetirar')" class="bg-white text-slate-900 border border-black font-black text-xs py-2 px-3.5 rounded-xl shadow-lg cursor-pointer transition active:scale-95 flex items-center gap-1">
+                <button onclick="toggleModal('modalRetirar')" class="bg-amber-400 text-slate-950 border border-black font-black text-xs py-2 px-3.5 rounded-xl shadow-lg cursor-pointer transition active:scale-95 flex items-center gap-1">
                     🏦 Retirar
                 </button>
             </div>
 
-            <!-- BOTONES PRINCIPALES INFERIORES -->
-            <div class="w-full max-w-xs space-y-3 mb-8 z-30 flex flex-col items-center">
-                <button onclick="mostrarLobbySalas()" class="w-64 py-3.5 bg-white text-slate-900 border border-black font-black rounded-2xl shadow-2xl uppercase tracking-wider text-sm cursor-pointer transition active:scale-95">
+            <!-- BOTONES PRINCIPALES INFERIORES (JUGAR PARTIDA BIEN GRANDE Y AMARILLO) -->
+            <div class="w-full max-w-sm space-y-3 mb-6 z-30 flex flex-col items-center">
+                <button onclick="mostrarLobbySalas()" class="w-full py-5 bg-amber-400 text-slate-950 border-2 border-black font-black rounded-2xl shadow-2xl uppercase tracking-wider text-lg cursor-pointer transition active:scale-95">
                     🎮 Jugar Partida
                 </button>
-                <button onclick="cerrarSesion()" class="w-48 py-2 bg-white text-slate-900 border border-black font-bold rounded-xl shadow-md text-xs cursor-pointer transition">
+                <button onclick="cerrarSesion()" class="w-56 py-2.5 bg-amber-400 text-slate-950 border border-black font-bold rounded-xl shadow-md text-xs cursor-pointer transition">
                     Cerrar Sesión
                 </button>
             </div>
