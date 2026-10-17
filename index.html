@@ -290,6 +290,7 @@
         const PALOS_ICONOS = { E: '⚔️', B: '🪵', C: '🍷', O: '🪙' };
         const PALOS_COLORES = { E: 'text-blue-400 border-blue-500/40', B: 'text-emerald-400 border-emerald-500/40', C: 'text-rose-400 border-rose-500/40', O: 'text-amber-400 border-amber-500/40' };
 
+        // Tus imágenes exactas de Espadas
         const IMAGENES_ESPADAS = {
             '1E': 'https://lh3.googleusercontent.com/d/3B9CB9AE-9416-4AEE-9D93-DF7E2B5D25D8',
             '2E': 'https://lh3.googleusercontent.com/d/280DF667-8528-4D10-BAC1-3D3BEE723E21',
@@ -303,6 +304,7 @@
             '12E': 'https://lh3.googleusercontent.com/d/1D922D71F-DDE0-4F93-9A48-13C2C25BAE0A'
         };
 
+        // Tus imágenes exactas de Copas
         const IMAGENES_COPAS = {
             '1C': 'https://lh3.googleusercontent.com/d/0A6E7B15-5DF8-490D-95E6-6876FDF4C6EE',
             '2C': 'https://lh3.googleusercontent.com/d/65D989B8-48D9-4ED0-A9E9-39F4F07D2B1C',
@@ -316,6 +318,7 @@
             '12C': 'https://lh3.googleusercontent.com/d/7F7C1D19-F1D2-4DC8-813C-FD9FD595167A'
         };
 
+        // Tus imágenes exactas de Bastos
         const IMAGENES_BASTOS = {
             '1B': 'https://lh3.googleusercontent.com/d/IMG_7083.JPG',
             '2B': 'https://lh3.googleusercontent.com/d/IMG_7084.JPG',
@@ -329,6 +332,7 @@
             '12B': 'https://lh3.googleusercontent.com/d/IMG_7092.JPG'
         };
 
+        // Tus imágenes exactas de Oros
         const IMAGENES_OROS = {
             '1O': 'https://lh3.googleusercontent.com/d/IMG_7061.JPG',
             '2O': 'https://lh3.googleusercontent.com/d/IMG_7062.JPG',
@@ -824,7 +828,7 @@
             limpiarEstadoJuego();
         }
 
-        // Función mejorada con Fallback visual por si las imágenes fallan o se bloquean
+        // Función de renderizado con tus imágenes custom y respaldo visual (fallback)
         function renderizarCartaHTML(cartaObj) {
             if (!cartaObj) return '-';
             const icono = PALOS_ICONOS[cartaObj.palo] || '🂠';
