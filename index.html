@@ -15,14 +15,47 @@
             font-family: 'Montserrat', sans-serif;
             background-color: #061933;
             color: white;
+            margin: 0;
+            padding: 0;
         }
 
-        /* FONDO LOBBY REAL CON IMAGEN */
+        /* FONDO LOBBY USANDO EXACTAMENTE TU IMAGEN DE GITHUB */
         .fondo-lobby-real {
-            background-image: url('lobby.png'); /* Reemplaza con el nombre de tu archivo de imagen del lobby */
+            background-image: url('WhatsApp Image 2026-10-17 at 5.38.35 PM.jpeg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
+        }
+
+        /* TÍTULO DORADO TRUCO ARGENTINO EN 3D */
+        .titulo-truco-dorado {
+            font-weight: 900;
+            color: #ffca28;
+            text-transform: uppercase;
+            text-align: center;
+            line-height: 0.95;
+            text-shadow: 
+                0 2px 0 #b38600,
+                0 4px 0 #806000,
+                0 6px 0 #4d3a00,
+                0 8px 15px rgba(0,0,0,0.8);
+            letter-spacing: -1px;
+        }
+
+        /* BARRA BILLETERA SUPERIOR DE LA IMAGEN */
+        .pildora-saldo {
+            background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+            border: 2px solid #38bdf8;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.3), 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .btn-top-blyts {
+            background: #ffffff;
+            color: #1a1a1a;
+            font-weight: 900;
+            border-radius: 12px;
+            border: 2px solid #000000;
+            box-shadow: 0 3px 0 #000000;
         }
 
         /* MESA DE JUEGO */
@@ -98,7 +131,7 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-between select-none p-2 overflow-x-hidden bg-slate-950">
+<body class="min-h-screen flex flex-col items-center justify-center select-none overflow-x-hidden bg-slate-950">
 
     <!-- MODAL DE LOGIN / REGISTRO OBLIGATORIO -->
     <div id="modal-auth" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
@@ -130,27 +163,25 @@
     </div>
 
     <!-- CONTENEDOR PRINCIPAL -->
-    <div class="w-full max-w-md h-screen max-h-[850px] flex flex-col justify-between relative my-auto shadow-2xl overflow-hidden rounded-3xl border border-slate-800">
+    <div id="contenedor-app" class="w-full max-w-md h-screen max-h-[850px] flex flex-col justify-between relative shadow-2xl overflow-hidden rounded-3xl border border-slate-800 bg-slate-950">
 
-        <!-- LOBBY / INICIO EXACTO CON LA IMAGEN DE FONDO Y ZONAS INTERACTIVAS -->
-        <div id="pantalla-inicio" class="fondo-lobby-real w-full h-full flex flex-col justify-between items-center relative py-3 px-3">
+        <!-- LOBBY PRINCIPAL CON TU FOTO DE FONDO EXACTA -->
+        <div id="pantalla-inicio" class="fondo-lobby-real w-full h-full relative flex flex-col justify-between items-center p-3">
             
-            <!-- BARRA SUPERIOR DE LA IMAGEN (SALDO REAL Y BOTONES) -->
-            <div class="w-full flex justify-between items-center z-20">
-                <!-- CONTADOR DE FICHAS REAL (POSICIONADO EXACTAMENTE EN LA PASTILLA AMARILLA DE LA IMAGEN) -->
+            <!-- BARRA SUPERIOR: SALDO EXACTO SOBRE LA PASTILLA DE LA FOTO -->
+            <div class="w-full flex justify-between items-center pt-2 z-20">
                 <div class="flex items-center pl-16 pt-1">
-                    <span id="saldoFichas" class="text-xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">0</span>
+                    <span id="saldoFichas" class="text-xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">1300</span>
                 </div>
 
-                <!-- BOTONES SUPERIORES COMPRAR Y RETIRAR -->
-                <div class="flex gap-2 pt-1">
-                    <button onclick="toggleModal('modalComprar')" class="w-20 h-9 opacity-0 cursor-pointer" title="Comprar"></button>
-                    <button onclick="toggleModal('modalRetirar')" class="w-20 h-9 opacity-0 cursor-pointer" title="Retirar"></button>
+                <div class="flex gap-2">
+                    <button onclick="toggleModal('modalComprar')" class="w-20 h-10 opacity-0 cursor-pointer" title="Comprar"></button>
+                    <button onclick="toggleModal('modalRetirar')" class="w-20 h-10 opacity-0 cursor-pointer" title="Retirar"></button>
                 </div>
             </div>
 
-            <!-- BOTONES PRINCIPALES JUGAR Y SALIR (POSICIONADOS SOBRE LOS BOTONES DE LA IMAGEN) -->
-            <div class="w-full max-w-xs space-y-3 mb-6 z-20 flex flex-col items-center">
+            <!-- BOTONES JUGAR Y SALIR (CALIBRADOS EXACTAMENTE SOBRE LOS DE TU FOTO) -->
+            <div class="w-full max-w-xs space-y-3 mb-10 z-20 flex flex-col items-center">
                 <button onclick="mostrarLobbySalas()" class="w-64 h-16 opacity-0 cursor-pointer" title="Jugar"></button>
                 <button onclick="cerrarSesion()" class="w-64 h-12 opacity-0 cursor-pointer" title="Salir"></button>
             </div>
@@ -197,20 +228,17 @@
 
         <!-- MESA DE JUEGO (EN PARTIDA) -->
         <div id="panel-juego" class="hidden flex-1 flex-col justify-between w-full h-full relative space-y-2 p-2 bg-slate-950">
-            
             <div class="card-trucox px-4 py-2 rounded-2xl flex justify-between items-center text-xs shadow-xl border-amber-500/40 z-20">
                 <div class="flex items-center gap-2">
                     <span id="nombre-yo-txt" class="font-black text-amber-400 text-xs uppercase">Yo:</span>
                     <span id="pts-yo" class="font-mono text-xl font-black text-amber-300">0</span>
                 </div>
-
                 <div class="flex flex-col items-center">
                     <div id="turno-info" class="bg-amber-500/10 border border-amber-500/40 px-3 py-1 rounded-full text-[11px] text-amber-300 font-extrabold uppercase tracking-wide">
                         Turno: -
                     </div>
                     <div id="temporizador-turno" class="text-[10px] text-rose-400 font-extrabold mt-0.5">⏱️ 20s</div>
                 </div>
-
                 <div class="flex items-center gap-2">
                     <span id="pts-el" class="font-mono text-xl font-black text-slate-300">0</span>
                     <span id="nombre-el-txt" class="font-black text-slate-400 text-xs uppercase">Él:</span>
@@ -218,12 +246,10 @@
             </div>
 
             <div class="mesa-blyts flex-1 relative flex flex-col justify-between p-4 rounded-3xl min-h-[390px] overflow-hidden">
-                
                 <div class="absolute top-2 left-1/2 transform -translate-x-1/2 w-9 h-9 rounded-full bg-slate-900/80 border border-amber-500/40 shadow-inner flex items-center justify-center text-sm pointer-events-none z-10">
                     ☕
                 </div>
 
-                <!-- RIVAL -->
                 <div class="flex justify-between items-start z-10 relative">
                     <div class="flex items-center gap-2 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full border border-amber-500/40 shadow-lg">
                         <div class="w-8 h-8 rounded-full bg-slate-800 border-2 border-amber-400 flex items-center justify-center text-sm">🧔</div>
@@ -236,7 +262,6 @@
                     </div>
                 </div>
 
-                <!-- CARTAS RONDAS MESA -->
                 <div class="my-auto z-10 grid grid-cols-3 gap-3 px-4">
                     <div class="flex flex-col items-center justify-center min-h-[105px]">
                         <div id="r1-el" class="carta-mesa-blyts -mb-10 transform -rotate-3 flex items-center justify-center"></div>
@@ -270,7 +295,6 @@
                         <span class="text-xs text-slate-300 font-bold bg-slate-900/80 px-2.5 py-1 rounded-xl border border-slate-700">Mezclando mazo...</span>
                     </div>
                 </div>
-
             </div>
 
             <div id="panel-respuesta" class="absolute inset-x-4 top-1/3 card-trucox border-2 border-amber-400 p-4 rounded-2xl hidden shadow-2xl z-40 text-center space-y-3 animate-pulse">
@@ -290,7 +314,6 @@
                 </div>
             </div>
 
-            <!-- BARRA DE ACCIONES DE JUEGO INFERIOR -->
             <div class="card-trucox p-2 rounded-2xl grid grid-cols-4 gap-1.5 z-30 shadow-2xl border-amber-500/30">
                 <button id="btn-truco" onclick="window.cantarTrucoDinamico()" class="btn-canto-blyts text-xs py-3 rounded-xl uppercase tracking-wide cursor-pointer col-span-1">
                     Truco
@@ -309,7 +332,6 @@
                 Salir de la Mesa
             </button>
         </div>
-
     </div>
 
     <!-- MODALES DE COMPRA Y RETIRO -->
@@ -321,7 +343,9 @@
                 <label class="text-xs text-slate-300 font-bold">Cantidad de Fichas</label>
                 <input type="number" id="cantidadComprar" min="1" value="500" class="w-full mt-1 p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm">
             </div>
-            <button onclick="toggleModal('modalComprar')" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl text-sm transition cursor-pointer mb-2">Aceptar</button>
+            <button onclick="comprarFichasMP()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl text-sm transition cursor-pointer mb-2">
+                Pagar con Mercado Pago
+            </button>
             <button onclick="toggleModal('modalComprar')" class="text-xs text-slate-500 hover:text-white">Cerrar</button>
         </div>
     </div>
@@ -335,8 +359,12 @@
                     <label class="text-xs text-slate-300 font-bold">Fichas a retirar</label>
                     <input type="number" id="cantidadRetirar" min="100" placeholder="Ej: 500" class="w-full mt-1 p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm">
                 </div>
+                <div>
+                    <label class="text-xs text-slate-300 font-bold">Alias o CBU</label>
+                    <input type="text" id="aliasCbu" placeholder="tu.alias.mp" class="w-full mt-1 p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm">
+                </div>
             </div>
-            <button onclick="toggleModal('modalRetirar')" class="w-full bg-rose-700 hover:bg-rose-600 text-white font-bold py-2.5 rounded-xl text-sm transition cursor-pointer mb-2">Solicitar Retiro</button>
+            <button onclick="solicitarRetiroFichas()" class="w-full bg-rose-700 hover:bg-rose-600 text-white font-bold py-2.5 rounded-xl text-sm transition cursor-pointer mb-2">Solicitar Retiro</button>
             <button onclick="toggleModal('modalRetirar')" class="text-xs text-slate-500 hover:text-white">Cerrar</button>
         </div>
     </div>
@@ -348,7 +376,7 @@
         
         let usuarioId = null;
         let nombreUsuario = '';
-        let saldoFichasActual = 0;
+        let saldoFichasActual = 1300;
         let supabaseClient = null;
         let salaId = null;
         let soyJ1 = false;
@@ -530,16 +558,16 @@
                 });
                 const data = await response.json();
                 if (response.ok && data) {
-                    saldoFichasActual = data.fichas !== undefined ? data.fichas : 0;
+                    saldoFichasActual = data.fichas !== undefined ? data.fichas : 1300;
                     nombreUsuario = data.nombre || data.email?.split('@')[0] || 'Jugador';
                     document.getElementById('saldoFichas').innerText = saldoFichasActual;
                     document.getElementById('user-name').value = nombreUsuario;
                 } else {
-                    saldoFichasActual = 0;
+                    saldoFichasActual = 1300;
                     document.getElementById('saldoFichas').innerText = saldoFichasActual;
                 }
             } catch (err) {
-                saldoFichasActual = 0;
+                saldoFichasActual = 1300;
                 document.getElementById('saldoFichas').innerText = saldoFichasActual;
             }
         }
@@ -594,7 +622,7 @@
 
         async function guardarNombreEnBD(nombre) {
             if (!supabaseClient || !usuarioId) return;
-            await supabaseClient.from('perfiles').upsert({ usuarios: usuarioId, nombre: nombre, fichas: saldoFichasActual || 0 });
+            await supabaseClient.from('perfiles').upsert({ usuarios: usuarioId, nombre: nombre, fichas: saldoFichasActual || 1300 });
         }
 
         async function cerrarSesion() {
@@ -620,14 +648,12 @@
         function mostrarLobbySalas() {
             document.getElementById('pantalla-inicio').classList.add('hidden');
             document.getElementById('menu-salas').classList.remove('hidden');
-            document.getElementById('menu-salas').classList.add('flex');
             window.cargarLobbySalas();
             escucharLobbyRealtime();
         }
 
         function volverAInicio() {
             document.getElementById('menu-salas').classList.add('hidden');
-            document.getElementById('menu-salas').classList.remove('flex');
             document.getElementById('pantalla-inicio').classList.remove('hidden');
             if (canalLobby) supabaseClient.removeChannel(canalLobby);
         }
@@ -794,7 +820,6 @@
                 document.getElementById('menu-salas').classList.add('hidden');
                 document.getElementById('pantalla-inicio').classList.add('hidden');
                 document.getElementById('panel-juego').classList.remove('hidden');
-                document.getElementById('panel-juego').classList.add('flex');
                 repartirNuevaMano('J1');
                 return;
             }
@@ -805,7 +830,6 @@
                 document.getElementById('menu-salas').classList.add('hidden');
                 document.getElementById('pantalla-inicio').classList.add('hidden');
                 document.getElementById('panel-juego').classList.remove('hidden');
-                document.getElementById('panel-juego').classList.add('flex');
                 actualizarInterfaz();
             }
         }
@@ -823,7 +847,6 @@
             alert("¡Tu rival abandonó la mesa!");
             limpiarEstadoJuego();
             document.getElementById('panel-juego').classList.add('hidden');
-            document.getElementById('panel-juego').classList.remove('flex');
             document.getElementById('pantalla-inicio').classList.remove('hidden');
         }
 
@@ -993,7 +1016,6 @@
             }
             limpiarEstadoJuego();
             document.getElementById('panel-juego').classList.add('hidden');
-            document.getElementById('panel-juego').classList.remove('flex');
             document.getElementById('pantalla-inicio').classList.remove('hidden');
         }
 
@@ -1239,9 +1261,7 @@
             }
             limpiarEstadoJuego();
             document.getElementById('panel-juego').classList.add('hidden');
-            document.getElementById('panel-juego').classList.remove('flex');
             document.getElementById('menu-salas').classList.add('hidden');
-            document.getElementById('menu-salas').classList.remove('flex');
             document.getElementById('pantalla-inicio').classList.remove('hidden');
             document.getElementById('esperando-rival').classList.add('hidden');
         };
