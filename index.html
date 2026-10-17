@@ -17,14 +17,20 @@
             color: white;
             margin: 0;
             padding: 0;
+            min-height: 100vh;
         }
 
-        /* FONDO LOBBY USANDO EXACTAMENTE TU CAPTURA DE GITHUB */
+        /* FONDO LOBBY USANDO TU IMAGEN EXACTA A PANTALLA COMPLETA */
         .fondo-lobby-real {
             background-image: url('WhatsApp%20Image%202026-10-17%20at%205.38.35%20PM.jpeg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         /* MESA DE JUEGO */
@@ -100,7 +106,7 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center select-none overflow-x-hidden bg-slate-950 p-2">
+<body class="relative flex flex-col items-center justify-center select-none overflow-x-hidden">
 
     <!-- MODAL DE LOGIN / REGISTRO OBLIGATORIO -->
     <div id="modal-auth" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
@@ -131,178 +137,172 @@
         </div>
     </div>
 
-    <!-- CONTENEDOR PRINCIPAL -->
-    <div id="contenedor-app" class="w-full max-w-md h-[800px] flex flex-col justify-between relative shadow-2xl overflow-hidden rounded-3xl border border-slate-800 bg-slate-950">
-
-        <!-- LOBBY PRINCIPAL CON TU FOTO DE FONDO EXACTA -->
-        <div id="pantalla-inicio" class="fondo-lobby-real w-full h-full relative flex flex-col justify-between items-center p-3">
-            
-            <!-- BARRA SUPERIOR: SALDO EXACTO SOBRE LA PASTILLA DE LA FOTO -->
-            <div class="w-full flex justify-between items-center pt-2 z-20">
-                <div class="flex items-center pl-16 pt-1">
-                    <span id="saldoFichas" class="text-xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">1300</span>
-                </div>
-
-                <div class="flex gap-2">
-                    <button onclick="toggleModal('modalComprar')" class="w-20 h-10 opacity-0 cursor-pointer" title="Comprar"></button>
-                    <button onclick="toggleModal('modalRetirar')" class="w-20 h-10 opacity-0 cursor-pointer" title="Retirar"></button>
-                </div>
+    <!-- LOBBY PRINCIPAL CON TU FOTO DE FONDO EXACTA A PANTALLA COMPLETA -->
+    <div id="pantalla-inicio" class="fondo-lobby-real flex flex-col justify-between items-center p-4">
+        <!-- BARRA SUPERIOR: SALDO EXACTO SOBRE LA PASTILLA DE LA FOTO -->
+        <div class="w-full max-w-5xl flex justify-between items-center pt-2 z-20">
+            <div class="flex items-center pl-[18%] pt-1 sm:pl-[22%]">
+                <span id="saldoFichas" class="text-xl sm:text-2xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">1300</span>
             </div>
 
-            <!-- BOTONES JUGAR Y SALIR (SOBRE LOS BOTONES DE LA FOTO) -->
-            <div class="w-full max-w-xs space-y-3 mb-10 z-20 flex flex-col items-center">
-                <button onclick="mostrarLobbySalas()" class="w-64 h-16 opacity-0 cursor-pointer" title="Jugar"></button>
-                <button onclick="cerrarSesion()" class="w-64 h-12 opacity-0 cursor-pointer" title="Salir"></button>
+            <div class="flex gap-4 pr-[5%]">
+                <button onclick="toggleModal('modalComprar')" class="w-24 h-11 opacity-0 cursor-pointer" title="Comprar"></button>
+                <button onclick="toggleModal('modalRetirar')" class="w-24 h-11 opacity-0 cursor-pointer" title="Retirar"></button>
             </div>
         </div>
 
-        <!-- LOBBY DE SALAS MULTIJUGADOR -->
-        <div id="menu-salas" class="w-full h-full bg-slate-950 p-4 space-y-4 hidden flex-col justify-between">
-            <div class="flex justify-between items-center px-1">
-                <button onclick="volverAInicio()" class="text-xs text-amber-400 hover:underline font-bold">⬅ Inicio</button>
-                <h2 class="text-lg font-black text-amber-400 uppercase tracking-wider">Salas Disponibles</h2>
-                <div class="w-8"></div>
-            </div>
+        <!-- BOTONES JUGAR Y SALIR (SOBRE LOS BOTONES DE LA FOTO) -->
+        <div class="w-full max-w-xs space-y-4 mb-16 z-20 flex flex-col items-center">
+            <button onclick="mostrarLobbySalas()" class="w-72 h-16 opacity-0 cursor-pointer" title="Jugar"></button>
+            <button onclick="cerrarSesion()" class="w-72 h-14 opacity-0 cursor-pointer" title="Salir"></button>
+        </div>
+    </div>
 
-            <div id="esperando-rival" class="hidden card-trucox p-4 rounded-2xl border-2 border-amber-500/80 text-center">
-                <div class="text-lg font-black text-amber-400">⏳ Buscando Oponente…</div>
-                <p id="esperando-sala-info" class="text-xs text-slate-300 mt-1"></p>
-                <button onclick="window.cancelarSala(false)" class="mt-3 bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-xs font-bold">Cancelar</button>
-            </div>
-
-            <div class="card-trucox p-4 rounded-2xl border border-slate-700 space-y-3">
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase">Puntos:</label>
-                        <select id="select-puntos-partido" class="w-full mt-1 p-2 bg-slate-950 border border-slate-700 rounded-xl text-amber-400 font-bold text-xs focus:outline-none">
-                            <option value="30">30 Puntos</option>
-                            <option value="15">15 Puntos</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase">Apuesta:</label>
-                        <select id="select-apuesta" class="w-full mt-1 p-2 bg-slate-950 border border-slate-700 rounded-xl text-amber-400 font-bold text-xs focus:outline-none">
-                        </select>
-                    </div>
-                </div>
-                <button onclick="window.crearSala()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl uppercase tracking-wide cursor-pointer text-sm shadow-lg">
-                    + Crear Sala
-                </button>
-            </div>
-
-            <div id="lista-salas" class="space-y-2.5 flex-1 overflow-y-auto pr-1">
-                <div class="text-xs text-slate-400 italic text-center py-4">Cargando salas disponibles...</div>
-            </div>
+    <!-- LOBBY DE SALAS MULTIJUGADOR -->
+    <div id="menu-salas" class="w-full max-w-md min-h-screen bg-slate-950 p-4 space-y-4 hidden flex-col justify-between z-30 relative my-auto">
+        <div class="flex justify-between items-center px-1">
+            <button onclick="volverAInicio()" class="text-xs text-amber-400 hover:underline font-bold">⬅ Inicio</button>
+            <h2 class="text-lg font-black text-amber-400 uppercase tracking-wider">Salas Disponibles</h2>
+            <div class="w-8"></div>
         </div>
 
-        <!-- MESA DE JUEGO (EN PARTIDA) -->
-        <div id="panel-juego" class="hidden flex-1 flex-col justify-between w-full h-full relative space-y-2 p-2 bg-slate-950">
-            <div class="card-trucox px-4 py-2 rounded-2xl flex justify-between items-center text-xs shadow-xl border-amber-500/40 z-20">
-                <div class="flex items-center gap-2">
-                    <span id="nombre-yo-txt" class="font-black text-amber-400 text-xs uppercase">Yo:</span>
-                    <span id="pts-yo" class="font-mono text-xl font-black text-amber-300">0</span>
-                </div>
-                <div class="flex flex-col items-center">
-                    <div id="turno-info" class="bg-amber-500/10 border border-amber-500/40 px-3 py-1 rounded-full text-[11px] text-amber-300 font-extrabold uppercase tracking-wide">
-                        Turno: -
-                    </div>
-                    <div id="temporizador-turno" class="text-[10px] text-rose-400 font-extrabold mt-0.5">⏱️ 20s</div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span id="pts-el" class="font-mono text-xl font-black text-slate-300">0</span>
-                    <span id="nombre-el-txt" class="font-black text-slate-400 text-xs uppercase">Él:</span>
-                </div>
-            </div>
+        <div id="esperando-rival" class="hidden card-trucox p-4 rounded-2xl border-2 border-amber-500/80 text-center">
+            <div class="text-lg font-black text-amber-400">⏳ Buscando Oponente…</div>
+            <p id="esperando-sala-info" class="text-xs text-slate-300 mt-1"></p>
+            <button onclick="window.cancelarSala(false)" class="mt-3 bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-xs font-bold">Cancelar</button>
+        </div>
 
-            <div class="mesa-blyts flex-1 relative flex flex-col justify-between p-4 rounded-3xl min-h-[390px] overflow-hidden">
-                <div class="absolute top-2 left-1/2 transform -translate-x-1/2 w-9 h-9 rounded-full bg-slate-900/80 border border-amber-500/40 shadow-inner flex items-center justify-center text-sm pointer-events-none z-10">
-                    ☕
+        <div class="card-trucox p-4 rounded-2xl border border-slate-700 space-y-3">
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Puntos:</label>
+                    <select id="select-puntos-partido" class="w-full mt-1 p-2 bg-slate-950 border border-slate-700 rounded-xl text-amber-400 font-bold text-xs focus:outline-none">
+                        <option value="30">30 Puntos</option>
+                        <option value="15">15 Puntos</option>
+                    </select>
                 </div>
-
-                <div class="flex justify-between items-start z-10 relative">
-                    <div class="flex items-center gap-2 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full border border-amber-500/40 shadow-lg">
-                        <div class="w-8 h-8 rounded-full bg-slate-800 border-2 border-amber-400 flex items-center justify-center text-sm">🧔</div>
-                        <span id="nombre-rival" class="text-xs font-black text-slate-200">Catalina</span>
-                    </div>
-                    <div id="globo-rival-container" class="absolute top-12 left-0"></div>
-
-                    <div class="w-12 h-7 rounded-md bg-blue-950 border border-blue-700 shadow-md flex items-center justify-center">
-                        <div class="w-8 h-3 rounded-sm bg-blue-800/80 border border-blue-600/50"></div>
-                    </div>
-                </div>
-
-                <div class="my-auto z-10 grid grid-cols-3 gap-3 px-4">
-                    <div class="flex flex-col items-center justify-center min-h-[105px]">
-                        <div id="r1-el" class="carta-mesa-blyts -mb-10 transform -rotate-3 flex items-center justify-center"></div>
-                        <div id="r1-yo" class="carta-mesa-blyts z-10 transform rotate-2 flex items-center justify-center"></div>
-                    </div>
-                    <div class="flex flex-col items-center justify-center min-h-[105px]">
-                        <div id="r2-el" class="carta-mesa-blyts -mb-10 transform rotate-2 flex items-center justify-center"></div>
-                        <div id="r2-yo" class="carta-mesa-blyts z-10 transform -rotate-1 flex items-center justify-center"></div>
-                    </div>
-                    <div class="flex flex-col items-center justify-center min-h-[105px]">
-                        <div id="r3-el" class="carta-mesa-blyts -mb-10 transform -rotate-2 flex items-center justify-center"></div>
-                        <div id="r3-yo" class="carta-mesa-blyts z-10 transform rotate-3 flex items-center justify-center"></div>
-                    </div>
-                </div>
-
-                <div class="absolute right-4 bottom-28 w-12 h-18 bg-blue-900 rounded-md border-2 border-amber-500/60 shadow-2xl flex items-center justify-center transform rotate-12 pointer-events-none">
-                    <div class="w-10 h-16 border border-blue-600/60 rounded bg-blue-950"></div>
-                </div>
-
-                <div id="estado-mensaje" class="text-xs font-black text-amber-200 text-center bg-slate-950/90 backdrop-blur py-1.5 px-4 rounded-full border border-amber-500/50 mx-auto max-w-xs z-10 shadow-xl">
-                    Esperando jugador...
-                </div>
-
-                <div class="absolute left-3 bottom-3 z-30 flex items-end gap-2">
-                    <div class="w-11 h-11 rounded-full bg-amber-600 border-2 border-amber-300 shadow-xl flex items-center justify-center text-lg">👨🏻</div>
-                    <div id="globo-yo-container" class="absolute -top-12 left-12"></div>
-                </div>
-
-                <div class="relative z-20 flex justify-center items-end min-h-[155px] pb-1">
-                    <div id="contenedor-mano" class="flex justify-center items-end -space-x-8">
-                        <span class="text-xs text-slate-300 font-bold bg-slate-900/80 px-2.5 py-1 rounded-xl border border-slate-700">Mezclando mazo...</span>
-                    </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Apuesta:</label>
+                    <select id="select-apuesta" class="w-full mt-1 p-2 bg-slate-950 border border-slate-700 rounded-xl text-amber-400 font-bold text-xs focus:outline-none">
+                    </select>
                 </div>
             </div>
-
-            <div id="panel-respuesta" class="absolute inset-x-4 top-1/3 card-trucox border-2 border-amber-400 p-4 rounded-2xl hidden shadow-2xl z-40 text-center space-y-3 animate-pulse">
-                <div id="texto-canto-rival" class="text-xs font-black text-amber-300 uppercase tracking-wider">¡Te cantaron!</div>
-                <div class="flex gap-2 justify-center flex-wrap">
-                    <button onclick="window.responder(true)" class="bg-emerald-600 hover:bg-emerald-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">¡Quiero!</button>
-                    
-                    <div id="botones-recanto-envido" class="flex gap-1 hidden">
-                        <button onclick="window.cantar('Envido')" class="bg-amber-600 hover:bg-amber-500 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Envido</button>
-                        <button onclick="window.cantar('Real Envido')" class="bg-amber-700 hover:bg-amber-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Real</button>
-                        <button onclick="window.cantar('Falta Envido')" class="bg-rose-700 hover:bg-rose-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Falta</button>
-                    </div>
-
-                    <button id="btn-recantar-truco" onclick="window.recantarTruco()" class="bg-amber-600 hover:bg-amber-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer hidden shadow-md text-white">Subir Apuesta</button>
-                    
-                    <button onclick="window.responder(false)" class="bg-rose-700 hover:bg-rose-600 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">No quiero</button>
-                </div>
-            </div>
-
-            <!-- BARRA DE ACCIONES DE JUEGO INFERIOR -->
-            <div class="card-trucox p-2 rounded-2xl grid grid-cols-4 gap-1.5 z-30 shadow-2xl border-amber-500/30">
-                <button id="btn-truco" onclick="window.cantarTrucoDinamico()" class="btn-canto-blyts text-xs py-3 rounded-xl uppercase tracking-wide cursor-pointer col-span-1">
-                    Truco
-                </button>
-                <div id="bloque-envidos" class="col-span-2 flex gap-1">
-                    <button onclick="window.cantar('Envido')" class="btn-canto-blyts flex-1 text-[11px] py-3 rounded-xl cursor-pointer">Envido</button>
-                    <button onclick="window.cantar('Real Envido')" class="btn-canto-blyts flex-1 text-[10px] py-3 rounded-xl cursor-pointer">Real</button>
-                    <button onclick="window.cantar('Falta Envido')" class="btn-canto-blyts flex-1 text-[10px] py-3 rounded-xl cursor-pointer">Falta</button>
-                </div>
-                <button onclick="window.cantar('Maso')" class="btn-canto-blyts text-xs py-3 rounded-xl uppercase tracking-wide cursor-pointer col-span-1">
-                    Mazo
-                </button>
-            </div>
-
-            <button onclick="window.cancelarSala(true)" class="w-full bg-slate-900/60 hover:bg-slate-800 text-slate-400 hover:text-white text-[11px] py-1 px-3 rounded-xl transition cursor-pointer">
-                Salir de la Mesa
+            <button onclick="window.crearSala()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl uppercase tracking-wide cursor-pointer text-sm shadow-lg">
+                + Crear Sala
             </button>
         </div>
 
+        <div id="lista-salas" class="space-y-2.5 flex-1 overflow-y-auto pr-1">
+            <div class="text-xs text-slate-400 italic text-center py-4">Cargando salas disponibles...</div>
+        </div>
+    </div>
+
+    <!-- MESA DE JUEGO (EN PARTIDA) -->
+    <div id="panel-juego" class="hidden flex-1 flex-col justify-between w-full max-w-md min-h-screen relative space-y-2 p-2 bg-slate-950 z-30 mx-auto">
+        <div class="card-trucox px-4 py-2 rounded-2xl flex justify-between items-center text-xs shadow-xl border-amber-500/40 z-20">
+            <div class="flex items-center gap-2">
+                <span id="nombre-yo-txt" class="font-black text-amber-400 text-xs uppercase">Yo:</span>
+                <span id="pts-yo" class="font-mono text-xl font-black text-amber-300">0</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <div id="turno-info" class="bg-amber-500/10 border border-amber-500/40 px-3 py-1 rounded-full text-[11px] text-amber-300 font-extrabold uppercase tracking-wide">
+                    Turno: -
+                </div>
+                <div id="temporizador-turno" class="text-[10px] text-rose-400 font-extrabold mt-0.5">⏱️ 20s</div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span id="pts-el" class="font-mono text-xl font-black text-slate-300">0</span>
+                <span id="nombre-el-txt" class="font-black text-slate-400 text-xs uppercase">Él:</span>
+            </div>
+        </div>
+
+        <div class="mesa-blyts flex-1 relative flex flex-col justify-between p-4 rounded-3xl min-h-[390px] overflow-hidden">
+            <div class="absolute top-2 left-1/2 transform -translate-x-1/2 w-9 h-9 rounded-full bg-slate-900/80 border border-amber-500/40 shadow-inner flex items-center justify-center text-sm pointer-events-none z-10">
+                ☕
+            </div>
+
+            <div class="flex justify-between items-start z-10 relative">
+                <div class="flex items-center gap-2 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full border border-amber-500/40 shadow-lg">
+                    <div class="w-8 h-8 rounded-full bg-slate-800 border-2 border-amber-400 flex items-center justify-center text-sm">🧔</div>
+                    <span id="nombre-rival" class="text-xs font-black text-slate-200">Catalina</span>
+                </div>
+                <div id="globo-rival-container" class="absolute top-12 left-0"></div>
+
+                <div class="w-12 h-7 rounded-md bg-blue-950 border border-blue-700 shadow-md flex items-center justify-center">
+                    <div class="w-8 h-3 rounded-sm bg-blue-800/80 border border-blue-600/50"></div>
+                </div>
+            </div>
+
+            <div class="my-auto z-10 grid grid-cols-3 gap-3 px-4">
+                <div class="flex flex-col items-center justify-center min-h-[105px]">
+                    <div id="r1-el" class="carta-mesa-blyts -mb-10 transform -rotate-3 flex items-center justify-center"></div>
+                    <div id="r1-yo" class="carta-mesa-blyts z-10 transform rotate-2 flex items-center justify-center"></div>
+                </div>
+                <div class="flex flex-col items-center justify-center min-h-[105px]">
+                    <div id="r2-el" class="carta-mesa-blyts -mb-10 transform rotate-2 flex items-center justify-center"></div>
+                    <div id="r2-yo" class="carta-mesa-blyts z-10 transform -rotate-1 flex items-center justify-center"></div>
+                </div>
+                <div class="flex flex-col items-center justify-center min-h-[105px]">
+                    <div id="r3-el" class="carta-mesa-blyts -mb-10 transform -rotate-2 flex items-center justify-center"></div>
+                    <div id="r3-yo" class="carta-mesa-blyts z-10 transform rotate-3 flex items-center justify-center"></div>
+                </div>
+            </div>
+
+            <div class="absolute right-4 bottom-28 w-12 h-18 bg-blue-900 rounded-md border-2 border-amber-500/60 shadow-2xl flex items-center justify-center transform rotate-12 pointer-events-none">
+                <div class="w-10 h-16 border border-blue-600/60 rounded bg-blue-950"></div>
+            </div>
+
+            <div id="estado-mensaje" class="text-xs font-black text-amber-200 text-center bg-slate-950/90 backdrop-blur py-1.5 px-4 rounded-full border border-amber-500/50 mx-auto max-w-xs z-10 shadow-xl">
+                Esperando jugador...
+            </div>
+
+            <div class="absolute left-3 bottom-3 z-30 flex items-end gap-2">
+                <div class="w-11 h-11 rounded-full bg-amber-600 border-2 border-amber-300 shadow-xl flex items-center justify-center text-lg">👨🏻</div>
+                <div id="globo-yo-container" class="absolute -top-12 left-12"></div>
+            </div>
+
+            <div class="relative z-20 flex justify-center items-end min-h-[155px] pb-1">
+                <div id="contenedor-mano" class="flex justify-center items-end -space-x-8">
+                    <span class="text-xs text-slate-300 font-bold bg-slate-900/80 px-2.5 py-1 rounded-xl border border-slate-700">Mezclando mazo...</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="panel-respuesta" class="absolute inset-x-4 top-1/3 card-trucox border-2 border-amber-400 p-4 rounded-2xl hidden shadow-2xl z-40 text-center space-y-3 animate-pulse">
+            <div id="texto-canto-rival" class="text-xs font-black text-amber-300 uppercase tracking-wider">¡Te cantaron!</div>
+            <div class="flex gap-2 justify-center flex-wrap">
+                <button onclick="window.responder(true)" class="bg-emerald-600 hover:bg-emerald-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">¡Quiero!</button>
+                
+                <div id="botones-recanto-envido" class="flex gap-1 hidden">
+                    <button onclick="window.cantar('Envido')" class="bg-amber-600 hover:bg-amber-500 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Envido</button>
+                    <button onclick="window.cantar('Real Envido')" class="bg-amber-700 hover:bg-amber-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Real</button>
+                    <button onclick="window.cantar('Falta Envido')" class="bg-rose-700 hover:bg-rose-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Falta</button>
+                </div>
+
+                <button id="btn-recantar-truco" onclick="window.recantarTruco()" class="bg-amber-600 hover:bg-amber-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer hidden shadow-md text-white">Subir Apuesta</button>
+                
+                <button onclick="window.responder(false)" class="bg-rose-700 hover:bg-rose-600 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">No quiero</button>
+            </div>
+        </div>
+
+        <!-- BARRA DE ACCIONES DE JUEGO INFERIOR -->
+        <div class="card-trucox p-2 rounded-2xl grid grid-cols-4 gap-1.5 z-30 shadow-2xl border-amber-500/30">
+            <button id="btn-truco" onclick="window.cantarTrucoDinamico()" class="btn-canto-blyts text-xs py-3 rounded-xl uppercase tracking-wide cursor-pointer col-span-1">
+                Truco
+            </button>
+            <div id="bloque-envidos" class="col-span-2 flex gap-1">
+                <button onclick="window.cantar('Envido')" class="btn-canto-blyts flex-1 text-[11px] py-3 rounded-xl cursor-pointer">Envido</button>
+                <button onclick="window.cantar('Real Envido')" class="btn-canto-blyts flex-1 text-[10px] py-3 rounded-xl cursor-pointer">Real</button>
+                <button onclick="window.cantar('Falta Envido')" class="btn-canto-blyts flex-1 text-[10px] py-3 rounded-xl cursor-pointer">Falta</button>
+            </div>
+            <button onclick="window.cantar('Maso')" class="btn-canto-blyts text-xs py-3 rounded-xl uppercase tracking-wide cursor-pointer col-span-1">
+                Mazo
+            </button>
+        </div>
+
+        <button onclick="window.cancelarSala(true)" class="w-full bg-slate-900/60 hover:bg-slate-800 text-slate-400 hover:text-white text-[11px] py-1 px-3 rounded-xl transition cursor-pointer">
+            Salir de la Mesa
+        </button>
     </div>
 
     <!-- MODALES DE COMPRA Y RETIRO -->
