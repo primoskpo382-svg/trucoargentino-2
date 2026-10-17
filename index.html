@@ -184,7 +184,7 @@
                 <span id="saldoFichas" class="text-base sm:text-lg font-black text-white tracking-wide">0</span>
             </div>
 
-            <!-- BOTONES SUPERIORES CORREGIDOS (Izquierda: Comprar / Derecha: Retirar) -->
+            <!-- BOTONES SUPERIORES: IZQUIERDA COMPRAR / DERECHA RETIRAR -->
             <div class="w-full flex justify-between items-center pt-3 px-10 z-40">
                 <button onclick="toggleModal('modalComprar')" class="w-24 h-10 opacity-0 cursor-pointer" title="Comprar"></button>
                 <button onclick="toggleModal('modalRetirar')" class="w-24 h-10 opacity-0 cursor-pointer" title="Retirar"></button>
@@ -572,16 +572,16 @@
                 });
                 const data = await response.json();
                 if (response.ok && data) {
-                    saldoFichasActual = data.fichas !== undefined ? data.fichas : 500;
+                    saldoFichasActual = data.fichas !== undefined ? data.fichas : 0;
                     nombreUsuario = data.nombre || data.email?.split('@')[0] || 'Jugador';
                     document.getElementById('saldoFichas').innerText = saldoFichasActual;
                     document.getElementById('user-name').value = nombreUsuario;
                 } else {
-                    saldoFichasActual = 500;
+                    saldoFichasActual = 0;
                     document.getElementById('saldoFichas').innerText = saldoFichasActual;
                 }
             } catch (err) {
-                saldoFichasActual = 500;
+                saldoFichasActual = 0;
                 document.getElementById('saldoFichas').innerText = saldoFichasActual;
             }
         }
@@ -636,7 +636,7 @@
 
         async function guardarNombreEnBD(nombre) {
             if (!supabaseClient || !usuarioId) return;
-            await supabaseClient.from('perfiles').upsert({ usuarios: usuarioId, nombre: nombre, fichas: saldoFichasActual || 500 });
+            await supabaseClient.from('perfiles').upsert({ usuarios: usuarioId, nombre: nombre, fichas: saldoFichasActual || 0 });
         }
 
         async function cerrarSesion() {
