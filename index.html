@@ -3,64 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Truco Argentino 1v1 - Cartas Custom</title>
+    <title>Truco Argentino 1v1 - Estilo Blyts</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SDK de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        .carta-truco {
-            transition: transform .18s ease, opacity .18s ease;
-            flex: 0 0 auto;
-            width: clamp(88px, 25vw, 142px);
-            height: clamp(132px, 38vw, 214px);
-            border-radius: 12px;
-            background: #fff;
-            border: 2px solid #e5e7eb;
-            box-shadow: 0 8px 18px #0005;
+        /* Estilos y perspectiva Mesa Blyts */
+        .tapete-blyts {
+            background: #c8b598;
+            background-image: 
+                radial-gradient(circle at 50% 30%, #e2d5c1 0%, #b39f82 100%),
+                repeating-linear-gradient(90deg, rgba(120,70,30,0.1) 0px, rgba(120,70,30,0.1) 2px, transparent 2px, transparent 20px);
+            box-shadow: inset 0 0 60px rgba(0,0,0,0.5);
+            perspective: 600px;
         }
-        .carta-truco:hover:not(:disabled) { transform: translateY(-8px); }
-        #contenedor-mano { gap: clamp(8px, 2vw, 16px); min-height: clamp(140px, 42vw, 230px); overflow-x: auto; padding: 8px 2px 14px; }
-        #contenedor-mano .carta-truco img { width:100%; height:100%; object-fit:fill; border-radius:9px; }
-        .carta-mesa { width:clamp(44px, 12vw, 72px); height:clamp(66px, 18vw, 108px); object-fit:fill; border-radius:5px; background:#fff; box-shadow:0 3px 7px #0005; }
-        #panel-juego { width:100%; }
-        @media (max-width: 520px) {
-          body { padding: 8px !important; justify-content:flex-start !important; }
-          #panel-juego { gap: 12px !important; }
-          #panel-juego > .mesa-truco { padding: 10px !important; min-height: 250px !important; }
-          #panel-juego .grid.grid-cols-3 { gap: 5px !important; }
-          #panel-juego .grid.grid-cols-3 > div { padding: 5px !important; }
+
+        /* Guarda ornamental en el mantel */
+        .guarda-mantel {
+            background-image: repeating-linear-gradient(45deg, #7a583e 0, #7a583e 10px, transparent 0, transparent 20px);
+            opacity: 0.25;
+        }
+
+        /* Cartas en la mano (Efecto abanico real con inclinación) */
+        .carta-mano-blyts {
+            width: clamp(90px, 26vw, 130px);
+            height: clamp(140px, 40vw, 195px);
+            border-radius: 10px;
+            box-shadow: -4px 6px 15px rgba(0,0,0,0.4);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: white;
+            cursor: pointer;
+        }
+
+        .carta-mano-blyts:hover:not(:disabled) {
+            transform: translateY(-20px) scale(1.08) rotate(0deg) !important;
+            z-index: 40 !important;
+        }
+
+        /* Posicionamiento abanico estilo foto */
+        #contenedor-mano .carta-mano-blyts:nth-child(1) { transform: rotate(-8deg) translateY(8px); z-index: 10; }
+        #contenedor-mano .carta-mano-blyts:nth-child(2) { transform: rotate(-2deg) translateY(0px); z-index: 20; }
+        #contenedor-mano .carta-mano-blyts:nth-child(3) { transform: rotate(6deg) translateY(10px); z-index: 30; }
+
+        /* Cartas jugadas en la mesa */
+        .carta-mesa-blyts {
+            width: clamp(60px, 16vw, 85px);
+            height: clamp(90px, 24vw, 130px);
+            border-radius: 6px;
+            box-shadow: 2px 5px 10px rgba(0,0,0,0.35);
+            background: white;
+        }
+
+        /* Barra de acciones inferior estilo madera */
+        .barra-acciones-blyts {
+            background: linear-gradient(180deg, #2a1c13 0%, #150d08 100%);
+            border-top: 2px solid #543925;
         }
     </style>
 </head>
-<body class="bg-slate-950 text-white min-h-screen flex flex-col items-center justify-center p-3 select-none">
+<body class="bg-stone-950 text-white min-h-screen flex flex-col items-center justify-between select-none font-sans overflow-x-hidden p-2">
 
     <!-- MODAL DE AUTENTICACIÓN OBLIGATORIA (LOGIN / REGISTRO) -->
-    <div id="modal-auth" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-8 space-y-6 text-white">
+    <div id="modal-auth" class="fixed inset-0 bg-stone-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-stone-900 border border-stone-800 rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-8 space-y-6 text-white">
             
             <div class="text-center space-y-2">
                 <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-500/10 text-amber-400 text-3xl mb-1 border border-amber-500/20">
                     🃏
                 </div>
                 <h1 class="text-2xl font-black tracking-wider uppercase text-amber-400">Truco Argentino</h1>
-                <p id="auth-subtitle" class="text-xs text-slate-400">
+                <p id="auth-subtitle" class="text-xs text-stone-400">
                     Es obligatorio iniciar sesión o registrarte para jugar
                 </p>
             </div>
 
             <!-- Pestañas -->
-            <div class="flex border-b border-slate-800 text-sm font-semibold">
+            <div class="flex border-b border-stone-800 text-sm font-semibold">
                 <button id="tab-login" onclick="cambiarModoAuth('login')" class="flex-1 py-2.5 text-center border-b-2 border-amber-500 text-amber-400 focus:outline-none transition">
                     Iniciar Sesión
                 </button>
-                <button id="tab-register" onclick="cambiarModoAuth('register')" class="flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-white focus:outline-none transition">
+                <button id="tab-register" onclick="cambiarModoAuth('register')" class="flex-1 py-2.5 text-center border-b-2 border-transparent text-stone-400 hover:text-white focus:outline-none transition">
                     Crear Cuenta
                 </button>
             </div>
 
             <!-- Botón Google OAuth -->
-            <button onclick="iniciarConGoogle()" class="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-100 text-slate-900 font-bold py-3 px-4 rounded-xl shadow transition cursor-pointer">
+            <button onclick="iniciarConGoogle()" class="w-full flex items-center justify-center gap-3 bg-white hover:bg-stone-100 text-stone-900 font-bold py-3 px-4 rounded-xl shadow transition cursor-pointer">
                 <svg class="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -71,8 +100,8 @@
             </button>
 
             <div class="relative flex items-center justify-center">
-                <div class="border-t border-slate-800 w-full"></div>
-                <span class="bg-slate-900 px-3 text-xs text-slate-500 uppercase absolute">o con email</span>
+                <div class="border-t border-stone-800 w-full"></div>
+                <span class="bg-stone-900 px-3 text-xs text-stone-500 uppercase absolute">o con email</span>
             </div>
 
             <!-- Alertas de Auth -->
@@ -81,14 +110,14 @@
             <!-- Formulario Email / Password -->
             <form onsubmit="procesarAuth(event)" class="space-y-4 text-left">
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1">Correo electrónico</label>
-                    <input type="email" id="user-email" required placeholder="tu@email.com" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+                    <label class="block text-xs font-bold text-stone-400 mb-1">Correo electrónico</label>
+                    <input type="email" id="user-email" required placeholder="tu@email.com" class="w-full bg-stone-950 border border-stone-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 mb-1">Contraseña</label>
-                    <input type="password" id="user-password" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
+                    <label class="block text-xs font-bold text-stone-400 mb-1">Contraseña</label>
+                    <input type="password" id="user-password" required placeholder="••••••••" class="w-full bg-stone-950 border border-stone-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500">
                 </div>
-                <button type="submit" id="btn-action" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 px-4 rounded-xl shadow transition cursor-pointer">
+                <button type="submit" id="btn-action" class="w-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-black py-3 px-4 rounded-xl shadow transition cursor-pointer">
                     Iniciar Sesión
                 </button>
             </form>
@@ -97,52 +126,54 @@
     </div>
 
     <!-- CARTEL DE GANADOR / FIN DE PARTIDA -->
-    <div id="modal-fin-partida" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border-2 border-amber-500/80 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center space-y-4 shadow-2xl animate-bounce">
+    <div id="modal-fin-partida" class="fixed inset-0 bg-stone-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-stone-900 border-2 border-amber-500/80 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center space-y-4 shadow-2xl animate-bounce">
             <div class="text-5xl">🏆</div>
             <h2 id="fin-titulo" class="text-2xl font-black text-amber-400 uppercase tracking-wider">¡Partida Finalizada!</h2>
-            <p id="fin-mensaje" class="text-sm text-slate-300 font-semibold"></p>
-            <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
-                <div class="text-xs text-slate-400 uppercase font-bold">Resultado de Fichas</div>
+            <p id="fin-mensaje" class="text-sm text-stone-300 font-semibold"></p>
+            <div class="bg-stone-950 p-3 rounded-2xl border border-stone-800">
+                <div class="text-xs text-stone-400 uppercase font-bold">Resultado de Fichas</div>
                 <div id="fin-ganancia" class="text-2xl font-black text-emerald-400 mt-1">+0 Fichas</div>
             </div>
-            <button onclick="cerrarFinPartida()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl transition cursor-pointer">
+            <button onclick="cerrarFinPartida()" class="w-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-black py-3 rounded-xl transition cursor-pointer">
                 Volver al Lobby
             </button>
         </div>
     </div>
 
     <!-- BARRA SUPERIOR DE FICHAS Y BILLETERA -->
-    <div class="absolute top-3 w-full max-w-lg px-3">
-        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-2xl flex justify-between items-center shadow-lg">
+    <div class="w-full max-w-md px-3 pt-1 z-20">
+        <div class="bg-stone-900/90 border border-stone-800 p-2.5 rounded-2xl flex justify-between items-center shadow-lg backdrop-blur">
             <div class="flex items-center gap-2">
-                <span class="text-xs text-slate-400 font-bold uppercase">Fichas:</span>
+                <span class="text-xs text-stone-400 font-bold uppercase">Fichas:</span>
                 <span id="saldoFichas" class="text-lg font-black text-amber-400">0</span>
             </div>
             <div class="flex gap-2">
                 <button onclick="toggleModal('modalComprar')" class="bg-blue-600 hover:bg-blue-500 text-xs font-bold px-3 py-1.5 rounded-xl transition cursor-pointer shadow">💳 Comprar</button>
                 <button onclick="toggleModal('modalRetirar')" class="bg-rose-700 hover:bg-rose-600 text-xs font-bold px-3 py-1.5 rounded-xl transition cursor-pointer shadow">📤 Retirar</button>
-                <button onclick="cerrarSesion()" class="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs font-bold px-3 py-1.5 rounded-xl transition cursor-pointer">Cerrar Sesión</button>
+                <button onclick="cerrarSesion()" class="bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white text-xs font-bold px-3 py-1.5 rounded-xl transition cursor-pointer">Salir</button>
             </div>
         </div>
     </div>
 
-    <div class="bg-slate-900/90 p-5 rounded-3xl shadow-2xl w-full max-w-lg text-center border border-slate-800 backdrop-blur-md mt-12">
-        <h1 class="text-3xl font-black text-amber-400 mb-4 tracking-wider uppercase drop-shadow-md">♠️ Truco Argentino ⚔️</h1>
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="w-full max-w-md flex-1 flex flex-col justify-between relative my-2">
 
         <!-- Menú / Lobby Principal -->
-        <div id="menu-salas" class="space-y-4 my-4">
+        <div id="menu-salas" class="bg-stone-900/90 p-5 rounded-3xl shadow-2xl w-full text-center border border-stone-800 backdrop-blur-md my-auto space-y-4">
+            <h1 class="text-3xl font-black text-amber-400 mb-4 tracking-wider uppercase drop-shadow-md">♠️ Truco Argentino ⚔️</h1>
             
             <div id="esperando-rival" class="hidden bg-amber-950/70 border border-amber-500/50 p-4 rounded-2xl text-center">
                 <div class="text-lg font-black text-amber-300">⏳ Sala creada</div>
-                <p class="text-sm text-slate-200 mt-1">Todavía no entraste a la partida. Esperando que se una otro jugador…</p>
-                <p id="esperando-sala-info" class="text-xs text-slate-400 mt-2"></p>
-                <button onclick="window.cancelarSala(false)" class="mt-3 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-xl text-sm font-bold">Cancelar espera</button>
+                <p class="text-sm text-stone-200 mt-1">Todavía no entraste a la partida. Esperando que se una otro jugador…</p>
+                <p id="esperando-sala-info" class="text-xs text-stone-400 mt-2"></p>
+                <button onclick="window.cancelarSala(false)" class="mt-3 bg-stone-700 hover:bg-stone-600 px-4 py-2 rounded-xl text-sm font-bold">Cancelar espera</button>
             </div>
-            <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+            
+            <div class="bg-stone-950 p-4 rounded-2xl border border-stone-800 space-y-3">
                 <div class="text-left">
-                    <label class="text-xs font-bold text-slate-400">Seleccioná el valor de la apuesta (Fichas):</label>
-                    <select id="select-apuesta" class="w-full mt-1.5 p-3 bg-slate-900 border border-slate-700 rounded-xl text-amber-400 font-black text-sm focus:outline-none focus:border-amber-500">
+                    <label class="text-xs font-bold text-stone-400">Seleccioná el valor de la apuesta (Fichas):</label>
+                    <select id="select-apuesta" class="w-full mt-1.5 p-3 bg-stone-900 border border-stone-700 rounded-xl text-amber-400 font-black text-sm focus:outline-none focus:border-amber-500">
                         <!-- Opciones dinámicas -->
                     </select>
                 </div>
@@ -151,77 +182,108 @@
                 </button>
             </div>
 
-            <div class="border-t border-slate-800 pt-3 text-left">
+            <div class="border-t border-stone-800 pt-3 text-left">
                 <div class="flex justify-between items-center mb-2 px-1">
-                    <span class="text-xs font-black text-slate-400 uppercase tracking-wider">Salas Disponibles</span>
+                    <span class="text-xs font-black text-stone-400 uppercase tracking-wider">Salas Disponibles</span>
                     <button onclick="window.cargarLobbySalas()" class="text-[11px] text-amber-400 hover:underline">🔄 Actualizar</button>
                 </div>
 
-                <!-- Contenedor de la lista de salas disponibles -->
                 <div id="lista-salas" class="space-y-2 max-h-56 overflow-y-auto pr-1">
-                    <div class="text-xs text-slate-500 italic text-center py-4">Buscando partidas disponibles...</div>
+                    <div class="text-xs text-stone-500 italic text-center py-4">Buscando partidas disponibles...</div>
                 </div>
             </div>
         </div>
 
-        <!-- Panel de Juego -->
-        <div id="panel-juego" class="hidden space-y-4">
+        <!-- Panel de Juego (Estilo Blyts) -->
+        <div id="panel-juego" class="hidden flex-1 flex flex-col justify-between w-full h-full relative space-y-2">
             
-            <!-- Encabezado de Estado -->
-            <div class="flex justify-between items-center text-xs text-slate-400 font-mono border-b border-slate-800 pb-2 px-1">
-                <span id="sala-info" class="bg-slate-800 px-2 py-1 rounded-md">Sala: -</span>
-                <span id="apuesta-info" class="text-amber-400 font-bold">Apuesta: -</span>
-                <span id="turno-info" class="text-amber-400 font-bold bg-amber-950/40 px-2.5 py-1 rounded-md border border-amber-500/30">Turno: -</span>
-            </div>
-
-            <!-- Marcador de Puntos -->
-            <div class="grid grid-cols-2 gap-3 bg-slate-950 p-2.5 rounded-2xl border border-slate-800 shadow-inner">
-                <div class="bg-indigo-950/40 border border-indigo-800/40 p-2.5 rounded-xl">
-                    <div class="text-[11px] font-black text-indigo-400 uppercase tracking-widest">YO</div>
-                    <div id="pts-yo" class="text-4xl font-black text-indigo-200">0</div>
+            <!-- Marcador Superior Estilo Fósforos / Blyts -->
+            <div class="bg-stone-950/90 border border-stone-800 px-4 py-2 rounded-2xl flex justify-between items-center text-xs shadow-md z-20">
+                <div class="flex items-center gap-2">
+                    <span class="font-black text-amber-400 text-sm uppercase">Yo:</span>
+                    <span id="pts-yo" class="font-mono text-lg font-black text-amber-300">0</span>
                 </div>
-                <div class="bg-rose-950/40 border border-rose-800/40 p-2.5 rounded-xl">
-                    <div class="text-[11px] font-black text-rose-400 uppercase tracking-widest">ÉL</div>
-                    <div id="pts-el" class="text-4xl font-black text-rose-200">0</div>
+
+                <div id="turno-info" class="bg-amber-900/40 border border-amber-500/30 px-3 py-1 rounded-full text-xs text-amber-300 font-bold">
+                    Turno: -
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span id="pts-el" class="font-mono text-lg font-black text-stone-300">0</span>
+                    <span class="font-black text-stone-400 text-sm uppercase">Él:</span>
                 </div>
             </div>
 
-            <!-- Mesa de Juego estilo Tapete Verde -->
-            <div class="mesa-truco bg-gradient-to-b from-amber-100 to-amber-200 border-4 border-amber-800 rounded-3xl p-4 min-h-[260px] flex flex-col justify-between relative shadow-2xl shadow-emerald-950/80">
-                <div id="estado-mensaje" class="text-xs font-bold text-emerald-200 text-center mb-2 bg-emerald-950/80 py-1.5 px-3 rounded-full border border-emerald-700/50 shadow">
+            <!-- Tapete de Mesa Estilo Blyts -->
+            <div class="tapete-blyts flex-1 relative flex flex-col justify-between p-4 rounded-3xl border-4 border-amber-900/80 min-h-[380px] overflow-hidden shadow-2xl">
+                
+                <!-- Guardas laterales del mantel -->
+                <div class="absolute left-2 top-0 bottom-0 w-8 guarda-mantel pointer-events-none"></div>
+                <div class="absolute right-2 top-0 bottom-0 w-8 guarda-mantel pointer-events-none"></div>
+
+                <!-- Rival (Superior) -->
+                <div class="flex justify-between items-start z-10">
+                    <div class="flex items-center gap-2 bg-stone-900/70 backdrop-blur px-3 py-1 rounded-full border border-stone-700/50 shadow">
+                        <div class="w-7 h-7 rounded-full bg-stone-800 border border-amber-400/50 flex items-center justify-center text-xs">🧔</div>
+                        <span id="nombre-rival" class="text-xs font-bold text-stone-200">Rival</span>
+                    </div>
+
+                    <!-- Cuenco decorativo superior -->
+                    <div class="w-12 h-7 rounded-full bg-amber-950 border-2 border-amber-900 shadow-inner flex items-center justify-center">
+                        <div class="w-8 h-3 rounded-full bg-amber-800/70"></div>
+                    </div>
+                </div>
+
+                <!-- Centro de Mesa: Cartas Jugadas en las Rondas -->
+                <div class="my-auto z-10 grid grid-cols-3 gap-3 px-4">
+                    <div class="flex flex-col items-center justify-center min-h-[100px]">
+                        <div id="r1-el" class="carta-mesa-blyts -mb-10 transform -rotate-3 flex items-center justify-center text-stone-400 text-xs"></div>
+                        <div id="r1-yo" class="carta-mesa-blyts z-10 transform rotate-2 flex items-center justify-center text-stone-400 text-xs"></div>
+                    </div>
+                    <div class="flex flex-col items-center justify-center min-h-[100px]">
+                        <div id="r2-el" class="carta-mesa-blyts -mb-10 transform rotate-2 flex items-center justify-center text-stone-400 text-xs"></div>
+                        <div id="r2-yo" class="carta-mesa-blyts z-10 transform -rotate-1 flex items-center justify-center text-stone-400 text-xs"></div>
+                    </div>
+                    <div class="flex flex-col items-center justify-center min-h-[100px]">
+                        <div id="r3-el" class="carta-mesa-blyts -mb-10 transform -rotate-2 flex items-center justify-center text-stone-400 text-xs"></div>
+                        <div id="r3-yo" class="carta-mesa-blyts z-10 transform rotate-3 flex items-center justify-center text-stone-400 text-xs"></div>
+                    </div>
+                </div>
+
+                <!-- Mazo boca abajo a la derecha -->
+                <div class="absolute right-4 bottom-24 w-12 h-18 bg-amber-900 rounded-md border-2 border-amber-700 shadow-xl flex items-center justify-center transform rotate-12 pointer-events-none">
+                    <div class="w-10 h-16 border border-amber-600/50 rounded bg-amber-950"></div>
+                </div>
+
+                <!-- Banner de Mensaje Central -->
+                <div id="estado-mensaje" class="text-xs font-bold text-amber-200 text-center bg-black/70 backdrop-blur py-1.5 px-3 rounded-full border border-amber-500/30 mx-auto max-w-xs z-10 shadow">
                     Esperando jugador...
                 </div>
 
-                <!-- Historial de las 3 Rondas -->
-                <div class="grid grid-cols-3 gap-2 text-center text-xs">
-                    <div class="bg-slate-950/70 p-2 rounded-xl border border-emerald-700/30 backdrop-blur-sm">
-                        <div class="text-[10px] text-slate-400 font-black border-b border-slate-800 pb-1 mb-1.5">1ª RONDA</div>
-                        <div id="r1-yo" class="text-indigo-300 font-bold min-h-[60px] flex items-center justify-center">-</div>
-                        <div id="r1-el" class="text-rose-300 font-bold min-h-[60px] flex items-center justify-center border-t border-slate-800/50 mt-1 pt-1">-</div>
-                    </div>
-                    <div class="bg-slate-950/70 p-2 rounded-xl border border-emerald-700/30 backdrop-blur-sm">
-                        <div class="text-[10px] text-slate-400 font-black border-b border-slate-800 pb-1 mb-1.5">2ª RONDA</div>
-                        <div id="r2-yo" class="text-indigo-300 font-bold min-h-[60px] flex items-center justify-center">-</div>
-                        <div id="r2-el" class="text-rose-300 font-bold min-h-[60px] flex items-center justify-center border-t border-slate-800/50 mt-1 pt-1">-</div>
-                    </div>
-                    <div class="bg-slate-950/70 p-2 rounded-xl border border-emerald-700/30 backdrop-blur-sm">
-                        <div class="text-[10px] text-slate-400 font-black border-b border-slate-800 pb-1 mb-1.5">3ª RONDA</div>
-                        <div id="r3-yo" class="text-indigo-300 font-bold min-h-[60px] flex items-center justify-center">-</div>
-                        <div id="r3-el" class="text-rose-300 font-bold min-h-[60px] flex items-center justify-center border-t border-slate-800/50 mt-1 pt-1">-</div>
+                <!-- Avatar Jugador Inferior Izquierda -->
+                <div class="absolute left-3 bottom-3 z-30">
+                    <div class="w-11 h-11 rounded-full bg-emerald-800 border-2 border-emerald-400 shadow-lg flex items-center justify-center text-lg">👨🏻</div>
+                </div>
+
+                <!-- Cartas en Mano (Abanico estilo foto) -->
+                <div class="relative z-20 flex justify-center items-end min-h-[150px] pb-1">
+                    <div id="contenedor-mano" class="flex justify-center items-end -space-x-8">
+                        <span class="text-xs text-stone-900 font-bold bg-white/80 px-2 py-1 rounded">Esperando mazo...</span>
                     </div>
                 </div>
+
             </div>
 
             <!-- Panel de Respuesta a Cantos -->
-            <div id="panel-respuesta" class="bg-amber-950/95 border-2 border-amber-500/80 p-3.5 rounded-2xl hidden shadow-2xl animate-pulse">
-                <div id="texto-canto-rival" class="text-xs font-black text-amber-200 mb-2.5 uppercase tracking-wide">¡Te cantaron!</div>
+            <div id="panel-respuesta" class="absolute inset-x-4 top-1/3 bg-stone-900/95 border-2 border-amber-500/80 p-4 rounded-2xl hidden shadow-2xl z-40 text-center space-y-3 animate-pulse">
+                <div id="texto-canto-rival" class="text-xs font-black text-amber-200 uppercase tracking-wide">¡Te cantaron!</div>
                 <div class="flex gap-2 justify-center flex-wrap">
                     <button onclick="window.responder(true)" class="bg-emerald-600 hover:bg-emerald-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md">¡Quiero!</button>
                     
                     <div id="botones-recanto-envido" class="flex gap-1 hidden">
                         <button onclick="window.cantar('Envido')" class="bg-amber-600 hover:bg-amber-500 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Envido</button>
-                        <button onclick="window.cantar('Real Envido')" class="bg-amber-700 hover:bg-amber-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Real Envido</button>
-                        <button onclick="window.cantar('Falta Envido')" class="bg-red-700 hover:bg-red-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Falta Envido</button>
+                        <button onclick="window.cantar('Real Envido')" class="bg-amber-700 hover:bg-amber-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Real</button>
+                        <button onclick="window.cantar('Falta Envido')" class="bg-red-700 hover:bg-red-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Falta</button>
                     </div>
 
                     <button id="btn-recantar-truco" onclick="window.recantarTruco()" class="bg-amber-600 hover:bg-amber-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer hidden shadow-md">Subir Apuesta</button>
@@ -230,26 +292,22 @@
                 </div>
             </div>
 
-            <!-- Botones de Canto Principal -->
-            <div id="panel-cantos" class="grid grid-cols-3 gap-2">
-                <div id="bloque-envidos" class="flex gap-1 col-span-1">
-                    <button onclick="window.cantar('Envido')" class="w-full bg-amber-600 hover:bg-amber-500 text-[11px] font-bold py-2 px-1 rounded-xl transition cursor-pointer shadow">Envido</button>
-                    <button onclick="window.cantar('Real Envido')" class="w-full bg-amber-700 hover:bg-amber-600 text-[11px] font-bold py-2 px-1 rounded-xl transition cursor-pointer shadow">Real</button>
-                    <button onclick="window.cantar('Falta Envido')" class="w-full bg-red-700 hover:bg-red-600 text-[11px] font-bold py-2 px-1 rounded-xl transition cursor-pointer shadow">Falta</button>
+            <!-- Barra Inferior de Cantos y Acciones (Estilo Blyts de madera) -->
+            <div class="barra-acciones-blyts p-2.5 rounded-2xl grid grid-cols-4 gap-1.5 z-30 shadow-2xl">
+                <div id="bloque-envidos" class="col-span-2 flex gap-1">
+                    <button onclick="window.cantar('Envido')" class="flex-1 bg-stone-800 hover:bg-stone-700 text-[11px] font-bold py-2.5 rounded-xl border border-stone-700 text-amber-200 shadow cursor-pointer">Envido</button>
+                    <button onclick="window.cantar('Real Envido')" class="flex-1 bg-stone-800 hover:bg-stone-700 text-[10px] font-bold py-2.5 rounded-xl border border-stone-700 text-amber-200 shadow cursor-pointer">Real</button>
+                    <button onclick="window.cantar('Falta Envido')" class="flex-1 bg-stone-800 hover:bg-stone-700 text-[10px] font-bold py-2.5 rounded-xl border border-stone-700 text-amber-200 shadow cursor-pointer">Falta</button>
                 </div>
-                <button id="btn-truco" onclick="window.cantarTrucoDinamico()" class="bg-orange-600 hover:bg-orange-500 text-xs font-extrabold py-2 px-2 rounded-xl transition cursor-pointer shadow">¡Truco!</button>
-                <button onclick="window.cantar('Maso')" class="bg-rose-800 hover:bg-rose-700 text-xs font-extrabold py-2 px-2 rounded-xl transition cursor-pointer shadow">Irse al Maso</button>
+                <button id="btn-truco" onclick="window.cantarTrucoDinamico()" class="bg-amber-700 hover:bg-amber-600 text-xs font-black py-2.5 rounded-xl text-amber-100 border border-amber-500/50 shadow col-span-1 cursor-pointer">
+                    Truco
+                </button>
+                <button onclick="window.cantar('Maso')" class="bg-stone-900 hover:bg-stone-800 text-xs font-black py-2.5 rounded-xl text-stone-300 border border-stone-700 shadow col-span-1 cursor-pointer">
+                    Maso
+                </button>
             </div>
 
-            <!-- Mis Cartas en Mano -->
-            <div class="text-left bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
-                <div class="text-[11px] text-slate-400 font-black mb-2.5 uppercase tracking-wider">Tus Cartas:</div>
-                <div id="contenedor-mano" class="flex gap-3 justify-center min-h-[110px] items-center">
-                    <span class="text-xs text-slate-500 italic">Esperando que se reparta la mano...</span>
-                </div>
-            </div>
-
-            <button onclick="window.cancelarSala(true)" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs py-2.5 px-4 rounded-xl transition cursor-pointer">
+            <button onclick="window.cancelarSala(true)" class="w-full bg-stone-900/60 hover:bg-stone-800 text-stone-400 hover:text-white text-[11px] py-1.5 px-3 rounded-xl transition cursor-pointer">
                 Salir de la Partida
             </button>
         </div>
@@ -258,38 +316,38 @@
 
     <!-- MODAL COMPRAR FICHAS (MERCADO PAGO) -->
     <div id="modalComprar" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl w-full max-w-sm text-center relative shadow-2xl">
+        <div class="bg-stone-900 border border-stone-800 p-6 rounded-3xl w-full max-w-sm text-center relative shadow-2xl">
             <h2 class="text-lg font-black text-amber-400 mb-2">Comprar Fichas</h2>
-            <p class="text-xs text-slate-400 mb-4">1 Ficha = $1 ARS</p>
+            <p class="text-xs text-stone-400 mb-4">1 Ficha = $1 ARS</p>
             <div class="mb-4 text-left">
-                <label class="text-xs text-slate-300 font-bold">Cantidad de Fichas</label>
-                <input type="number" id="cantidadComprar" min="1" value="500" class="w-full mt-1 p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm">
+                <label class="text-xs text-stone-300 font-bold">Cantidad de Fichas</label>
+                <input type="number" id="cantidadComprar" min="1" value="500" class="w-full mt-1 p-2.5 bg-stone-950 border border-stone-700 rounded-xl text-white text-sm">
             </div>
             <button onclick="comprarFichasMP()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl text-sm transition cursor-pointer mb-2">
                 Pagar con Mercado Pago
             </button>
-            <button onclick="toggleModal('modalComprar')" class="text-xs text-slate-500 hover:text-white">Cerrar</button>
+            <button onclick="toggleModal('modalComprar')" class="text-xs text-stone-500 hover:text-white">Cerrar</button>
             <div id="msgComprar" class="text-xs mt-2"></div>
         </div>
     </div>
 
     <!-- MODAL RETIRAR FICHAS -->
     <div id="modalRetirar" class="fixed inset-0 bg-black/80 flex items-center justify-center hidden p-4 z-50">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl w-full max-w-sm text-center relative shadow-2xl">
+        <div class="bg-stone-900 border border-stone-800 p-6 rounded-3xl w-full max-w-sm text-center relative shadow-2xl">
             <h2 class="text-lg font-black text-rose-400 mb-2">Solicitar Retiro</h2>
-            <p class="text-xs text-slate-400 mb-4">Envía tus fichas a tu cuenta</p>
+            <p class="text-xs text-stone-400 mb-4">Envía tus fichas a tu cuenta</p>
             <div class="space-y-3 mb-4 text-left">
                 <div>
-                    <label class="text-xs text-slate-300 font-bold">Fichas a retirar</label>
-                    <input type="number" id="cantidadRetirar" min="100" placeholder="Ej: 500" class="w-full mt-1 p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm">
+                    <label class="text-xs text-stone-300 font-bold">Fichas a retirar</label>
+                    <input type="number" id="cantidadRetirar" min="100" placeholder="Ej: 500" class="w-full mt-1 p-2.5 bg-stone-950 border border-stone-700 rounded-xl text-white text-sm">
                 </div>
                 <div>
-                    <label class="text-xs text-slate-300 font-bold">Alias o CBU</label>
-                    <input type="text" id="aliasCbu" placeholder="tu.alias.mp" class="w-full mt-1 p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm">
+                    <label class="text-xs text-stone-300 font-bold">Alias o CBU</label>
+                    <input type="text" id="aliasCbu" placeholder="tu.alias.mp" class="w-full mt-1 p-2.5 bg-stone-950 border border-stone-700 rounded-xl text-white text-sm">
                 </div>
             </div>
             <button onclick="solicitarRetiroFichas()" class="w-full bg-rose-700 hover:bg-rose-600 text-white font-bold py-2.5 rounded-xl text-sm transition cursor-pointer mb-2">Solicitar Retiro</button>
-            <button onclick="toggleModal('modalRetirar')" class="text-xs text-slate-500 hover:text-white">Cerrar</button>
+            <button onclick="toggleModal('modalRetirar')" class="text-xs text-stone-500 hover:text-white">Cerrar</button>
             <div id="msgRetirar" class="text-xs mt-2"></div>
         </div>
     </div>
@@ -309,9 +367,7 @@
         let modoAuth = 'login';
         let apuestaSalaActual = 100;
 
-        const PALOS_ICONOS = { E: '⚔️', B: '🪵', C: '🏆', O: '🪙' };
-        const PALOS_COLORES = { E: 'text-blue-400 border-blue-500/40', B: 'text-emerald-400 border-emerald-500/40', C: 'text-rose-400 border-rose-500/40', O: 'text-amber-400 border-amber-500/40' };
-
+        // DICCIONARIO COMPLETO DE LAS 40 CARTAS CON TUS ENLACES DE IMAGEN
         const IMAGENES_ESPADAS = {
             '1E': 'https://lh3.googleusercontent.com/d/3B9CB9AE-9416-4AEE-9D93-DF7E2B5D25D8',
             '2E': 'https://lh3.googleusercontent.com/d/280DF667-8528-4D10-BAC1-3D3BEE723E21',
@@ -468,12 +524,6 @@
                 opt.innerText = `${v} Fichas`;
                 select.appendChild(opt);
             }
-            for (let v = 2500; v <= 10000; v += 500) {
-                const opt = document.createElement('option');
-                opt.value = v;
-                opt.innerText = `${v} Fichas`;
-                select.appendChild(opt);
-            }
         }
 
         async function cargarSaldoUsuario() {
@@ -492,12 +542,10 @@
                     saldoFichasActual = data.fichas !== undefined ? data.fichas : 10000;
                     document.getElementById('saldoFichas').innerText = saldoFichasActual;
                 } else {
-                    console.error("Error al obtener usuario del backend:", data);
                     saldoFichasActual = 10000;
                     document.getElementById('saldoFichas').innerText = saldoFichasActual;
                 }
             } catch (err) {
-                console.error("Error de conexión al cargar saldo:", err);
                 saldoFichasActual = 10000;
                 document.getElementById('saldoFichas').innerText = saldoFichasActual;
             }
@@ -523,12 +571,12 @@
 
             if (modo === 'login') {
                 tabLogin.className = "flex-1 py-2.5 text-center border-b-2 border-amber-500 text-amber-400 focus:outline-none transition";
-                tabRegister.className = "flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-white focus:outline-none transition";
+                tabRegister.className = "flex-1 py-2.5 text-center border-b-2 border-transparent text-stone-400 hover:text-white focus:outline-none transition";
                 btnAction.innerText = "Iniciar Sesión";
                 authSubtitle.innerText = "Iniciá sesión para acceder a las salas";
             } else {
                 tabRegister.className = "flex-1 py-2.5 text-center border-b-2 border-amber-500 text-amber-400 focus:outline-none transition";
-                tabLogin.className = "flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-white focus:outline-none transition";
+                tabLogin.className = "flex-1 py-2.5 text-center border-b-2 border-transparent text-stone-400 hover:text-white focus:outline-none transition";
                 btnAction.innerText = "Crear Cuenta";
                 authSubtitle.innerText = "Registrate para guardar tus fichas y estadísticas";
             }
@@ -538,9 +586,7 @@
             try {
                 const { error } = await supabaseClient.auth.signInWithOAuth({
                     provider: 'google',
-                    options: {
-                        redirectTo: window.location.origin
-                    }
+                    options: { redirectTo: window.location.origin }
                 });
                 if (error) throw error;
             } catch (err) {
@@ -604,9 +650,7 @@
 
                 const response = await fetch(`${API_URL}/crear-preferencia`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         cantidad: cantidad,
                         precio: cantidad,
@@ -619,14 +663,12 @@
                 if (data.init_point) {
                     window.location.href = data.init_point;
                 } else {
-                    console.error("Respuesta del servidor:", data);
                     if (msg) {
                         msg.className = 'text-xs mt-2 text-rose-400';
                         msg.innerText = data.error || "Error al generar el pago.";
                     }
                 }
             } catch (error) {
-                console.error("Error de conexión:", error);
                 if (msg) {
                     msg.className = 'text-xs mt-2 text-rose-400';
                     msg.innerText = "Error al conectar con el servidor.";
@@ -682,14 +724,14 @@
             const contenedor = document.getElementById('lista-salas');
             
             if (error || !data || data.length === 0) {
-                contenedor.innerHTML = `<div class="text-xs text-slate-500 italic text-center py-4">No hay salas abiertas. ¡Creá una para jugar!</div>`;
+                contenedor.innerHTML = `<div class="text-xs text-stone-500 italic text-center py-4">No hay salas abiertas. ¡Creá una para jugar!</div>`;
                 return;
             }
 
             contenedor.innerHTML = '';
             data.forEach(s => {
                 const item = document.createElement('div');
-                item.className = "bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 p-2.5 rounded-xl flex justify-between items-center transition shadow-sm";
+                item.className = "bg-stone-800/80 hover:bg-stone-800 border border-stone-700/60 p-2.5 rounded-xl flex justify-between items-center transition shadow-sm";
                 item.innerHTML = `
                     <div class="text-left">
                         <div class="text-xs font-black text-amber-300">Mesa #${s.id} <span class="text-emerald-400 ml-1">($${s.apuesta !== undefined ? s.apuesta : 0})</span></div>
@@ -736,7 +778,6 @@
             soyJ1 = true;
             apuestaSalaActual = montoApuesta;
 
-            // El creador permanece en el lobby hasta que se conecte el rival.
             document.getElementById('esperando-rival').classList.remove('hidden');
             document.getElementById('esperando-sala-info').innerText = `Mesa #${salaId} · Apuesta: ${apuestaSalaActual} fichas`;
             escucharCanalRealtime();
@@ -752,7 +793,6 @@
             soyJ1 = false;
             apuestaSalaActual = montoApuesta;
 
-            // El segundo jugador también espera la confirmación del reparto antes de entrar.
             document.getElementById('esperando-rival').classList.remove('hidden');
             document.getElementById('esperando-rival').querySelector('div').innerText = '🃏 Conectando a la mesa…';
             document.getElementById('esperando-rival').querySelector('p').innerText = 'Esperando que el creador confirme el inicio de la partida…';
@@ -824,8 +864,6 @@
                 document.getElementById('esperando-rival').classList.add('hidden');
                 document.getElementById('menu-salas').classList.add('hidden');
                 document.getElementById('panel-juego').classList.remove('hidden');
-                document.getElementById('sala-info').innerText = `Mesa: #${salaId}`;
-                document.getElementById('apuesta-info').innerText = `Apuesta: $${apuestaSalaActual}`;
                 repartirNuevaMano('J1');
                 return;
             }
@@ -835,8 +873,6 @@
                 document.getElementById('esperando-rival').classList.add('hidden');
                 document.getElementById('menu-salas').classList.add('hidden');
                 document.getElementById('panel-juego').classList.remove('hidden');
-                document.getElementById('sala-info').innerText = `Mesa: #${salaId}`;
-                document.getElementById('apuesta-info').innerText = `Apuesta: $${apuestaSalaActual}`;
                 actualizarInterfaz();
             }
         }
@@ -860,12 +896,9 @@
             limpiarEstadoJuego();
         }
 
-        function renderizarCartaHTML(cartaObj) {
-            if (!cartaObj) return '-';
-            if (cartaObj.img) {
-                return `<img src="${cartaObj.img}" alt="${cartaObj.txt}" class="carta-mesa mx-auto" />`;
-            }
-            return `<span class="${PALOS_COLORES[cartaObj.palo]} font-black">${cartaObj.num} ${PALOS_ICONOS[cartaObj.palo]}</span>`;
+        function renderizarCartaMesaHTML(cartaObj) {
+            if (!cartaObj) return '';
+            return `<img src="${cartaObj.img}" alt="${cartaObj.txt}" class="w-full h-full object-cover rounded bg-white shadow-md border border-stone-300" />`;
         }
 
         function actualizarInterfaz() {
@@ -885,14 +918,14 @@
 
             const miTurno = estadoJuego.turnoActual === miRol;
             
-            document.getElementById('turno-info').innerText = `Turno: ${miTurno ? 'TUYO' : 'DEL RIVAL'} ${estadoJuego.manoJugador === miRol ? '(Mano)' : '(Pie)'}`;
+            document.getElementById('turno-info').innerText = `Turno: ${miTurno ? 'TUYO' : 'RIVAL'} ${estadoJuego.manoJugador === miRol ? '(Mano)' : ''}`;
 
-            document.getElementById('r1-yo').innerHTML = renderizarCartaHTML(estadoJuego.mesaR1[miRol]);
-            document.getElementById('r1-el').innerHTML = renderizarCartaHTML(estadoJuego.mesaR1[rivalRol]);
-            document.getElementById('r2-yo').innerHTML = renderizarCartaHTML(estadoJuego.mesaR2[miRol]);
-            document.getElementById('r2-el').innerHTML = renderizarCartaHTML(estadoJuego.mesaR2[rivalRol]);
-            document.getElementById('r3-yo').innerHTML = renderizarCartaHTML(estadoJuego.mesaR3[miRol]);
-            document.getElementById('r3-el').innerHTML = renderizarCartaHTML(estadoJuego.mesaR3[rivalRol]);
+            document.getElementById('r1-yo').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR1[miRol]);
+            document.getElementById('r1-el').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR1[rivalRol]);
+            document.getElementById('r2-yo').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR2[miRol]);
+            document.getElementById('r2-el').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR2[rivalRol]);
+            document.getElementById('r3-yo').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR3[miRol]);
+            document.getElementById('r3-el').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR3[rivalRol]);
 
             const misCartasActuales = soyJ1 ? estadoJuego.cartasJ1 : estadoJuego.cartasJ2;
             const contenedor = document.getElementById('contenedor-mano');
@@ -900,22 +933,10 @@
 
             misCartasActuales.forEach((carta) => {
                 const btn = document.createElement('button');
-                btn.className = `carta-truco flex items-center justify-center p-1 cursor-pointer overflow-hidden ${miTurno && !estadoJuego.cantosPendientes ? 'opacity-100' : 'opacity-50 cursor-not-allowed'}`;
+                btn.className = `carta-mano-blyts flex items-center justify-center p-0 cursor-pointer overflow-hidden bg-white ${miTurno && !estadoJuego.cantosPendientes ? 'opacity-100' : 'opacity-70 cursor-not-allowed'}`;
                 btn.disabled = !miTurno || estadoJuego.cantosPendientes !== null;
                 btn.onclick = () => tirarcarta(carta);
-
-                if (carta.img) {
-                    btn.innerHTML = `<img src="${carta.img}" alt="${carta.txt}" class="bg-white" />`;
-                } else {
-                    btn.className += ` ${PALOS_COLORES[carta.palo]}`;
-                    btn.innerHTML = `
-                        <div class="flex flex-col justify-between items-center w-full h-full p-1">
-                            <div class="text-[11px] font-black self-start leading-none">${carta.num}</div>
-                            <div class="text-lg leading-none my-auto">${PALOS_ICONOS[carta.palo]}</div>
-                            <div class="text-[11px] font-black self-end leading-none">${carta.num}</div>
-                        </div>
-                    `;
-                }
+                btn.innerHTML = `<img src="${carta.img}" alt="${carta.txt}" class="w-full h-full object-cover rounded-lg" />`;
                 contenedor.appendChild(btn);
             });
 
@@ -924,9 +945,9 @@
                 btnTruco.classList.add('hidden');
             } else {
                 btnTruco.classList.remove('hidden');
-                if (estadoJuego.nivelTruco === 1) btnTruco.innerText = '¡Truco!';
-                else if (estadoJuego.nivelTruco === 2) btnTruco.innerText = '¡Retruco!';
-                else if (estadoJuego.nivelTruco === 3) btnTruco.innerText = '¡Vale Cuatro!';
+                if (estadoJuego.nivelTruco === 1) btnTruco.innerText = 'Truco';
+                else if (estadoJuego.nivelTruco === 2) btnTruco.innerText = 'Retruco';
+                else if (estadoJuego.nivelTruco === 3) btnTruco.innerText = 'Vale 4';
             }
 
             const bloqueEnvidos = document.getElementById('bloque-envidos');
@@ -948,7 +969,7 @@
             if (estadoJuego.cantosPendientes) {
                 const paraMi = estadoJuego.cantosPendientes.para === miRol;
                 if (paraMi) {
-                    document.getElementById('texto-canto-rival').innerText = `¡Él te cantó ${estadoJuego.cantosPendientes.tipo}!`;
+                    document.getElementById('texto-canto-rival').innerText = `¡Te cantaron ${estadoJuego.cantosPendientes.tipo}!`;
                     document.getElementById('panel-respuesta').classList.remove('hidden');
                     
                     const recantoEnvido = document.getElementById('botones-recanto-envido');
@@ -960,7 +981,7 @@
                     } else if (estadoJuego.cantosPendientes.tipo.includes('Truco') || estadoJuego.cantosPendientes.tipo.includes('Retruco')) {
                         recantoTruco.classList.remove('hidden');
                         recantoEnvido.classList.add('hidden');
-                        recantoTruco.innerText = estadoJuego.cantosPendientes.tipo === 'Truco' ? '¡Retruco!' : '¡Vale Cuatro!';
+                        recantoTruco.innerText = estadoJuego.cantosPendientes.tipo === 'Truco' ? 'Retruco' : 'Vale Cuatro';
                     } else {
                         recantoEnvido.classList.add('hidden');
                         recantoTruco.classList.add('hidden');
@@ -1187,26 +1208,24 @@
 
                     if (env1 > env2) {
                         estadoJuego.ptsJ1 += ptsGanados;
-                        estadoJuego.mensajeEstado = `¡Tantos Queridos! J1 muestra ${env1} pts vs J2 muestra ${env2} pts. ¡+${ptsGanados} pts para J1!`;
+                        estadoJuego.mensajeEstado = `¡Tantos Queridos! J1 (${env1} pts) vs J2 (${env2} pts). +${ptsGanados} para J1`;
                     } else if (env2 > env1) {
                         estadoJuego.ptsJ2 += ptsGanados;
-                        estadoJuego.mensajeEstado = `¡Tantos Queridos! J2 muestra ${env2} pts vs J1 muestra ${env1} pts. ¡+${ptsGanados} pts para J2!`;
+                        estadoJuego.mensajeEstado = `¡Tantos Queridos! J2 (${env2} pts) vs J1 (${env1} pts). +${ptsGanados} para J2`;
                     } else {
                         if (estadoJuego.manoJugador === 'J1') {
                             estadoJuego.ptsJ1 += ptsGanados;
-                            estadoJuego.mensajeEstado = `¡Tantos Queridos! Empate en ${env1}. Gana J1 por Mano (+${ptsGanados} pts).`;
+                            estadoJuego.mensajeEstado = `Empate en ${env1}. Gana J1 por Mano (+${ptsGanados}).`;
                         } else {
                             estadoJuego.ptsJ2 += ptsGanados;
-                            estadoJuego.mensajeEstado = `¡Tantos Queridos! Empate en ${env2}. Gana J2 por Mano (+${ptsGanados} pts).`;
+                            estadoJuego.mensajeEstado = `Empate en ${env2}. Gana J2 por Mano (+${ptsGanados}).`;
                         }
                     }
                 } else {
                     const ptsRechazo = estadoJuego.puntosEnvidoRechazo;
                     if (emisor === 'J1') estadoJuego.ptsJ1 += ptsRechazo;
                     else estadoJuego.ptsJ2 += ptsRechazo;
-                    
-                    const emisorEsYo = (soyJ1 && emisor === 'J1') || (!soyJ1 && emisor === 'J2');
-                    estadoJuego.mensajeEstado = `No se quiso el ${tipo}. +${ptsRechazo} pt(s) para ${emisorEsYo ? 'YO' : 'ÉL'}.`;
+                    estadoJuego.mensajeEstado = `No se quiso el ${tipo}. +${ptsRechazo} pt(s).`;
                 }
             }
 
