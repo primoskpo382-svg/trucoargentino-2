@@ -27,25 +27,6 @@
             background-repeat: no-repeat;
         }
 
-        /* BOTÓN JUGAR EN AMARILLO */
-        .btn-jugar-amarillo {
-            background: linear-gradient(180deg, #facc15 0%, #eab308 100%);
-            color: #0f172a;
-            font-weight: 900;
-            border: 3px solid #78350f;
-            border-radius: 20px;
-            box-shadow: 0 6px 0 #78350f, 0 10px 20px rgba(0,0,0,0.6);
-            transition: all 0.1s ease;
-        }
-        .btn-jugar-amarillo:hover {
-            background: linear-gradient(180deg, #fef08a 0%, #facc15 100%);
-            transform: translateY(-2px);
-        }
-        .btn-jugar-amarillo:active {
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 #78350f, 0 4px 10px rgba(0,0,0,0.5);
-        }
-
         /* MESA DE JUEGO */
         .mesa-blyts {
             background: #0d2847;
@@ -153,31 +134,25 @@
     <!-- MARCO CONTENEDOR TIPO CELULAR -->
     <div id="contenedor-app" class="w-full max-w-sm sm:max-w-md h-[780px] flex flex-col justify-between relative shadow-2xl overflow-hidden rounded-[38px] border-4 border-slate-800 bg-slate-950">
 
-        <!-- LOBBY CON LA IMAGEN "lobby.png.jpeg" DE FONDO -->
+        <!-- LOBBY CON LA IMAGEN DE FONDO -->
         <div id="pantalla-inicio" class="fondo-lobby-real w-full h-full relative flex flex-col justify-between items-center p-3">
             
-            <!-- BARRA SUPERIOR Y BOTONES CENTRADOS -->
-            <div class="w-full flex justify-between items-center pt-3 px-2 z-20">
-                <!-- FICHAS DINÁMICAS SOBRE LA PASTILLA DE LA FOTO -->
-                <div class="flex items-center pl-14 pt-1">
-                    <span id="saldoFichas" class="text-lg sm:text-xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">0</span>
+            <!-- BARRA SUPERIOR: SALDO DINÁMICO EXACTO EN LA PASTILLA -->
+            <div class="w-full flex justify-between items-center pt-2 z-20">
+                <div class="flex items-center pl-32 pt-0.5">
+                    <span id="saldoFichas" class="text-base sm:text-lg font-black text-white tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">0</span>
                 </div>
 
-                <!-- BOTONES DE COMPRAR Y RETIRAR CENTRADOS SOBRE LA BARRA -->
-                <div class="flex gap-1.5 pr-2">
-                    <button onclick="toggleModal('modalComprar')" class="w-16 h-9 opacity-0 cursor-pointer" title="Comprar"></button>
-                    <button onclick="toggleModal('modalRetirar')" class="w-16 h-9 opacity-0 cursor-pointer" title="Retirar"></button>
+                <div class="flex gap-2 pr-1">
+                    <button onclick="toggleModal('modalComprar')" class="w-16 h-8 opacity-0 cursor-pointer" title="Comprar"></button>
+                    <button onclick="toggleModal('modalRetirar')" class="w-16 h-8 opacity-0 cursor-pointer" title="Retirar"></button>
                 </div>
             </div>
 
-            <!-- BOTONES INFERIORES: JUGAR EN AMARILLO Y SALIR -->
-            <div class="w-full max-w-xs space-y-3 mb-8 z-20 flex flex-col items-center px-4">
-                <button onclick="mostrarLobbySalas()" class="btn-jugar-amarillo w-full py-3.5 text-2xl uppercase tracking-wider cursor-pointer">
-                    JUGAR
-                </button>
-                <button onclick="cerrarSesion()" class="w-full py-2.5 text-lg font-black text-slate-800 bg-white/90 hover:bg-white rounded-2xl border-2 border-slate-900 shadow-md uppercase tracking-wider cursor-pointer">
-                    SALIR
-                </button>
+            <!-- BOTONES TRANSPARENTES SOBRE LOS BOTONES DE LA FOTO -->
+            <div class="w-full max-w-xs space-y-3 mb-10 z-20 flex flex-col items-center">
+                <button onclick="mostrarLobbySalas()" class="w-64 h-16 opacity-0 cursor-pointer" title="Jugar"></button>
+                <button onclick="cerrarSesion()" class="w-64 h-12 opacity-0 cursor-pointer" title="Salir"></button>
             </div>
         </div>
 
@@ -748,7 +723,7 @@
             apuestaSalaActual = montoApuesta;
             metaPuntosPartida = metaSala;
 
-            document.getElementById('esperando-rival').classList.remove('hidden');
+            document.getElementById('esperando-rival').classList.add('hidden');
             document.getElementById('esperando-rival').querySelector('div').innerText = '🃏 Conectando a la mesa…';
             document.getElementById('esperando-sala-info').innerText = `Mesa #${salaId} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual}`;
             escucharCanalRealtime();
