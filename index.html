@@ -617,13 +617,17 @@
             }
         }
 
-        // INICIAR SESIÓN CON GOOGLE
+        // INICIAR SESIÓN CON GOOGLE MEDIANTE POPUP (Evita bucles y recargas en móviles)
         async function iniciarSesionGoogle() {
             if (!supabaseClient) return;
             const { error } = await supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.origin
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'consent',
+                    },
+                    skipBrowserRedirect: false
                 }
             });
             if (error) {
