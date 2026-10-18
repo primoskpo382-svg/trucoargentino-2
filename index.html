@@ -123,7 +123,7 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center select-none bg-slate-950 p-0 sm:p-2">
 
-    <!-- MODAL DE LOGIN / REGISTRO CON GOOGLE Y EMAIL (OCULTO POR DEFECTO PARA EVITAR BLOQUEOS) -->
+    <!-- MODAL DE LOGIN / REGISTRO CON GOOGLE Y EMAIL -->
     <div id="modal-auth" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="card-trucox rounded-3xl p-6 sm:p-8 w-full max-w-md border-2 border-amber-500/40 text-center space-y-4">
             <div class="text-3xl">🃏</div>
@@ -164,13 +164,13 @@
         </div>
     </div>
 
-    <!-- MARCO CONTENEDOR TIPO CELULAR ADAPTABLE -->
+    <!-- MARCO CONTENEDOR TIPO CELULAR -->
     <div id="contenedor-app">
 
-        <!-- LOBBY CON LA NUEVA IMAGEN DE FONDO Y BOTONES AMARILLOS -->
+        <!-- LOBBY PRINCIPAL -->
         <div id="pantalla-inicio" class="fondo-lobby-real w-full h-full relative flex flex-col justify-between items-center p-4">
             
-            <!-- CABECERA: COMPRAR, SALDO Y RETIRAR (AMARILLOS CON BORDE FINO NEGRO) -->
+            <!-- CABECERA: COMPRAR, SALDO Y RETIRAR -->
             <div class="w-full flex justify-between items-center pt-2 z-40 gap-2">
                 <button onclick="toggleModal('modalComprar')" class="bg-amber-400 text-slate-950 border border-black font-black text-xs py-2 px-3.5 rounded-xl shadow-lg cursor-pointer transition active:scale-95 flex items-center gap-1">
                     💳 Comprar
@@ -186,7 +186,7 @@
                 </button>
             </div>
 
-            <!-- BOTONES PRINCIPALES INFERIORES (JUGAR PARTIDA BIEN GRANDE Y AMARILLO) -->
+            <!-- BOTONES PRINCIPALES INFERIORES -->
             <div class="w-full max-w-sm space-y-3 mb-6 z-30 flex flex-col items-center">
                 <button onclick="mostrarLobbySalas()" class="w-full py-5 bg-amber-400 text-slate-950 border-2 border-black font-black rounded-2xl shadow-2xl uppercase tracking-wider text-lg cursor-pointer transition active:scale-95">
                     🎮 Jugar Partida
@@ -236,7 +236,7 @@
             </div>
         </div>
 
-        <!-- MESA DE JUEGO (EN PARTIDA) -->
+        <!-- MESA DE JUEGO -->
         <div id="panel-juego" class="hidden flex-1 flex-col justify-between w-full h-full relative space-y-2 p-2 bg-slate-950">
             <div class="card-trucox px-4 py-2 rounded-2xl flex justify-between items-center text-xs shadow-xl border-amber-500/40 z-20">
                 <div class="flex items-center gap-2">
@@ -324,7 +324,7 @@
                 </div>
             </div>
 
-            <!-- BARRA DE ACCIONES DE JUEGO INFERIOR -->
+            <!-- BARRA DE ACCIONES DE JUEGO -->
             <div class="card-trucox p-2 rounded-2xl grid grid-cols-4 gap-1.5 z-30 shadow-2xl border-amber-500/30">
                 <button id="btn-truco" onclick="window.cantarTrucoDinamico()" class="btn-canto-blyts text-xs py-3 rounded-xl uppercase tracking-wide cursor-pointer col-span-1">
                     Truco
@@ -530,13 +530,18 @@
             poblarSelectApuestas();
             const modalAuth = document.getElementById('modal-auth');
 
+            // Detectar si volvemos de una compra en Mercado Pago
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('status') === 'approved' || urlParams.get('collection_status') === 'approved') {
+                alert("¡Pago aprobado! Tus fichas se están acreditando...");
+            }
+
             if (!supabaseClient) {
                 modalAuth.classList.remove('hidden');
                 return;
             }
 
             try {
-                // 1. Intentar capturar sesión desde la URL de OAuth
                 const { data: sessionData } = await supabaseClient.auth.getSessionFromUrl({ storeSession: true });
                 if (sessionData && sessionData.session) {
                     await supabaseClient.auth.setSession(sessionData.session);
@@ -545,29 +550,26 @@
                 console.log("No hay token OAuth en URL");
             }
 
-            // 2. Verificar si ya hay una sesión activa
             try {
                 const { data: { session }, error } = await supabaseClient.auth.getSession();
                 if (error) throw error;
 
                 if (session && session.user) {
                     usuarioId = session.user.id;
-                    modalAuth.classList.add('hidden'); // Asegurarnos de ocultarlo
+                    modalAuth.classList.add('hidden');
                     try {
                         await cargarSaldoUsuario();
                     } catch (e) {
                         console.error("Error cargando saldo:", e);
                     }
                 } else {
-                    // Si no hay sesión, recién ahí mostramos el modal de login
                     modalAuth.classList.remove('hidden');
                 }
             } catch (err) {
-                console.error("Error obteniendo sesión, limpiando caché:", err);
+                console.error("Error obteniendo sesión:", err);
                 modalAuth.classList.remove('hidden');
             }
 
-            // 3. Escuchar cambios de estado en tiempo real
             supabaseClient.auth.onAuthStateChange(async (event, session) => {
                 if (session && session.user) {
                     usuarioId = session.user.id;
@@ -600,7 +602,10 @@
         }
 
         async function cargarSaldoUsuario() {
-            if (!usuarioId) return;
+            if (!usuarioId) {
+                document.getElementById('saldoFichas').innerText = saldoFichasActual;
+                return;
+            }
             try {
                 const response = await fetch(`${API_URL}/obtener-usuario`, {
                     method: 'POST',
@@ -612,29 +617,41 @@
                 });
                 const data = await response.json();
                 if (response.ok && data) {
-                    saldoFichasActual = data.fichas !== undefined ? data.fichas : 0;
+                    // Si el usuario existe toma sus fichas, si no, asigna 1000 de bienvenida
+                    saldoFichasActual = (data.fichas !== undefined && data.fichas !== null) ? data.fichas : 1000;
                     nombreUsuario = data.nombre || data.email?.split('@')[0] || 'Jugador';
-                    document.getElementById('saldoFichas').innerText = saldoFichasActual;
-                    document.getElementById('user-name').value = nombreUsuario;
+                    
+                    const spanSaldo = document.getElementById('saldoFichas');
+                    if (spanSaldo) spanSaldo.innerText = saldoFichasActual;
+
+                    const inputName = document.getElementById('user-name');
+                    if (inputName) inputName.value = nombreUsuario;
                 } else {
-                    saldoFichasActual = 0;
+                    saldoFichasActual = 1000;
                     document.getElementById('saldoFichas').innerText = saldoFichasActual;
                 }
             } catch (err) {
-                saldoFichasActual = 0;
+                console.error("Error sincronizando saldo:", err);
+                saldoFichasActual = 1000;
                 document.getElementById('saldoFichas').innerText = saldoFichasActual;
             }
         }
 
         async function actualizarSaldoBD(nuevoSaldo) {
             saldoFichasActual = Math.max(0, nuevoSaldo);
-            document.getElementById('saldoFichas').innerText = saldoFichasActual;
+            
+            const spanSaldo = document.getElementById('saldoFichas');
+            if (spanSaldo) spanSaldo.innerText = saldoFichasActual;
+
             if (supabaseClient && usuarioId) {
-                await supabaseClient.from('perfiles').update({ fichas: saldoFichasActual }).eq('usuarios', usuarioId);
+                try {
+                    await supabaseClient.from('perfiles').update({ fichas: saldoFichasActual }).eq('usuarios', usuarioId);
+                } catch (e) {
+                    console.error("Error al actualizar Supabase:", e);
+                }
             }
         }
 
-        // INICIAR SESIÓN CON GOOGLE MEDIANTE POPUP (Evita bucles y recargas en móviles)
         async function iniciarSesionGoogle() {
             if (!supabaseClient) return;
             const { error } = await supabaseClient.auth.signInWithOAuth({
@@ -689,7 +706,7 @@
 
         async function guardarNombreEnBD(nombre) {
             if (!supabaseClient || !usuarioId) return;
-            await supabaseClient.from('perfiles').upsert({ usuarios: usuarioId, nombre: nombre, fichas: saldoFichasActual || 0 });
+            await supabaseClient.from('perfiles').upsert({ usuarios: usuarioId, nombre: nombre, fichas: saldoFichasActual || 1000 });
         }
 
         async function cerrarSesion() {
@@ -712,7 +729,6 @@
             document.getElementById(id).classList.toggle('hidden');
         }
 
-        // FUNCIONES DE COMPRA Y RETIRO DE FICHAS
         async function comprarFichasMP() {
             const cant = Number(document.getElementById('cantidadComprar').value);
             if (!cant || cant <= 0) {
