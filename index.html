@@ -123,8 +123,8 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center select-none bg-slate-950 p-0 sm:p-2">
 
-    <!-- MODAL DE LOGIN / REGISTRO CON GOOGLE Y EMAIL -->
-    <div id="modal-auth" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <!-- MODAL DE LOGIN / REGISTRO CON GOOGLE Y EMAIL (OCULTO POR DEFECTO PARA EVITAR BLOQUEOS) -->
+    <div id="modal-auth" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="card-trucox rounded-3xl p-6 sm:p-8 w-full max-w-md border-2 border-amber-500/40 text-center space-y-4">
             <div class="text-3xl">🃏</div>
             <h1 class="text-2xl font-black text-amber-400 uppercase tracking-wider drop-shadow-md">Truco Argentino</h1>
@@ -545,28 +545,29 @@
                 console.log("No hay token OAuth en URL");
             }
 
-            // 2. Verificar si ya hay una sesión activa de inmediato
+            // 2. Verificar si ya hay una sesión activa
             try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                if (error) throw error;
+
                 if (session && session.user) {
                     usuarioId = session.user.id;
-                    modalAuth.classList.add('hidden'); // Ocultar el modal de inmediato
-                    
-                    // Cargar saldo de forma segura sin bloquear la interfaz si falla
+                    modalAuth.classList.add('hidden'); // Asegurarnos de ocultarlo
                     try {
                         await cargarSaldoUsuario();
                     } catch (e) {
-                        console.error("Error al cargar saldo inicial:", e);
+                        console.error("Error cargando saldo:", e);
                     }
                 } else {
+                    // Si no hay sesión, recién ahí mostramos el modal de login
                     modalAuth.classList.remove('hidden');
                 }
             } catch (err) {
-                console.error("Error obteniendo sesión:", err);
+                console.error("Error obteniendo sesión, limpiando caché:", err);
                 modalAuth.classList.remove('hidden');
             }
 
-            // 3. Escuchar cambios de estado posteriores
+            // 3. Escuchar cambios de estado en tiempo real
             supabaseClient.auth.onAuthStateChange(async (event, session) => {
                 if (session && session.user) {
                     usuarioId = session.user.id;
