@@ -529,38 +529,39 @@
         window.onload = async () => {
             poblarSelectApuestas();
             if (supabaseClient) {
-                // Forzar la lectura del token si viene de la redirección OAuth en móviles
+                // Capturar sesión desde la URL si viene de OAuth
                 try {
                     const { data: sessionData } = await supabaseClient.auth.getSessionFromUrl({ storeSession: true });
                     if (sessionData && sessionData.session) {
                         await supabaseClient.auth.setSession(sessionData.session);
                     }
                 } catch (err) {
-                    console.log("No hay token en la URL o ya fue procesado");
+                    console.log("No hay token en URL");
                 }
 
-                // Escuchar cambios de autenticación en tiempo real (móviles/OAuth)
+                // Obtener sesión actual directamente
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                const modalAuth = document.getElementById('modal-auth');
+                
+                if (session) {
+                    usuarioId = session.user.id;
+                    modalAuth.classList.add('hidden');
+                    await cargarSaldoUsuario();
+                } else {
+                    modalAuth.classList.remove('hidden');
+                }
+
+                // Escuchar cambios posteriores sin bloquear la UI
                 supabaseClient.auth.onAuthStateChange(async (event, session) => {
                     const modalAuth = document.getElementById('modal-auth');
                     if (session) {
-                        modalAuth.classList.add('hidden');
                         usuarioId = session.user.id;
+                        modalAuth.classList.add('hidden');
                         await cargarSaldoUsuario();
                     } else {
                         modalAuth.classList.remove('hidden');
                     }
                 });
-
-                // Validar sesión activa al cargar
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                const modalAuth = document.getElementById('modal-auth');
-                if (session) {
-                    modalAuth.classList.add('hidden');
-                    usuarioId = session.user.id;
-                    await cargarSaldoUsuario();
-                } else {
-                    modalAuth.classList.remove('hidden');
-                }
             }
         };
 
@@ -1011,6 +1012,7 @@
 
             document.getElementById('r1-yo').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR1[miRol]);
             document.getElementById('r1-el').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR1[rivalRol]);
+            document.getElementById('r2-yo').innerHTML = renderizarCartaMesaHTML(estadoJico.mesaR2[miRol]); // corregido internamente por seguridad en referencias
             document.getElementById('r2-yo').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR2[miRol]);
             document.getElementById('r2-el').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR2[rivalRol]);
             document.getElementById('r3-yo').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR3[miRol]);
