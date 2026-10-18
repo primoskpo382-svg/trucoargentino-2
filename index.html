@@ -529,6 +529,19 @@
         window.onload = async () => {
             poblarSelectApuestas();
             if (supabaseClient) {
+                // Escuchar cambios de autenticación en tiempo real (móviles/OAuth)
+                supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                    const modalAuth = document.getElementById('modal-auth');
+                    if (session) {
+                        modalAuth.classList.add('hidden');
+                        usuarioId = session.user.id;
+                        await cargarSaldoUsuario();
+                    } else {
+                        modalAuth.classList.remove('hidden');
+                    }
+                });
+
+                // Validar sesión activa al cargar
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 const modalAuth = document.getElementById('modal-auth');
                 if (session) {
