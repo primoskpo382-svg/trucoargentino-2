@@ -18,19 +18,19 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://olvieohhsybycmyojdpo.s
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_sBg5zRa3r3FS1pJGC5IwNg_Ca4Gy5An';
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const FICHAS_INICIALES = 10000;
+const FICHAS_INICIALES = 1000;
 
 app.get('/', (req, res) => {
     res.send('¡Servidor Backend de Truco Argentino funcionando con éxito!');
 });
 
-// Endpoint para consultar saldo u obtener usuario con 10,000 fichas iniciales si es nuevo
+// Endpoint para consultar saldo u obtener usuario con fichas iniciales si es nuevo
 app.post('/obtener-usuario', async (req, res) => {
     try {
         const { usuarioId, email } = req.body;
         if (!usuarioId) return res.status(400).json({ error: 'Falta usuarioId' });
 
-        const { data: userData, error } = await supabase
+        const { data: userData } = await supabase
             .from('perfiles')
             .select('*')
             .eq('usuarios', usuarioId)
@@ -67,7 +67,7 @@ const jugarGratisHandler = async (req, res) => {
         const { usuarioId } = req.body;
         if (!usuarioId) return res.status(400).json({ error: 'Falta usuarioId' });
 
-        const { data: userData, error } = await supabase
+        const { data: userData } = await supabase
             .from('perfiles')
             .select('*')
             .eq('usuarios', usuarioId)
@@ -93,10 +93,9 @@ app.post('/api/jugar-gratis', jugarGratisHandler);
 
 const crearPreferenciaHandler = async (req, res) => {
     try {
-        const cantidad = Number(req.body.cantidad || req.body.fichas || 1000);
+        const cantidad = Number(req.body.cantidad || req.body.fichas || 500);
         const PRECIO_POR_FICHA = 1; 
-        const precioUnitario = Number(req.body.precio || req.body.price || req.body.monto || PRECIO_POR_FICHA);
-        const precioTotal = precioUnitario * (req.body.precio ? 1 : cantidad);
+        const precioTotal = cantidad * PRECIO_POR_FICHA;
         const usuarioId = req.body.usuarioId || req.body.user || 'demo_user';
 
         const preference = new Preference(client);
@@ -107,14 +106,14 @@ const crearPreferenciaHandler = async (req, res) => {
                     {
                         title: `${cantidad} Ficha(s) de Truco Argentino`,
                         quantity: 1,
-                        unit_price: precioTotal > 0 ? precioTotal : cantidad * PRECIO_POR_FICHA,
+                        unit_price: precioTotal,
                         currency_id: 'ARS'
                     }
                 ],
                 back_urls: {
-                    success: 'https://trucoargentino.site',
-                    failure: 'https://trucoargentino.site',
-                    pending: 'https://trucoargentino.site'
+                    success: `https://trucoargentino.site/?status=approved&cantidad=${cantidad}`,
+                    failure: 'https://trucoargentino.site/?status=failure',
+                    pending: 'https://trucoargentino.site/?status=pending'
                 },
                 auto_return: 'approved',
                 external_reference: String(usuarioId)
@@ -129,7 +128,6 @@ const crearPreferenciaHandler = async (req, res) => {
     }
 };
 
-// Rutas múltiples para evitar errores 404 de compatibilidad en el frontend
 app.post('/crear-preferencia', crearPreferenciaHandler);
 app.post('/api/crear-preferencia', crearPreferenciaHandler);
 app.post('/crear-preferencia-mp', crearPreferenciaHandler);
@@ -164,7 +162,7 @@ const webhookHandler = async (req, res) => {
                 
                 if (!fichasCompradas || fichasCompradas <= 0) {
                     const montoPagado = Number(paymentData.transaction_amount || 0);
-                    fichasCompradas = montoPagado > 0 ? montoPagado : 1000;
+                    fichasCompradas = montoPagado > 0 ? montoPagado : 500;
                 }
 
                 if (usuarioId && usuarioId !== 'demo_user' && fichasCompradas > 0) {

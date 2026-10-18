@@ -530,10 +530,19 @@
             poblarSelectApuestas();
             const modalAuth = document.getElementById('modal-auth');
 
-            // Detectar si volvemos de una compra en Mercado Pago
+            // Detectar si volvemos de una compra en Mercado Pago y acreditar automáticamente
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('status') === 'approved' || urlParams.get('collection_status') === 'approved') {
-                alert("¡Pago aprobado! Tus fichas se están acreditando...");
+                const cantidadComprada = Number(urlParams.get('cantidad') || 500);
+                setTimeout(async () => {
+                    if (usuarioId) {
+                        await cargarSaldoUsuario();
+                        const nuevoSaldo = saldoFichasActual + cantidadComprada;
+                        await actualizarSaldoBD(nuevoSaldo);
+                        alert(`¡Pago acreditado con éxito! Se sumaron ${cantidadComprada} fichas a tu cuenta.`);
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                }, 1500);
             }
 
             if (!supabaseClient) {
@@ -546,9 +555,7 @@
                 if (sessionData && sessionData.session) {
                     await supabaseClient.auth.setSession(sessionData.session);
                 }
-            } catch (err) {
-                console.log("No hay token OAuth en URL");
-            }
+            } catch (err) {}
 
             try {
                 const { data: { session }, error } = await supabaseClient.auth.getSession();
@@ -558,16 +565,11 @@
                     usuarioId = session.user.id;
                     nombreUsuario = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email.split('@')[0];
                     modalAuth.classList.add('hidden');
-                    try {
-                        await cargarSaldoUsuario();
-                    } catch (e) {
-                        console.error("Error cargando saldo:", e);
-                    }
+                    await cargarSaldoUsuario();
                 } else {
                     modalAuth.classList.remove('hidden');
                 }
             } catch (err) {
-                console.error("Error obteniendo sesión:", err);
                 modalAuth.classList.remove('hidden');
             }
 
@@ -576,9 +578,7 @@
                     usuarioId = session.user.id;
                     nombreUsuario = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email.split('@')[0];
                     modalAuth.classList.add('hidden');
-                    try {
-                        await cargarSaldoUsuario();
-                    } catch (e) {}
+                    await cargarSaldoUsuario();
                 } else {
                     modalAuth.classList.remove('hidden');
                 }
@@ -609,8 +609,7 @@
                 return;
             }
             try {
-                // Buscamos o creamos directamente en la tabla perfiles vía cliente y fallback a API
-                let { data: perfil, error } = await supabaseClient
+                let { data: perfil } = await supabaseClient
                     .from('perfiles')
                     .select('*')
                     .eq('usuarios', usuarioId)
@@ -619,11 +618,7 @@
                 if (!perfil) {
                     const { data: nuevoPerfil } = await supabaseClient
                         .from('perfiles')
-                        .upsert({ 
-                            usuarios: usuarioId, 
-                            nombre: nombreUsuario || 'Jugador', 
-                            fichas: 1000 
-                        })
+                        .insert([{ usuarios: usuarioId, nombre: nombreUsuario || 'Jugador', fichas: 1000 }])
                         .select()
                         .single();
                     perfil = nuevoPerfil;
@@ -643,7 +638,6 @@
                 if (inputName) inputName.value = nombreUsuario;
 
             } catch (err) {
-                console.error("Error sincronizando saldo:", err);
                 saldoFichasActual = 1000;
                 document.getElementById('saldoFichas').innerText = saldoFichasActual;
             }
@@ -670,15 +664,10 @@
                 provider: 'google',
                 options: {
                     redirectTo: window.location.origin,
-                    queryParams: {
-                        access_type: 'offline',
-                        prompt: 'consent',
-                    }
+                    queryParams: { access_type: 'offline', prompt: 'consent' }
                 }
             });
-            if (error) {
-                mostrarAlertaAuth(error.message, true);
-            }
+            if (error) mostrarAlertaAuth(error.message, true);
         }
 
         async function procesarAuth(e) {
@@ -700,31 +689,43 @@
                         await guardarNombreEnBD(nombreUsuario);
                     }
                     mostrarAlertaAuth("¡Cuenta creada con éxito!", false);
-                    setTimeout(() => {
+                    setTimeout(async () => {
                         document.getElementById('modal-auth').classList.add('hidden');
-                        cargarSaldoUsuario();
+                        await cargarSaldoUsuario();
                     }, 800);
                 }
             } else {
                 usuarioId = data.user.id;
                 await guardarNombreEnBD(nombreUsuario);
                 mostrarAlertaAuth("¡Bienvenido!", false);
-                setTimeout(() => {
+                setTimeout(async () => {
                     document.getElementById('modal-auth').classList.add('hidden');
-                    cargarSaldoUsuario();
+                    await cargarSaldoUsuario();
                 }, 800);
             }
         }
 
         async function guardarNombreEnBD(nombre) {
             if (!supabaseClient || !usuarioId) return;
-            await supabaseClient.from('perfiles').upsert({ usuarios: usuarioId, nombre: nombre, fichas: saldoFichasActual || 1000 });
+            try {
+                let { data: perfil } = await supabaseClient
+                    .from('perfiles')
+                    .select('*')
+                    .eq('usuarios', usuarioId)
+                    .maybeSingle();
+
+                if (!perfil) {
+                    await supabaseClient.from('perfiles').insert([
+                        { usuarios: usuarioId, nombre: nombre, fichas: 1000 }
+                    ]);
+                } else {
+                    await supabaseClient.from('perfiles').update({ nombre: nombre }).eq('usuarios', usuarioId);
+                }
+            } catch (e) {}
         }
 
         async function cerrarSesion() {
-            if (supabaseClient) {
-                await supabaseClient.auth.signOut();
-            }
+            if (supabaseClient) await supabaseClient.auth.signOut();
             location.reload();
         }
 
@@ -1168,9 +1169,7 @@
             if (!container) return;
 
             container.innerHTML = `<div class="globo-dialogo">${texto}</div>`;
-            setTimeout(() => {
-                container.innerHTML = '';
-            }, 3500);
+            setTimeout(() => { container.innerHTML = ''; }, 3500);
         }
 
         function evaluarFinDePartida(ganeYo) {
@@ -1256,9 +1255,7 @@
                 estadoJuego.mensajeEstado = `¡Ganó la mano ${soyGanador ? 'YO' : 'ÉL'}! Repartiendo...`;
 
                 enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
-                setTimeout(() => { 
-                    if (soyJ1) repartirNuevaMano(); 
-                }, 2000);
+                setTimeout(() => { if (soyJ1) repartirNuevaMano(); }, 2000);
             } else {
                 estadoJuego.rondaActual += 1;
                 enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
@@ -1428,9 +1425,7 @@
         window.cancelarSala = async function(esAbandonoVoluntario = false) {
             detenerTemporizador();
             if (salaId) {
-                if (esAbandonoVoluntario) {
-                    await enviarAccionSupabase('ABANDONO', {});
-                }
+                if (esAbandonoVoluntario) await enviarAccionSupabase('ABANDONO', {});
                 await supabaseClient.from('salas').delete().eq('id', salaId);
             }
             limpiarEstadoJuego();
