@@ -528,41 +528,56 @@
 
         window.onload = async () => {
             poblarSelectApuestas();
-            if (supabaseClient) {
-                // Capturar sesión desde la URL si viene de OAuth
-                try {
-                    const { data: sessionData } = await supabaseClient.auth.getSessionFromUrl({ storeSession: true });
-                    if (sessionData && sessionData.session) {
-                        await supabaseClient.auth.setSession(sessionData.session);
-                    }
-                } catch (err) {
-                    console.log("No hay token en URL");
-                }
+            const modalAuth = document.getElementById('modal-auth');
 
-                // Obtener sesión actual directamente
+            if (!supabaseClient) {
+                modalAuth.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                // 1. Intentar capturar sesión desde la URL de OAuth
+                const { data: sessionData } = await supabaseClient.auth.getSessionFromUrl({ storeSession: true });
+                if (sessionData && sessionData.session) {
+                    await supabaseClient.auth.setSession(sessionData.session);
+                }
+            } catch (err) {
+                console.log("No hay token OAuth en URL");
+            }
+
+            // 2. Verificar si ya hay una sesión activa de inmediato
+            try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
-                const modalAuth = document.getElementById('modal-auth');
-                
-                if (session) {
+                if (session && session.user) {
                     usuarioId = session.user.id;
-                    modalAuth.classList.add('hidden');
-                    await cargarSaldoUsuario();
+                    modalAuth.classList.add('hidden'); // Ocultar el modal de inmediato
+                    
+                    // Cargar saldo de forma segura sin bloquear la interfaz si falla
+                    try {
+                        await cargarSaldoUsuario();
+                    } catch (e) {
+                        console.error("Error al cargar saldo inicial:", e);
+                    }
                 } else {
                     modalAuth.classList.remove('hidden');
                 }
-
-                // Escuchar cambios posteriores sin bloquear la UI
-                supabaseClient.auth.onAuthStateChange(async (event, session) => {
-                    const modalAuth = document.getElementById('modal-auth');
-                    if (session) {
-                        usuarioId = session.user.id;
-                        modalAuth.classList.add('hidden');
-                        await cargarSaldoUsuario();
-                    } else {
-                        modalAuth.classList.remove('hidden');
-                    }
-                });
+            } catch (err) {
+                console.error("Error obteniendo sesión:", err);
+                modalAuth.classList.remove('hidden');
             }
+
+            // 3. Escuchar cambios de estado posteriores
+            supabaseClient.auth.onAuthStateChange(async (event, session) => {
+                if (session && session.user) {
+                    usuarioId = session.user.id;
+                    modalAuth.classList.add('hidden');
+                    try {
+                        await cargarSaldoUsuario();
+                    } catch (e) {}
+                } else {
+                    modalAuth.classList.remove('hidden');
+                }
+            });
         };
 
         function poblarSelectApuestas() {
@@ -1012,7 +1027,6 @@
 
             document.getElementById('r1-yo').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR1[miRol]);
             document.getElementById('r1-el').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR1[rivalRol]);
-            document.getElementById('r2-yo').innerHTML = renderizarCartaMesaHTML(estadoJico.mesaR2[miRol]); // corregido internamente por seguridad en referencias
             document.getElementById('r2-yo').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR2[miRol]);
             document.getElementById('r2-el').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR2[rivalRol]);
             document.getElementById('r3-yo').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR3[miRol]);
