@@ -530,21 +530,6 @@
             poblarSelectApuestas();
             const modalAuth = document.getElementById('modal-auth');
 
-            // Detectar si volvemos de una compra en Mercado Pago y acreditar automáticamente
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('status') === 'approved' || urlParams.get('collection_status') === 'approved') {
-                const cantidadComprada = Number(urlParams.get('cantidad') || 500);
-                setTimeout(async () => {
-                    if (usuarioId) {
-                        await cargarSaldoUsuario();
-                        const nuevoSaldo = saldoFichasActual + cantidadComprada;
-                        await actualizarSaldoBD(nuevoSaldo);
-                        alert(`¡Pago acreditado con éxito! Se sumaron ${cantidadComprada} fichas a tu cuenta.`);
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                    }
-                }, 1500);
-            }
-
             if (!supabaseClient) {
                 modalAuth.classList.remove('hidden');
                 return;
@@ -565,7 +550,25 @@
                     usuarioId = session.user.id;
                     nombreUsuario = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email.split('@')[0];
                     modalAuth.classList.add('hidden');
+                    
+                    // 1. Cargamos el saldo inicial del usuario desde la base de datos
                     await cargarSaldoUsuario();
+
+                    // 2. Detectamos si volvemos de un pago aprobado en Mercado Pago de forma directa
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.get('status') === 'approved' || urlParams.get('collection_status') === 'approved') {
+                        const cantidadComprada = Number(urlParams.get('cantidad') || 500);
+                        
+                        // Sumamos las fichas compradas al saldo actual de forma segura
+                        const nuevoSaldoFinal = saldoFichasActual + cantidadComprada;
+                        await actualizarSaldoBD(nuevoSaldoFinal);
+                        
+                        alert(`¡Pago acreditado con éxito! Se sumaron ${cantidadComprada} fichas a tu cuenta.`);
+                        
+                        // Limpiamos la URL para evitar recargas en bucle
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+
                 } else {
                     modalAuth.classList.remove('hidden');
                 }
