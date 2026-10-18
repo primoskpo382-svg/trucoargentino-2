@@ -556,6 +556,7 @@
 
                 if (session && session.user) {
                     usuarioId = session.user.id;
+                    nombreUsuario = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email.split('@')[0];
                     modalAuth.classList.add('hidden');
                     try {
                         await cargarSaldoUsuario();
@@ -573,6 +574,7 @@
             supabaseClient.auth.onAuthStateChange(async (event, session) => {
                 if (session && session.user) {
                     usuarioId = session.user.id;
+                    nombreUsuario = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email.split('@')[0];
                     modalAuth.classList.add('hidden');
                     try {
                         await cargarSaldoUsuario();
@@ -607,29 +609,39 @@
                 return;
             }
             try {
-                const response = await fetch(`${API_URL}/obtener-usuario`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        usuarioId: usuarioId, 
-                        email: `${usuarioId}@jugador.com` 
-                    })
-                });
-                const data = await response.json();
-                if (response.ok && data) {
-                    // Si el usuario existe toma sus fichas, si no, asigna 1000 de bienvenida
-                    saldoFichasActual = (data.fichas !== undefined && data.fichas !== null) ? data.fichas : 1000;
-                    nombreUsuario = data.nombre || data.email?.split('@')[0] || 'Jugador';
-                    
-                    const spanSaldo = document.getElementById('saldoFichas');
-                    if (spanSaldo) spanSaldo.innerText = saldoFichasActual;
+                // Buscamos o creamos directamente en la tabla perfiles vía cliente y fallback a API
+                let { data: perfil, error } = await supabaseClient
+                    .from('perfiles')
+                    .select('*')
+                    .eq('usuarios', usuarioId)
+                    .maybeSingle();
 
-                    const inputName = document.getElementById('user-name');
-                    if (inputName) inputName.value = nombreUsuario;
+                if (!perfil) {
+                    const { data: nuevoPerfil } = await supabaseClient
+                        .from('perfiles')
+                        .upsert({ 
+                            usuarios: usuarioId, 
+                            nombre: nombreUsuario || 'Jugador', 
+                            fichas: 1000 
+                        })
+                        .select()
+                        .single();
+                    perfil = nuevoPerfil;
+                }
+
+                if (perfil) {
+                    saldoFichasActual = (perfil.fichas !== undefined && perfil.fichas !== null) ? perfil.fichas : 1000;
+                    nombreUsuario = perfil.nombre || nombreUsuario || 'Jugador';
                 } else {
                     saldoFichasActual = 1000;
-                    document.getElementById('saldoFichas').innerText = saldoFichasActual;
                 }
+
+                const spanSaldo = document.getElementById('saldoFichas');
+                if (spanSaldo) spanSaldo.innerText = saldoFichasActual;
+
+                const inputName = document.getElementById('user-name');
+                if (inputName) inputName.value = nombreUsuario;
+
             } catch (err) {
                 console.error("Error sincronizando saldo:", err);
                 saldoFichasActual = 1000;
@@ -657,11 +669,11 @@
             const { error } = await supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
+                    redirectTo: window.location.origin,
                     queryParams: {
                         access_type: 'offline',
                         prompt: 'consent',
-                    },
-                    skipBrowserRedirect: false
+                    }
                 }
             });
             if (error) {
