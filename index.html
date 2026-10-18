@@ -529,6 +529,16 @@
         window.onload = async () => {
             poblarSelectApuestas();
             if (supabaseClient) {
+                // Forzar la lectura del token si viene de la redirección OAuth en móviles
+                try {
+                    const { data: sessionData } = await supabaseClient.auth.getSessionFromUrl({ storeSession: true });
+                    if (sessionData && sessionData.session) {
+                        await supabaseClient.auth.setSession(sessionData.session);
+                    }
+                } catch (err) {
+                    console.log("No hay token en la URL o ya fue procesado");
+                }
+
                 // Escuchar cambios de autenticación en tiempo real (móviles/OAuth)
                 supabaseClient.auth.onAuthStateChange(async (event, session) => {
                     const modalAuth = document.getElementById('modal-auth');
