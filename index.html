@@ -87,11 +87,15 @@
         }
 
         .btn-canto-blyts {
-            background: linear-gradient(180deg, #0f2744 0%, #071526 100%);
-            border: 1.5px solid #d4af37;
-            color: #f3e5ab;
-            font-weight: 900;
+            background: linear-gradient(180deg, #132742 0%, #081424 100%);
+            border: 1px solid #1f3a5f;
+            color: #ffffff;
+            font-weight: 700;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: all 0.15s ease;
+        }
+        .btn-canto-blyts:active {
+            transform: scale(0.95);
         }
 
         .card-trucox {
@@ -123,7 +127,7 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center select-none bg-slate-950 p-0 sm:p-2">
 
-    <!-- MODAL DE LOGIN / REGISTRO CON GOOGLE Y EMAIL -->
+    <!-- MODAL DE LOGIN / REGISTRO -->
     <div id="modal-auth" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="card-trucox rounded-3xl p-6 sm:p-8 w-full max-w-md border-2 border-amber-500/40 text-center space-y-4">
             <div class="text-3xl">🃏</div>
@@ -233,17 +237,16 @@
         </div>
 
         <!-- MESA DE JUEGO -->
-        <div id="panel-juego" class="hidden flex-1 flex-col justify-between w-full h-full relative space-y-2 p-2 bg-slate-950">
-            <div class="card-trucox px-4 py-2 rounded-2xl flex justify-between items-center text-xs shadow-xl border-amber-500/40 z-20">
+        <div id="panel-juego" class="hidden flex-1 flex-col justify-between w-full h-full relative space-y-1 p-2 bg-slate-950">
+            <div class="card-trucox px-3 py-1.5 rounded-2xl flex justify-between items-center text-xs shadow-xl border-amber-500/40 z-20">
                 <div class="flex items-center gap-2">
                     <span id="nombre-yo-txt" class="font-black text-amber-400 text-xs uppercase">Yo:</span>
                     <span id="pts-yo" class="font-mono text-xl font-black text-amber-300">0</span>
                 </div>
                 <div class="flex flex-col items-center">
-                    <div id="turno-info" class="bg-amber-500/10 border border-amber-500/40 px-3 py-1 rounded-full text-[11px] text-amber-300 font-extrabold uppercase tracking-wide">
+                    <div id="turno-info" class="bg-amber-500/10 border border-amber-500/40 px-2.5 py-0.5 rounded-full text-[10px] text-amber-300 font-extrabold uppercase tracking-wide">
                         Turno: -
                     </div>
-                    <div id="temporizador-turno" class="text-[10px] text-rose-400 font-extrabold mt-0.5">⏱️ 20s</div>
                 </div>
                 <div class="flex items-center gap-2">
                     <span id="pts-el" class="font-mono text-xl font-black text-slate-300">0</span>
@@ -251,52 +254,49 @@
                 </div>
             </div>
 
-            <div class="mesa-blyts flex-1 relative flex flex-col justify-between p-4 rounded-3xl min-h-[390px] overflow-hidden">
-                <div class="absolute top-2 left-1/2 transform -translate-x-1/2 w-9 h-9 rounded-full bg-slate-900/80 border border-amber-500/40 shadow-inner flex items-center justify-center text-sm pointer-events-none z-10">
-                    ☕
+            <div class="mesa-blyts flex-1 relative flex flex-col justify-between p-3 rounded-3xl min-h-[370px] overflow-hidden">
+                <div class="absolute top-2 left-1/2 transform -translate-x-1/2 flex items-center justify-center z-10">
+                    <div id="temporizador-turno" class="w-8 h-8 rounded-full bg-slate-950/90 border-2 border-amber-400 text-amber-300 text-xs font-black flex items-center justify-center shadow-lg">15</div>
                 </div>
 
                 <div class="flex justify-between items-start z-10 relative">
                     <div class="flex items-center gap-2 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full border border-amber-500/40 shadow-lg">
-                        <div class="w-8 h-8 rounded-full bg-slate-800 border-2 border-amber-400 flex items-center justify-center text-sm">🧔</div>
-                        <span id="nombre-rival" class="text-xs font-black text-slate-200">Rival</span>
+                        <div class="w-7 h-7 rounded-full bg-slate-800 border border-amber-400 flex items-center justify-center text-xs">🧔</div>
+                        <span id="nombre-rival" class="text-xs font-black text-slate-200">Jose20</span>
                     </div>
                     <div id="globo-rival-container" class="absolute top-12 left-0"></div>
 
-                    <div class="w-12 h-7 rounded-md bg-blue-950 border border-blue-700 shadow-md flex items-center justify-center">
-                        <div class="w-8 h-3 rounded-sm bg-blue-800/80 border border-blue-600/50"></div>
+                    <div class="flex items-center gap-1">
+                        <div class="w-3 h-3 rounded-full border border-slate-500 bg-slate-800"></div>
+                        <div class="w-3 h-3 rounded-full border border-slate-500 bg-slate-800"></div>
+                        <div class="w-3 h-3 rounded-full border border-slate-500 bg-slate-800"></div>
                     </div>
                 </div>
 
-                <div class="my-auto z-10 grid grid-cols-3 gap-3 px-4">
-                    <div class="flex flex-col items-center justify-center min-h-[105px]">
-                        <div id="r1-el" class="carta-mesa-blyts -mb-10 transform -rotate-3 flex items-center justify-center"></div>
+                <div class="my-auto z-10 grid grid-cols-3 gap-2 px-2">
+                    <div class="flex flex-col items-center justify-center min-h-[95px]">
+                        <div id="r1-el" class="carta-mesa-blyts -mb-8 transform -rotate-3 flex items-center justify-center"></div>
                         <div id="r1-yo" class="carta-mesa-blyts z-10 transform rotate-2 flex items-center justify-center"></div>
                     </div>
-                    <div class="flex flex-col items-center justify-center min-h-[105px]">
-                        <div id="r2-el" class="carta-mesa-blyts -mb-10 transform rotate-2 flex items-center justify-center"></div>
+                    <div class="flex flex-col items-center justify-center min-h-[95px]">
+                        <div id="r2-el" class="carta-mesa-blyts -mb-8 transform rotate-2 flex items-center justify-center"></div>
                         <div id="r2-yo" class="carta-mesa-blyts z-10 transform -rotate-1 flex items-center justify-center"></div>
                     </div>
-                    <div class="flex flex-col items-center justify-center min-h-[105px]">
-                        <div id="r3-el" class="carta-mesa-blyts -mb-10 transform -rotate-2 flex items-center justify-center"></div>
+                    <div class="flex flex-col items-center justify-center min-h-[95px]">
+                        <div id="r3-el" class="carta-mesa-blyts -mb-8 transform -rotate-2 flex items-center justify-center"></div>
                         <div id="r3-yo" class="carta-mesa-blyts z-10 transform rotate-3 flex items-center justify-center"></div>
                     </div>
                 </div>
 
-                <div class="absolute right-4 bottom-28 w-12 h-18 bg-blue-900 rounded-md border-2 border-amber-500/60 shadow-2xl flex items-center justify-center transform rotate-12 pointer-events-none">
-                    <div class="w-10 h-16 border border-blue-600/60 rounded bg-blue-950"></div>
-                </div>
-
-                <div id="estado-mensaje" class="text-xs font-black text-amber-200 text-center bg-slate-950/90 backdrop-blur py-1.5 px-4 rounded-full border border-amber-500/50 mx-auto max-w-xs z-10 shadow-xl">
+                <div id="estado-mensaje" class="text-[11px] font-black text-amber-200 text-center bg-slate-950/90 backdrop-blur py-1 px-3 rounded-full border border-amber-500/50 mx-auto max-w-xs z-10 shadow-xl">
                     Esperando jugador...
                 </div>
 
                 <div class="absolute left-3 bottom-3 z-30 flex items-end gap-2">
-                    <div class="w-11 h-11 rounded-full bg-amber-600 border-2 border-amber-300 shadow-xl flex items-center justify-center text-lg">👨🏻</div>
-                    <div id="globo-yo-container" class="absolute -top-12 left-12"></div>
+                    <div id="globo-yo-container" class="absolute -top-12 left-10"></div>
                 </div>
 
-                <div class="relative z-20 flex justify-center items-end min-h-[155px] pb-1">
+                <div class="relative z-20 flex justify-center items-end min-h-[145px] pb-1">
                     <div id="contenedor-mano" class="flex justify-center items-end -space-x-8">
                         <span class="text-xs text-slate-300 font-bold bg-slate-900/80 px-2.5 py-1 rounded-xl border border-slate-700">Mezclando mazo...</span>
                     </div>
@@ -304,37 +304,43 @@
             </div>
 
             <!-- PANEL DE RESPUESTAS A CANTOS -->
-            <div id="panel-respuesta" class="absolute inset-x-4 top-1/3 card-trucox border-2 border-amber-400 p-4 rounded-2xl hidden shadow-2xl z-40 text-center space-y-3 animate-pulse">
+            <div id="panel-respuesta" class="absolute inset-x-4 top-1/3 card-trucox border-2 border-amber-400 p-4 rounded-2xl hidden shadow-2xl z-40 text-center space-y-3">
                 <div id="texto-canto-rival" class="text-xs font-black text-amber-300 uppercase tracking-wider">¡Te cantaron!</div>
                 <div class="flex gap-2 justify-center flex-wrap">
-                    <button onclick="window.responder(true)" class="bg-emerald-600 hover:bg-emerald-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">¡Quiero!</button>
+                    <button onclick="window.responder(true)" class="bg-emerald-600 hover:bg-emerald-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">Quiero</button>
                     
                     <div id="botones-recanto-envido" class="flex gap-1 hidden">
                         <button onclick="window.cantar('Envido')" class="bg-amber-600 hover:bg-amber-500 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Envido</button>
-                        <button onclick="window.cantar('Real Envido')" class="bg-amber-700 hover:bg-amber-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Real</button>
-                        <button onclick="window.cantar('Falta Envido')" class="bg-rose-700 hover:bg-rose-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Falta</button>
+                        <button onclick="window.cantar('Real envido')" class="bg-amber-700 hover:bg-amber-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Real envido</button>
+                        <button onclick="window.cantar('Falta envido')" class="bg-rose-700 hover:bg-rose-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Falta envido</button>
                     </div>
 
-                    <button id="btn-recantar-truco" onclick="window.recantarTruco()" class="bg-amber-600 hover:bg-amber-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer hidden shadow-md text-white">Subir Apuesta</button>
+                    <button id="btn-recantar-truco" onclick="window.recantarTruco()" class="bg-amber-600 hover:bg-amber-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer hidden shadow-md text-white">Quiero re truco</button>
                     
                     <button id="btn-son-buenas" onclick="window.cantarSonBuenas()" class="bg-sky-600 hover:bg-sky-500 text-xs font-black py-2.5 px-3 rounded-xl cursor-pointer hidden shadow-md text-white">Son buenas</button>
 
-                    <button onclick="window.responder(false)" class="bg-rose-700 hover:bg-rose-600 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">No quiero</button>
+                    <button onclick="window.responder(false)" class="bg-slate-700 hover:bg-slate-600 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">No quiero</button>
                 </div>
             </div>
 
-            <!-- BARRA DE ACCIONES DE JUEGO -->
-            <div class="card-trucox p-2 rounded-2xl grid grid-cols-4 gap-1.5 z-30 shadow-2xl border-amber-500/30">
-                <button id="btn-truco" onclick="window.cantarTrucoDinamico()" class="btn-canto-blyts text-xs py-3 rounded-xl uppercase tracking-wide cursor-pointer col-span-1">
-                    Truco
+            <!-- BARRA DE ACCIONES DINÁMICA -->
+            <div id="barra-acciones" class="card-trucox p-2 rounded-2xl grid grid-cols-2 gap-2 z-30 shadow-2xl border-amber-500/30">
+                <button id="btn-truco" onclick="window.cantarTrucoDinamico()" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
+                    Truco!
                 </button>
-                <div id="bloque-envidos" class="col-span-2 flex gap-1">
-                    <button onclick="window.cantar('Envido')" class="btn-canto-blyts flex-1 text-[11px] py-3 rounded-xl cursor-pointer">Envido</button>
-                    <button onclick="window.cantar('Real Envido')" class="btn-canto-blyts flex-1 text-[10px] py-3 rounded-xl cursor-pointer">Real</button>
-                    <button onclick="window.cantar('Falta Envido')" class="btn-canto-blyts flex-1 text-[10px] py-3 rounded-xl cursor-pointer">Falta</button>
+                <div id="bloque-envidos" class="contents">
+                    <button id="btn-envido" onclick="window.cantar('Envido')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
+                        Envido
+                    </button>
+                    <button id="btn-real-envido" onclick="window.cantar('Real envido')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
+                        Real envido
+                    </button>
+                    <button id="btn-falta-envido" onclick="window.cantar('Falta envido')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
+                        Falta envido
+                    </button>
                 </div>
-                <button onclick="window.cantar('Maso')" class="btn-canto-blyts text-xs py-3 rounded-xl uppercase tracking-wide cursor-pointer col-span-1">
-                    Mazo
+                <button id="btn-mazo" onclick="window.cantar('Me voy al mazo')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer col-span-2 bg-rose-950/60 border-rose-800 text-rose-300">
+                    Me voy al mazo
                 </button>
             </div>
 
@@ -399,7 +405,7 @@
         let metaPuntosPartida = 30;
 
         let temporizadorTurno = null;
-        let segundosRestantes = 20;
+        let segundosRestantes = 15;
 
         const IMAGENES_ESPADAS = {
             '1E': 'casrtas/3B9CB9AE-9416-4AEE-9D93-DF7E2B5D25D8.png',
@@ -1048,7 +1054,7 @@
 
             const miTurno = estadoJuego.turnoActual === miRol;
             
-            document.getElementById('turno-info').innerText = `Turno: ${miTurno ? 'TUYO' : 'RIVAL'} ${estadoJuego.manoJugador === miRol ? '(Mano)' : ''}`;
+            document.getElementById('turno-info').innerText = miTurno ? '¡Tu turno!' : 'Esperando a tu rival...';
 
             if (miTurno && !estadoJuego.cantosPendientes) {
                 iniciarTemporizador();
@@ -1087,26 +1093,18 @@
                 btnTruco.classList.add('hidden');
             } else {
                 btnTruco.classList.remove('hidden');
-                if (estadoJuego.nivelTruco === 1) btnTruco.innerText = 'Truco';
-                else if (estadoJuego.nivelTruco === 2) btnTruco.innerText = 'Retruco';
-                else if (estadoJuego.nivelTruco === 3) btnTruco.innerText = 'Vale 4';
+                if (estadoJuego.nivelTruco === 1) btnTruco.innerText = 'Truco!';
+                else if (estadoJuego.nivelTruco === 2) btnTruco.innerText = 'Quiero re truco';
+                else if (estadoJuego.nivelTruco === 3) btnTruco.innerText = 'Vale Cuatro!';
             }
 
+            // Ocultar / Mostrar botones de envido dinámicamente según la ronda de la mano
             const bloqueEnvidos = document.getElementById('bloque-envidos');
-            const cartaManoMesa = estadoJuego.mesaR1[estadoJuego.manoJugador];
-            const cartaPieMesa = estadoJuego.mesaR1[estadoJuego.manoJugador === 'J1' ? 'J2' : 'J1'];
-
-            let puedeCantarEnvido = false;
             if (estadoJuego.rondaActual === 1 && !estadoJuego.envidoCantado && miTurno) {
-                if (!cartaManoMesa && estadoJuego.manoJugador === miRol) {
-                    puedeCantarEnvido = true;
-                } else if (cartaManoMesa && !cartaPieMesa && estadoJuego.manoJugador !== miRol) {
-                    puedeCantarEnvido = true;
-                }
+                bloqueEnvidos.classList.remove('hidden');
+            } else {
+                bloqueEnvidos.classList.add('hidden');
             }
-
-            if (puedeCantarEnvido) bloqueEnvidos.classList.remove('hidden');
-            else bloqueEnvidos.classList.add('hidden');
 
             if (estadoJuego.cantosPendientes) {
                 const paraMi = estadoJuego.cantosPendientes.para === miRol;
@@ -1118,15 +1116,15 @@
                     const recantoTruco = document.getElementById('btn-recantar-truco');
                     const btnSonBuenas = document.getElementById('btn-son-buenas');
 
-                    if (estadoJuego.cantosPendientes.tipo.includes('Envido') || estadoJuego.cantosPendientes.tipo.includes('Real') || estadoJuego.cantosPendientes.tipo.includes('Falta')) {
+                    if (estadoJuego.cantosPendientes.tipo.includes('Envido') || estadoJuego.cantosPendientes.tipo.includes('envido')) {
                         recantoEnvido.classList.remove('hidden');
                         recantoTruco.classList.add('hidden');
                         btnSonBuenas.classList.remove('hidden');
-                    } else if (estadoJuego.cantosPendientes.tipo.includes('Truco') || estadoJuego.cantosPendientes.tipo.includes('Retruco')) {
+                    } else if (estadoJuego.cantosPendientes.tipo.includes('Truco')) {
                         recantoTruco.classList.remove('hidden');
                         recantoEnvido.classList.add('hidden');
                         btnSonBuenas.classList.add('hidden');
-                        recantoTruco.innerText = estadoJuego.cantosPendientes.tipo === 'Truco' ? 'Retruco' : 'Vale Cuatro';
+                        recantoTruco.innerText = estadoJuego.cantosPendientes.tipo === 'Truco!' ? 'Quiero re truco' : 'Vale Cuatro!';
                     } else {
                         recantoEnvido.classList.add('hidden');
                         recantoTruco.classList.add('hidden');
@@ -1138,23 +1136,23 @@
                 }
             } else {
                 document.getElementById('panel-respuesta').classList.add('hidden');
-                document.getElementById('estado-mensaje').innerText = estadoJuego.mensajeEstado || (miTurno ? '¡Es tu turno de jugar o cantar!' : 'Esperando jugada de él...');
+                document.getElementById('estado-mensaje').innerText = estadoJuego.mensajeEstado || (miTurno ? '¡Es tu turno!' : 'Esperando a tu rival...');
             }
         }
 
         function iniciarTemporizador() {
             if (temporizadorTurno) return;
-            segundosRestantes = 20;
-            document.getElementById('temporizador-turno').innerText = `⏱️ ${segundosRestantes}s`;
+            segundosRestantes = 15;
+            document.getElementById('temporizador-turno').innerText = segundosRestantes;
             
             temporizadorTurno = setInterval(() => {
                 segundosRestantes--;
                 const elem = document.getElementById('temporizador-turno');
-                if (elem) elem.innerText = `⏱️ ${segundosRestantes}s`;
+                if (elem) elem.innerText = segundosRestantes;
 
                 if (segundosRestantes <= 0) {
                     detenerTemporizador();
-                    window.cantar('Maso');
+                    window.cantar('Me voy al mazo');
                 }
             }, 1000);
         }
@@ -1165,7 +1163,7 @@
                 temporizadorTurno = null;
             }
             const elem = document.getElementById('temporizador-turno');
-            if (elem) elem.innerText = '';
+            if (elem) elem.innerText = '15';
         }
 
         function mostrarGloboDialogo(esYo, texto) {
@@ -1280,14 +1278,14 @@
         }
 
         window.cantarTrucoDinamico = function() {
-            if (estadoJuego.nivelTruco === 1) window.cantar('Truco');
-            else if (estadoJuego.nivelTruco === 2) window.cantar('Retruco');
-            else if (estadoJuego.nivelTruco === 3) window.cantar('Vale Cuatro');
+            if (estadoJuego.nivelTruco === 1) window.cantar('Truco!');
+            else if (estadoJuego.nivelTruco === 2) window.cantar('Quiero re truco');
+            else if (estadoJuego.nivelTruco === 3) window.cantar('Vale Cuatro!');
         };
 
         window.recantarTruco = function() {
-            if (estadoJuego.cantosPendientes.tipo === 'Truco') window.cantar('Retruco');
-            else if (estadoJuego.cantosPendientes.tipo === 'Retruco') window.cantar('Vale Cuatro');
+            if (estadoJuego.cantosPendientes.tipo === 'Truco!') window.cantar('Quiero re truco');
+            else if (estadoJuego.cantosPendientes.tipo === 'Quiero re truco') window.cantar('Vale Cuatro!');
         };
 
         function calcularValorFaltaEnvido() {
@@ -1304,19 +1302,19 @@
 
             estadoJuego.ultimoCantoGlobal = { jugador: miRol, texto: tipo };
 
-            if (tipo === 'Maso') {
+            if (tipo === 'Me voy al mazo') {
                 const ptsNoQuiero = estadoJuego.puntosTrucoAceptado || 1;
                 if (miRol === 'J1') estadoJuego.ptsJ2 += ptsNoQuiero;
                 else estadoJuego.ptsJ1 += ptsNoQuiero;
 
-                estadoJuego.mensajeEstado = `¡Te fuiste al maso! Punto(s) para él. Repartiendo...`;
+                estadoJuego.mensajeEstado = `¡Me voy al mazo! Punto(s) para él. Repartiendo...`;
                 
                 await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
                 setTimeout(() => { if (soyJ1) repartirNuevaMano(); }, 2000);
                 return;
             }
 
-            if (tipo === 'Envido' || tipo === 'Real Envido' || tipo === 'Falta Envido') {
+            if (tipo === 'Envido' || tipo === 'Real envido' || tipo === 'Falta envido') {
                 estadoJuego.historialEnvido.push(tipo);
                 
                 let ptsQuiero = 0;
@@ -1325,11 +1323,11 @@
                 const cadena = estadoJuego.historialEnvido.join(' + ');
 
                 if (cadena === 'Envido') { ptsQuiero = 2; ptsNoQuiero = 1; }
-                else if (cadena === 'Real Envido') { ptsQuiero = 3; ptsNoQuiero = 1; }
+                else if (cadena === 'Real envido') { ptsQuiero = 3; ptsNoQuiero = 1; }
                 else if (cadena === 'Envido + Envido') { ptsQuiero = 4; ptsNoQuiero = 2; }
-                else if (cadena === 'Envido + Real Envido') { ptsQuiero = 5; ptsNoQuiero = 2; }
-                else if (cadena === 'Envido + Envido + Real Envido') { ptsQuiero = 7; ptsNoQuiero = 4; }
-                else if (tipo === 'Falta Envido') {
+                else if (cadena === 'Envido + Real envido') { ptsQuiero = 5; ptsNoQuiero = 2; }
+                else if (cadena === 'Envido + Envido + Real envido') { ptsQuiero = 7; ptsNoQuiero = 4; }
+                else if (tipo === 'Falta envido') {
                     ptsQuiero = calcularValorFaltaEnvido();
                     ptsNoQuiero = estadoJuego.puntosEnvidoEnJuego || 1;
                 }
@@ -1339,7 +1337,7 @@
             }
 
             estadoJuego.cantosPendientes = { tipo, de: miRol, para: rival };
-            if (tipo.includes('Truco') || tipo.includes('Retruco') || tipo.includes('Vale')) {
+            if (tipo.includes('Truco') || tipo.includes('re truco') || tipo.includes('Vale')) {
                 estadoJuego.ultimoQueCantoTruco = miRol;
             }
             await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
@@ -1366,9 +1364,9 @@
 
             setTimeout(() => {
                 const esMiTurno = estadoJuego.turnoActual === miRol;
-                estadoJuego.mensajeEstado = esMiTurno ? '¡Es tu turno de jugar o cantar!' : 'Esperando jugada de él...';
+                estadoJuego.mensajeEstado = esMiTurno ? '¡Es tu turno!' : 'Esperando a tu rival...';
                 actualizarInterfaz();
-            }, 3500);
+            }, 3000);
         };
 
         window.responder = async function(acepta) {
@@ -1379,17 +1377,17 @@
             const emisor = estadoJuego.cantosPendientes.de;
 
             estadoJuego.cantosPendientes = null;
-            estadoJuego.ultimoCantoGlobal = { jugador: miRol, texto: acepta ? '¡Quiero!' : 'No quiero' };
+            estadoJuego.ultimoCantoGlobal = { jugador: miRol, texto: acepta ? 'Quiero' : 'No quiero' };
 
-            if (tipo === 'Truco' || tipo === 'Retruco' || tipo === 'Vale Cuatro') {
+            if (tipo === 'Truco!' || tipo === 'Quiero re truco' || tipo === 'Vale Cuatro!') {
                 if (acepta) {
-                    if (tipo === 'Truco') {
+                    if (tipo === 'Truco!') {
                         estadoJuego.nivelTruco = 2;
                         estadoJuego.puntosTrucoAceptado = 2;
-                    } else if (tipo === 'Retruco') {
+                    } else if (tipo === 'Quiero re truco') {
                         estadoJuego.nivelTruco = 3;
                         estadoJuego.puntosTrucoAceptado = 3;
-                    } else if (tipo === 'Vale Cuatro') {
+                    } else if (tipo === 'Vale Cuatro!') {
                         estadoJuego.nivelTruco = 4;
                         estadoJuego.puntosTrucoAceptado = 4;
                     }
@@ -1405,7 +1403,7 @@
                     setTimeout(() => { if (soyJ1) repartirNuevaMano(); }, 2000);
                     return;
                 }
-            } else if (tipo.includes('Envido') || tipo.includes('Real') || tipo.includes('Falta')) {
+            } else if (tipo.includes('Envido') || tipo.includes('envido')) {
                 estadoJuego.envidoCantado = true;
                 const cartasJ1Orig = estadoJuego.cartasInicialesJ1 || estadoJuego.cartasJ1;
                 const cartasJ2Orig = estadoJuego.cartasInicialesJ2 || estadoJuego.cartasJ2;
@@ -1424,13 +1422,13 @@
 
                     if (envJ1 > envJ2) {
                         estadoJuego.ptsJ1 += ptsGanados;
-                        textoGloboJ1 = `${envJ1} (${resJ1.cartasUsadas.map(c => c.txt).join(', ')})`;
+                        textoGloboJ1 = `${envJ1} son mejores`;
                         textoGloboJ2 = `${envJ2}`;
                         estadoJuego.mensajeEstado = `¡Tantos Queridos! Gana J1 (${envJ1}). +${ptsGanados}`;
                     } else if (envJ2 > envJ1) {
                         estadoJuego.ptsJ2 += ptsGanados;
                         textoGloboJ1 = `${envJ1}`;
-                        textoGloboJ2 = `${envJ2} (${resJ2.cartasUsadas.map(c => c.txt).join(', ')})`;
+                        textoGloboJ2 = `${envJ2} son mejores`;
                         estadoJuego.mensajeEstado = `¡Tantos Queridos! Gana J2 (${envJ2}). +${ptsGanados}`;
                     } else {
                         if (manoEsJ1) { 
@@ -1440,8 +1438,8 @@
                             estadoJuego.ptsJ2 += ptsGanados; 
                             estadoJuego.mensajeEstado = `Empate en ${envJ2}. Gana J2 por Mano (+${ptsGanados}).`; 
                         }
-                        textoGloboJ1 = `${envJ1} (${resJ1.cartasUsadas.map(c => c.txt).join(', ')})`;
-                        textoGloboJ2 = `${envJ2} (${resJ2.cartasUsadas.map(c => c.txt).join(', ')})`;
+                        textoGloboJ1 = `${envJ1} en mesa`;
+                        textoGloboJ2 = `${envJ2} en mesa`;
                     }
                 } else {
                     const ptsRechazo = estadoJuego.puntosEnvidoRechazo;
@@ -1455,9 +1453,9 @@
 
                 setTimeout(() => {
                     const esMiTurno = estadoJuego.turnoActual === miRol;
-                    estadoJuego.mensajeEstado = esMiTurno ? '¡Es tu turno de jugar o cantar!' : 'Esperando jugada de él...';
+                    estadoJuego.mensajeEstado = esMiTurno ? '¡Es tu turno!' : 'Esperando a tu rival...';
                     actualizarInterfaz();
-                }, 3500);
+                }, 3000);
             }
 
             await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
@@ -1485,10 +1483,6 @@
                 }
             }
             return { puntos: max, cartasUsadas };
-        }
-
-        function calcularEnvido(cartas) {
-            return calcularDetalleEnvido(cartas).puntos;
         }
 
         window.cancelarSala = async function(esAbandonoVoluntario = false) {
