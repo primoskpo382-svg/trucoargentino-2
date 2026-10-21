@@ -111,7 +111,7 @@
             z-index: 60;
             white-space: nowrap;
             border: 2px solid #d4af37;
-            animation: fadeInOut 3.5s ease forwards;
+            animation: fadeInOut 3s ease forwards;
         }
         @keyframes fadeInOut {
             0% { opacity: 0; transform: translateY(8px); }
@@ -1174,7 +1174,9 @@
             if (!container) return;
 
             container.innerHTML = `<div class="globo-dialogo">${texto}</div>`;
-            setTimeout(() => { container.innerHTML = ''; }, 3500);
+            setTimeout(() => { 
+                if (container) container.innerHTML = ''; 
+            }, 3000);
         }
 
         function evaluarFinDePartida(ganeYo) {
@@ -1361,6 +1363,12 @@
             estadoJuego.mensajeEstado = `Dijo "Son buenas". +${ptsGanados} punto(s) para el rival.`;
 
             await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
+
+            setTimeout(() => {
+                const esMiTurno = estadoJuego.turnoActual === miRol;
+                estadoJuego.mensajeEstado = esMiTurno ? '¡Es tu turno de jugar o cantar!' : 'Esperando jugada de él...';
+                actualizarInterfaz();
+            }, 3500);
         };
 
         window.responder = async function(acepta) {
@@ -1444,6 +1452,12 @@
 
                 mostrarGloboDialogo(true, soyJ1 ? textoGloboJ1 : textoGloboJ2);
                 mostrarGloboDialogo(false, soyJ1 ? textoGloboJ2 : textoGloboJ1);
+
+                setTimeout(() => {
+                    const esMiTurno = estadoJuego.turnoActual === miRol;
+                    estadoJuego.mensajeEstado = esMiTurno ? '¡Es tu turno de jugar o cantar!' : 'Esperando jugada de él...';
+                    actualizarInterfaz();
+                }, 3500);
             }
 
             await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
