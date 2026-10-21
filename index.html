@@ -1399,8 +1399,13 @@
                 }
             } else if (tipo.includes('Envido') || tipo.includes('Real') || tipo.includes('Falta')) {
                 estadoJuego.envidoCantado = true;
-                const envJ1 = calcularEnvido(estadoJuego.cartasInicialesJ1 || estadoJuego.cartasJ1);
-                const envJ2 = calcularEnvido(estadoJuego.cartasInicialesJ2 || estadoJuego.cartasJ2);
+                const cartasJ1Orig = estadoJuego.cartasInicialesJ1 || estadoJuego.cartasJ1;
+                const cartasJ2Orig = estadoJuego.cartasInicialesJ2 || estadoJuego.cartasJ2;
+                
+                const resJ1 = calcularDetalleEnvido(cartasJ1Orig);
+                const resJ2 = calcularDetalleEnvido(cartasJ2Orig);
+                const envJ1 = resJ1.puntos;
+                const envJ2 = resJ2.puntos;
                 const manoEsJ1 = estadoJuego.manoJugador === 'J1';
 
                 let textoGloboJ1 = "";
@@ -1411,24 +1416,29 @@
 
                     if (envJ1 > envJ2) {
                         estadoJuego.ptsJ1 += ptsGanados;
-                        if (manoEsJ1) { textoGloboJ1 = `${envJ1}`; textoGloboJ2 = "Son buenas"; }
-                        else { textoGloboJ1 = `${envJ1}`; textoGloboJ2 = `${envJ2}`; }
-                        estadoJuego.mensajeEstado = `¡Tantos Queridos! J1 (${envJ1}) vs J2 (${envJ2}). +${ptsGanados} para J1`;
+                        textoGloboJ1 = `${envJ1} (${resJ1.cartasUsadas.map(c => c.txt).join(', ')})`;
+                        textoGloboJ2 = `${envJ2}`;
+                        estadoJuego.mensajeEstado = `¡Tantos Queridos! Gana J1 (${envJ1}). +${ptsGanados}`;
                     } else if (envJ2 > envJ1) {
                         estadoJuego.ptsJ2 += ptsGanados;
-                        if (manoEsJ1) { textoGloboJ1 = `${envJ1}`; textoGloboJ2 = `${envJ2}`; }
-                        else { textoGloboJ1 = "Son buenas"; textoGloboJ2 = `${envJ2}`; }
-                        estadoJuego.mensajeEstado = `¡Tantos Queridos! J2 (${envJ2}) vs J1 (${envJ1}). +${ptsGanados} para J2`;
-                    } else {
-                        if (manoEsJ1) { estadoJuego.ptsJ1 += ptsGanados; estadoJuego.mensajeEstado = `Empate en ${envJ1}. Gana J1 por Mano (+${ptsGanados}).`; }
-                        else { estadoJuego.ptsJ2 += ptsGanados; estadoJuego.mensajeEstado = `Empate en ${envJ2}. Gana J2 por Mano (+${ptsGanados}).`; }
                         textoGloboJ1 = `${envJ1}`;
-                        textoGloboJ2 = `${envJ2}`;
+                        textoGloboJ2 = `${envJ2} (${resJ2.cartasUsadas.map(c => c.txt).join(', ')})`;
+                        estadoJuego.mensajeEstado = `¡Tantos Queridos! Gana J2 (${envJ2}). +${ptsGanados}`;
+                    } else {
+                        if (manoEsJ1) { 
+                            estadoJuego.ptsJ1 += ptsGanados; 
+                            estadoJuego.mensajeEstado = `Empate en ${envJ1}. Gana J1 por Mano (+${ptsGanados}).`; 
+                        } else { 
+                            estadoJuego.ptsJ2 += ptsGanados; 
+                            estadoJuego.mensajeEstado = `Empate en ${envJ2}. Gana J2 por Mano (+${ptsGanados}).`; 
+                        }
+                        textoGloboJ1 = `${envJ1} (${resJ1.cartasUsadas.map(c => c.txt).join(', ')})`;
+                        textoGloboJ2 = `${envJ2} (${resJ2.cartasUsadas.map(c => c.txt).join(', ')})`;
                     }
                 } else {
                     const ptsRechazo = estadoJuego.puntosEnvidoRechazo;
-                    if (emisor === 'J1') { estadoJuego.ptsJ1 += ptsRechazo; textoGloboJ1 = `${envJ1}`; textoGloboJ2 = "Son buenas"; }
-                    else { estadoJuego.ptsJ2 += ptsRechazo; textoGloboJ1 = "Son buenas"; textoGloboJ2 = `${envJ2}`; }
+                    if (emisor === 'J1') { estadoJuego.ptsJ1 += ptsRechazo; textoGloboJ1 = `${envJ1}`; textoGloboJ2 = "No muestra"; }
+                    else { estadoJuego.ptsJ2 += ptsRechazo; textoGloboJ1 = "No muestra"; textoGloboJ2 = `${envJ2}`; }
                     estadoJuego.mensajeEstado = `No se quiso el ${tipo}. +${ptsRechazo} pt(s).`;
                 }
 
@@ -1439,22 +1449,32 @@
             await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
         };
 
-        function calcularEnvido(cartas) {
+        function calcularDetalleEnvido(cartas) {
             let max = 0;
+            let cartasUsadas = [cartas[0]];
             const palos = { E: [], B: [], C: [], O: [] };
-            cartas.forEach(c => palos[c.palo].push(c.envido));
+            
+            cartas.forEach(c => palos[c.palo].push(c));
 
             for (let p in palos) {
                 const vals = palos[p];
                 if (vals.length >= 2) {
-                    vals.sort((a, b) => b - a);
-                    const suma = 20 + vals[0] + vals[1];
-                    if (suma > max) max = suma;
-                } else if (vals.length === 1 && vals[0] > max) {
-                    max = vals[0];
+                    vals.sort((a, b) => b.envido - a.envido);
+                    const suma = 20 + vals[0].envido + vals[1].envido;
+                    if (suma > max) {
+                        max = suma;
+                        cartasUsadas = [vals[0], vals[1]];
+                    }
+                } else if (vals.length === 1 && vals[0].envido > max) {
+                    max = vals[0].envido;
+                    cartasUsadas = [vals[0]];
                 }
             }
-            return max;
+            return { puntos: max, cartasUsadas };
+        }
+
+        function calcularEnvido(cartas) {
+            return calcularDetalleEnvido(cartas).puntos;
         }
 
         window.cancelarSala = async function(esAbandonoVoluntario = false) {
