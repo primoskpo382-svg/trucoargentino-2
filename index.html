@@ -132,7 +132,6 @@
 
             <div id="auth-alert" class="hidden text-xs p-3 rounded-xl"></div>
 
-            <!-- BOTÓN DE GOOGLE -->
             <button onclick="iniciarSesionGoogle()" class="w-full bg-white hover:bg-slate-100 text-slate-900 font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-3 text-sm shadow-md cursor-pointer">
                 <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.95H1.2v3.15C3.16 21.32 7.24 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.25c-.25-.72-.38-1.5-.38-2.25s.13-1.53.38-2.25V6.6H1.2C.44 8.14 0 9.87 0 12s.44 3.86 1.2 5.4l4.08-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.24 0 3.16 2.68 1.2 6.6l4.08 3.15c.95-2.84 3.6-4.95 6.72-4.95z"/></svg>
                 Continuar con Google
@@ -169,8 +168,6 @@
 
         <!-- LOBBY PRINCIPAL -->
         <div id="pantalla-inicio" class="fondo-lobby-real w-full h-full relative flex flex-col justify-between items-center p-4">
-            
-            <!-- CABECERA: COMPRAR, SALDO Y RETIRAR -->
             <div class="w-full flex justify-between items-center pt-2 z-40 gap-2">
                 <button onclick="toggleModal('modalComprar')" class="bg-amber-400 text-slate-950 border border-black font-black text-xs py-2 px-3.5 rounded-xl shadow-lg cursor-pointer transition active:scale-95 flex items-center gap-1">
                     💳 Comprar
@@ -186,7 +183,6 @@
                 </button>
             </div>
 
-            <!-- BOTONES PRINCIPALES INFERIORES -->
             <div class="w-full max-w-sm space-y-3 mb-6 z-30 flex flex-col items-center">
                 <button onclick="mostrarLobbySalas()" class="w-full py-5 bg-amber-400 text-slate-950 border-2 border-black font-black rounded-2xl shadow-2xl uppercase tracking-wider text-lg cursor-pointer transition active:scale-95">
                     🎮 Jugar Partida
@@ -263,7 +259,7 @@
                 <div class="flex justify-between items-start z-10 relative">
                     <div class="flex items-center gap-2 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full border border-amber-500/40 shadow-lg">
                         <div class="w-8 h-8 rounded-full bg-slate-800 border-2 border-amber-400 flex items-center justify-center text-sm">🧔</div>
-                        <span id="nombre-rival" class="text-xs font-black text-slate-200">Catalina</span>
+                        <span id="nombre-rival" class="text-xs font-black text-slate-200">Rival</span>
                     </div>
                     <div id="globo-rival-container" class="absolute top-12 left-0"></div>
 
@@ -307,6 +303,7 @@
                 </div>
             </div>
 
+            <!-- PANEL DE RESPUESTAS A CANTOS -->
             <div id="panel-respuesta" class="absolute inset-x-4 top-1/3 card-trucox border-2 border-amber-400 p-4 rounded-2xl hidden shadow-2xl z-40 text-center space-y-3 animate-pulse">
                 <div id="texto-canto-rival" class="text-xs font-black text-amber-300 uppercase tracking-wider">¡Te cantaron!</div>
                 <div class="flex gap-2 justify-center flex-wrap">
@@ -320,6 +317,8 @@
 
                     <button id="btn-recantar-truco" onclick="window.recantarTruco()" class="bg-amber-600 hover:bg-amber-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer hidden shadow-md text-white">Subir Apuesta</button>
                     
+                    <button id="btn-son-buenas" onclick="window.cantarSonBuenas()" class="bg-sky-600 hover:bg-sky-500 text-xs font-black py-2.5 px-3 rounded-xl cursor-pointer hidden shadow-md text-white">Son buenas</button>
+
                     <button onclick="window.responder(false)" class="bg-rose-700 hover:bg-rose-600 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">No quiero</button>
                 </div>
             </div>
@@ -511,6 +510,8 @@
             turnoActual: 'J1',
             cartasJ1: [],
             cartasJ2: [],
+            cartasInicialesJ1: [],
+            cartasInicialesJ2: [],
             mesaR1: { J1: null, J2: null },
             mesaR2: { J1: null, J2: null },
             mesaR3: { J1: null, J2: null },
@@ -550,25 +551,16 @@
                     usuarioId = session.user.id;
                     nombreUsuario = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email.split('@')[0];
                     modalAuth.classList.add('hidden');
-                    
-                    // 1. Cargamos el saldo inicial del usuario desde la base de datos
                     await cargarSaldoUsuario();
 
-                    // 2. Detectamos si volvemos de un pago aprobado en Mercado Pago de forma directa
                     const urlParams = new URLSearchParams(window.location.search);
                     if (urlParams.get('status') === 'approved' || urlParams.get('collection_status') === 'approved') {
                         const cantidadComprada = Number(urlParams.get('cantidad') || 500);
-                        
-                        // Sumamos las fichas compradas al saldo actual de forma segura
                         const nuevoSaldoFinal = saldoFichasActual + cantidadComprada;
                         await actualizarSaldoBD(nuevoSaldoFinal);
-                        
                         alert(`¡Pago acreditado con éxito! Se sumaron ${cantidadComprada} fichas a tu cuenta.`);
-                        
-                        // Limpiamos la URL para evitar recargas en bucle
                         window.history.replaceState({}, document.title, window.location.pathname);
                     }
-
                 } else {
                     modalAuth.classList.remove('hidden');
                 }
@@ -933,8 +925,14 @@
             const mazoMezclado = [...MAZO].sort(() => Math.random() - 0.5);
             const proximaMano = manoEspecifica || (estadoJuego.manoJugador === 'J1' ? 'J2' : 'J1');
 
-            estadoJuego.cartasJ1 = [mazoMezclado[0], mazoMezclado[1], mazoMezclado[2]];
-            estadoJuego.cartasJ2 = [mazoMezclado[3], mazoMezclado[4], mazoMezclado[5]];
+            const cJ1 = [mazoMezclado[0], mazoMezclado[1], mazoMezclado[2]];
+            const cJ2 = [mazoMezclado[3], mazoMezclado[4], mazoMezclado[5]];
+
+            estadoJuego.cartasJ1 = [...cJ1];
+            estadoJuego.cartasJ2 = [...cJ2];
+            estadoJuego.cartasInicialesJ1 = [...cJ1];
+            estadoJuego.cartasInicialesJ2 = [...cJ2];
+            
             estadoJuego.rondaActual = 1;
             estadoJuego.manoJugador = proximaMano;
             estadoJuego.turnoActual = proximaMano;
@@ -1118,17 +1116,21 @@
                     
                     const recantoEnvido = document.getElementById('botones-recanto-envido');
                     const recantoTruco = document.getElementById('btn-recantar-truco');
+                    const btnSonBuenas = document.getElementById('btn-son-buenas');
 
                     if (estadoJuego.cantosPendientes.tipo.includes('Envido') || estadoJuego.cantosPendientes.tipo.includes('Real') || estadoJuego.cantosPendientes.tipo.includes('Falta')) {
                         recantoEnvido.classList.remove('hidden');
                         recantoTruco.classList.add('hidden');
+                        btnSonBuenas.classList.remove('hidden');
                     } else if (estadoJuego.cantosPendientes.tipo.includes('Truco') || estadoJuego.cantosPendientes.tipo.includes('Retruco')) {
                         recantoTruco.classList.remove('hidden');
                         recantoEnvido.classList.add('hidden');
+                        btnSonBuenas.classList.add('hidden');
                         recantoTruco.innerText = estadoJuego.cantosPendientes.tipo === 'Truco' ? 'Retruco' : 'Vale Cuatro';
                     } else {
                         recantoEnvido.classList.add('hidden');
                         recantoTruco.classList.add('hidden');
+                        btnSonBuenas.classList.add('hidden');
                     }
                 } else {
                     document.getElementById('panel-respuesta').classList.add('hidden');
@@ -1196,8 +1198,10 @@
         }
 
         async function tirarcarta(carta) {
-            detenerTemporizador();
             const miRol = soyJ1 ? 'J1' : 'J2';
+            if (estadoJuego.turnoActual !== miRol || estadoJuego.cantosPendientes) return;
+
+            detenerTemporizador();
             
             if (soyJ1) estadoJuego.cartasJ1 = estadoJuego.cartasJ1.filter(c => c.id !== carta.id);
             else estadoJuego.cartasJ2 = estadoJuego.cartasJ2.filter(c => c.id !== carta.id);
@@ -1284,9 +1288,16 @@
             else if (estadoJuego.cantosPendientes.tipo === 'Retruco') window.cantar('Vale Cuatro');
         };
 
+        function calcularValorFaltaEnvido() {
+            const maxPts = Math.max(estadoJuego.ptsJ1, estadoJuego.ptsJ2);
+            return Math.max(1, metaPuntosPartida - maxPts);
+        }
+
         window.cantar = async function(tipo) {
-            detenerTemporizador();
             const miRol = soyJ1 ? 'J1' : 'J2';
+            if (estadoJuego.cantosPendientes && estadoJuego.cantosPendientes.para !== miRol) return;
+
+            detenerTemporizador();
             const rival = soyJ1 ? 'J2' : 'J1';
 
             estadoJuego.ultimoCantoGlobal = { jugador: miRol, texto: tipo };
@@ -1317,8 +1328,7 @@
                 else if (cadena === 'Envido + Real Envido') { ptsQuiero = 5; ptsNoQuiero = 2; }
                 else if (cadena === 'Envido + Envido + Real Envido') { ptsQuiero = 7; ptsNoQuiero = 4; }
                 else if (tipo === 'Falta Envido') {
-                    const maxPts = Math.max(estadoJuego.ptsJ1, estadoJuego.ptsJ2);
-                    ptsQuiero = Math.max(1, metaPuntosPartida - maxPts); 
+                    ptsQuiero = calcularValorFaltaEnvido();
                     ptsNoQuiero = estadoJuego.puntosEnvidoEnJuego || 1;
                 }
 
@@ -1333,10 +1343,32 @@
             await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
         };
 
+        window.cantarSonBuenas = async function() {
+            const miRol = soyJ1 ? 'J1' : 'J2';
+            if (!estadoJuego.cantosPendientes || estadoJuego.cantosPendientes.para !== miRol) return;
+
+            detenerTemporizador();
+            const emisor = estadoJuego.cantosPendientes.de;
+
+            estadoJuego.cantosPendientes = null;
+            estadoJuego.envidoCantado = true;
+            estadoJuego.ultimoCantoGlobal = { jugador: miRol, texto: 'Son buenas' };
+
+            const ptsGanados = estadoJuego.puntosEnvidoEnJuego || 2;
+            if (emisor === 'J1') estadoJuego.ptsJ1 += ptsGanados;
+            else estadoJuego.ptsJ2 += ptsGanados;
+
+            estadoJuego.mensajeEstado = `Dijo "Son buenas". +${ptsGanados} punto(s) para el rival.`;
+
+            await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
+        };
+
         window.responder = async function(acepta) {
+            const miRol = soyJ1 ? 'J1' : 'J2';
+            if (!estadoJuego.cantosPendientes || estadoJuego.cantosPendientes.para !== miRol) return;
+
             const tipo = estadoJuego.cantosPendientes.tipo;
             const emisor = estadoJuego.cantosPendientes.de;
-            const miRol = soyJ1 ? 'J1' : 'J2';
 
             estadoJuego.cantosPendientes = null;
             estadoJuego.ultimoCantoGlobal = { jugador: miRol, texto: acepta ? '¡Quiero!' : 'No quiero' };
@@ -1367,8 +1399,8 @@
                 }
             } else if (tipo.includes('Envido') || tipo.includes('Real') || tipo.includes('Falta')) {
                 estadoJuego.envidoCantado = true;
-                const envJ1 = calcularEnvido(estadoJuego.cartasJ1);
-                const envJ2 = calcularEnvido(estadoJuego.cartasJ2);
+                const envJ1 = calcularEnvido(estadoJuego.cartasInicialesJ1 || estadoJuego.cartasJ1);
+                const envJ2 = calcularEnvido(estadoJuego.cartasInicialesJ2 || estadoJuego.cartasJ2);
                 const manoEsJ1 = estadoJuego.manoJugador === 'J1';
 
                 let textoGloboJ1 = "";
@@ -1396,7 +1428,7 @@
                 } else {
                     const ptsRechazo = estadoJuego.puntosEnvidoRechazo;
                     if (emisor === 'J1') { estadoJuego.ptsJ1 += ptsRechazo; textoGloboJ1 = `${envJ1}`; textoGloboJ2 = "Son buenas"; }
-                    else { estadoJuego.ptsJ1 += ptsRechazo; textoGloboJ1 = "Son buenas"; textoGloboJ2 = `${envJ2}`; }
+                    else { estadoJuego.ptsJ2 += ptsRechazo; textoGloboJ1 = "Son buenas"; textoGloboJ2 = `${envJ2}`; }
                     estadoJuego.mensajeEstado = `No se quiso el ${tipo}. +${ptsRechazo} pt(s).`;
                 }
 
