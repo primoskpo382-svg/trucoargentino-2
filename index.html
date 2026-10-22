@@ -113,7 +113,6 @@
         }
 
         .globo-dialogo {
-            position: absolute;
             background: #ffffff;
             color: #0b1426;
             padding: 6px 14px;
@@ -121,16 +120,14 @@
             font-size: 13px;
             font-weight: 900;
             box-shadow: 0 6px 18px rgba(0,0,0,0.6);
-            z-index: 60;
             white-space: nowrap;
             border: 2px solid #d4af37;
-            animation: fadeInOut 3s ease forwards;
+            animation: popIn 0.2s ease-out;
         }
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(8px); }
-            12% { opacity: 1; transform: translateY(0); }
-            88% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-8px); }
+
+        @keyframes popIn {
+            0% { transform: scale(0.6); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
@@ -273,12 +270,27 @@
                         <div class="w-7 h-7 rounded-full bg-slate-800 border border-amber-400 flex items-center justify-center text-xs">🧔</div>
                         <span id="nombre-rival" class="text-xs font-black text-slate-200">Jose20</span>
                     </div>
-                    <div id="globo-rival-container" class="absolute top-12 left-0"></div>
+                    <div id="globo-rival-container" class="absolute top-10 left-2 z-50"></div>
 
                     <div class="flex items-center gap-1">
                         <div class="w-3 h-3 rounded-full border border-slate-500 bg-slate-800"></div>
                         <div class="w-3 h-3 rounded-full border border-slate-500 bg-slate-800"></div>
                         <div class="w-3 h-3 rounded-full border border-slate-500 bg-slate-800"></div>
+                    </div>
+                </div>
+
+                <!-- CARTAS DE ENVIDO REVELADAS EN MESA -->
+                <div id="panel-cartas-envido" class="hidden absolute inset-x-4 top-16 bg-slate-950/95 border-2 border-amber-400 rounded-2xl p-3 z-40 text-center space-y-2 shadow-2xl">
+                    <div class="text-xs font-black text-amber-400 uppercase">Tantos del Envido</div>
+                    <div class="flex justify-around items-center gap-2">
+                        <div class="flex flex-col items-center">
+                            <span class="text-[10px] text-slate-300 font-bold mb-1">Mis Cartas</span>
+                            <div id="envido-cartas-yo" class="flex gap-1 h-16"></div>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-[10px] text-slate-300 font-bold mb-1">Rival</span>
+                            <div id="envido-cartas-el" class="flex gap-1 h-16"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -301,8 +313,8 @@
                     Esperando jugador...
                 </div>
 
-                <div class="absolute left-3 bottom-3 z-30 flex items-end gap-2">
-                    <div id="globo-yo-container" class="absolute -top-12 left-10"></div>
+                <div class="absolute left-3 bottom-14 z-50">
+                    <div id="globo-yo-container"></div>
                 </div>
 
                 <div class="relative z-20 flex justify-center items-end min-h-[145px] pb-1">
@@ -310,6 +322,14 @@
                         <span class="text-xs text-slate-300 font-bold bg-slate-900/80 px-2.5 py-1 rounded-xl border border-slate-700">Mezclando mazo...</span>
                     </div>
                 </div>
+            </div>
+
+            <!-- BOTÓN REPARTIR AL FINALIZAR MANO -->
+            <div id="panel-repartir" class="hidden absolute inset-x-6 top-1/2 -translate-y-1/2 card-trucox border-2 border-amber-400 p-4 rounded-2xl z-50 text-center space-y-2 shadow-2xl">
+                <div id="txt-fin-mano" class="text-sm font-black text-amber-300">¡Mano Finalizada!</div>
+                <button onclick="window.solicitarNuevaMano()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl uppercase tracking-wider text-sm cursor-pointer shadow-lg animate-pulse">
+                    🃏 Repartir (<span id="cuenta-repartir">5</span>s)
+                </button>
             </div>
 
             <!-- PANEL DE RESPUESTAS A CANTOS -->
@@ -413,6 +433,8 @@
 
         let temporizadorTurno = null;
         let segundosRestantes = 15;
+        let temporizadorRepartir = null;
+        let cuentaRepartir = 5;
 
         const IMAGENES_ESPADAS = {
             '1E': 'casrtas/3B9CB9AE-9416-4AEE-9D93-DF7E2B5D25D8.png',
@@ -537,6 +559,8 @@
             envidoCantado: false,
             historialEnvido: [],
             ultimoCantoGlobal: null,
+            cartasEnvidoMostrar: null,
+            finMano: false,
             mensajeEstado: 'Esperando conexiones...'
         };
 
@@ -936,6 +960,7 @@
 
         async function repartirNuevaMano(manoEspecifica) {
             if (!soyJ1) return;
+            detenerTemporizadorRepartir();
 
             const mazoMezclado = [...MAZO].sort(() => Math.random() - 0.5);
             const proximaMano = manoEspecifica || (estadoJuego.manoJugador === 'J1' ? 'J2' : 'J1');
@@ -963,6 +988,8 @@
             estadoJuego.historialEnvido = [];
             estadoJuego.cantosPendientes = null;
             estadoJuego.ultimoCantoGlobal = null;
+            estadoJuego.cartasEnvidoMostrar = null;
+            estadoJuego.finMano = false;
             estadoJuego.mensajeEstado = `¡Nueva mano repartida!`;
 
             await enviarAccionSupabase('NUEVA_MANO', estadoJuego);
@@ -1026,6 +1053,7 @@
         function procesarAbandonoRival() {
             if (!salaId) return;
             detenerTemporizador();
+            detenerTemporizadorRepartir();
             
             if (apuestaSalaActual > 0) {
                 const pozoTotal = apuestaSalaActual * 2;
@@ -1067,13 +1095,13 @@
             
             document.getElementById('turno-info').innerText = miTurno ? '¡Tu turno!' : 'Esperando a tu rival...';
 
-            if (miTurno && !estadoJuego.cantosPendientes) {
+            if (miTurno && !estadoJuego.cantosPendientes && !estadoJuego.finMano) {
                 iniciarTemporizador();
             } else {
                 detenerTemporizador();
             }
 
-            // Calcular cartas ganadoras por baza
+            // Cartas en la mesa y resaltado de ganadora
             const gR1 = (estadoJuego.mesaR1.J1 && estadoJuego.mesaR1.J2) ? (estadoJuego.mesaR1.J1.poder > estadoJuego.mesaR1.J2.poder ? 'J1' : (estadoJuego.mesaR1.J2.poder > estadoJuego.mesaR1.J1.poder ? 'J2' : null)) : null;
             const gR2 = (estadoJuego.mesaR2.J1 && estadoJuego.mesaR2.J2) ? (estadoJuego.mesaR2.J1.poder > estadoJuego.mesaR2.J2.poder ? 'J1' : (estadoJuego.mesaR2.J2.poder > estadoJuego.mesaR2.J1.poder ? 'J2' : null)) : null;
             const gR3 = (estadoJuego.mesaR3.J1 && estadoJuego.mesaR3.J2) ? (estadoJuego.mesaR3.J1.poder > estadoJuego.mesaR3.J2.poder ? 'J1' : (estadoJuego.mesaR3.J2.poder > estadoJuego.mesaR3.J1.poder ? 'J2' : null)) : null;
@@ -1091,8 +1119,8 @@
 
             misCartasActuales.forEach((carta) => {
                 const btn = document.createElement('button');
-                btn.className = `carta-mano-blyts flex items-center justify-center p-0 cursor-pointer overflow-hidden ${miTurno && !estadoJuego.cantosPendientes ? 'opacity-100' : 'opacity-75 cursor-not-allowed'}`;
-                btn.disabled = !miTurno || estadoJuego.cantosPendientes !== null;
+                btn.className = `carta-mano-blyts flex items-center justify-center p-0 cursor-pointer overflow-hidden ${miTurno && !estadoJuego.cantosPendientes && !estadoJuego.finMano ? 'opacity-100' : 'opacity-75 cursor-not-allowed'}`;
+                btn.disabled = !miTurno || estadoJuego.cantosPendientes !== null || estadoJuego.finMano;
                 btn.onclick = () => tirarcarta(carta);
                 btn.innerHTML = `<img src="${carta.img}" alt="${carta.txt}" class="w-full h-full object-cover rounded-xl bg-transparent" />`;
                 contenedor.appendChild(btn);
@@ -1104,8 +1132,32 @@
                 mostrarGloboDialogo(esYo, texto);
             }
 
+            // Mostrar u ocultar cartas de Envido reveladas
+            const panelEnvido = document.getElementById('panel-cartas-envido');
+            if (estadoJuego.cartasEnvidoMostrar) {
+                panelEnvido.classList.remove('hidden');
+                const cartasYo = soyJ1 ? estadoJuego.cartasEnvidoMostrar.J1 : estadoJuego.cartasEnvidoMostrar.J2;
+                const cartasEl = soyJ1 ? estadoJuego.cartasEnvidoMostrar.J2 : estadoJuego.cartasEnvidoMostrar.J1;
+
+                document.getElementById('envido-cartas-yo').innerHTML = (cartasYo || []).map(c => `<img src="${c.img}" class="h-full rounded shadow" />`).join('');
+                document.getElementById('envido-cartas-el').innerHTML = (cartasEl || []).map(c => `<img src="${c.img}" class="h-full rounded shadow" />`).join('');
+            } else {
+                panelEnvido.classList.add('hidden');
+            }
+
+            // Panel Repartir al finalizar mano
+            const panelRepartir = document.getElementById('panel-repartir');
+            if (estadoJuego.finMano) {
+                panelRepartir.classList.remove('hidden');
+                document.getElementById('txt-fin-mano').innerText = estadoJuego.mensajeEstado;
+                iniciarTemporizadorRepartir();
+            } else {
+                panelRepartir.classList.add('hidden');
+                detenerTemporizadorRepartir();
+            }
+
             const btnTruco = document.getElementById('btn-truco');
-            if (!miTurno || estadoJuego.ultimoQueCantoTruco === miRol || estadoJuego.nivelTruco >= 4) {
+            if (!miTurno || estadoJuego.ultimoQueCantoTruco === miRol || estadoJuego.nivelTruco >= 4 || estadoJuego.finMano) {
                 btnTruco.classList.add('hidden');
             } else {
                 btnTruco.classList.remove('hidden');
@@ -1114,9 +1166,8 @@
                 else if (estadoJuego.nivelTruco === 3) btnTruco.innerText = 'Vale Cuatro!';
             }
 
-            // Ocultar / Mostrar botones de envido dinámicamente según la ronda de la mano
             const bloqueEnvidos = document.getElementById('bloque-envidos');
-            if (estadoJuego.rondaActual === 1 && !estadoJuego.envidoCantado && miTurno) {
+            if (estadoJuego.rondaActual === 1 && !estadoJuego.envidoCantado && miTurno && !estadoJuego.finMano) {
                 bloqueEnvidos.classList.remove('hidden');
             } else {
                 bloqueEnvidos.classList.add('hidden');
@@ -1151,6 +1202,39 @@
                 document.getElementById('estado-mensaje').innerText = estadoJuego.mensajeEstado || (miTurno ? '¡Es tu turno!' : 'Esperando a tu rival...');
             }
         }
+
+        function iniciarTemporizadorRepartir() {
+            if (temporizadorRepartir) return;
+            cuentaRepartir = 5;
+            const elCuenta = document.getElementById('cuenta-repartir');
+            if (elCuenta) elCuenta.innerText = cuentaRepartir;
+
+            temporizadorRepartir = setInterval(() => {
+                cuentaRepartir--;
+                if (elCuenta) elCuenta.innerText = cuentaRepartir;
+
+                if (cuentaRepartir <= 0) {
+                    detenerTemporizadorRepartir();
+                    if (soyJ1) repartirNuevaMano();
+                }
+            }, 1000);
+        }
+
+        function detenerTemporizadorRepartir() {
+            if (temporizadorRepartir) {
+                clearInterval(temporizadorRepartir);
+                temporizadorRepartir = null;
+            }
+        }
+
+        window.solicitarNuevaMano = function() {
+            detenerTemporizadorRepartir();
+            if (soyJ1) {
+                repartirNuevaMano();
+            } else {
+                enviarAccionSupabase('SOLICITAR_REPARTIR', {});
+            }
+        };
 
         function iniciarTemporizador() {
             if (temporizadorTurno) return;
@@ -1191,6 +1275,8 @@
 
         function evaluarFinDePartida(ganeYo) {
             detenerTemporizador();
+            detenerTemporizadorRepartir();
+
             if (apuestaSalaActual > 0) {
                 const pozoTotal = apuestaSalaActual * 2;
                 const gananciaNetoPura = Math.floor(pozoTotal * 0.98);
@@ -1211,7 +1297,7 @@
 
         async function tirarcarta(carta) {
             const miRol = soyJ1 ? 'J1' : 'J2';
-            if (estadoJuego.turnoActual !== miRol || estadoJuego.cantosPendientes) return;
+            if (estadoJuego.turnoActual !== miRol || estadoJuego.cantosPendientes || estadoJuego.finMano) return;
 
             detenerTemporizador();
             
@@ -1271,10 +1357,10 @@
                 else estadoJuego.ptsJ2 += ptsAOtorgar;
 
                 const soyGanador = (soyJ1 && ganadorMano === 'J1') || (!soyJ1 && ganadorMano === 'J2');
-                estadoJuego.mensajeEstado = `¡Ganó la mano ${soyGanador ? 'YO' : 'ÉL'}! Repartiendo...`;
+                estadoJuego.mensajeEstado = `¡Ganó la mano ${soyGanador ? 'YO' : 'ÉL'}! (+${ptsAOtorgar} pts)`;
+                estadoJuego.finMano = true;
 
                 enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
-                setTimeout(() => { if (soyJ1) repartirNuevaMano(); }, 2000);
             } else {
                 estadoJuego.rondaActual += 1;
                 enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
@@ -1319,10 +1405,10 @@
                 if (miRol === 'J1') estadoJuego.ptsJ2 += ptsNoQuiero;
                 else estadoJuego.ptsJ1 += ptsNoQuiero;
 
-                estadoJuego.mensajeEstado = `¡Me voy al mazo! Punto(s) para él. Repartiendo...`;
+                estadoJuego.mensajeEstado = `¡Me voy al mazo! Punto(s) para él.`;
+                estadoJuego.finMano = true;
                 
                 await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
-                setTimeout(() => { if (soyJ1) repartirNuevaMano(); }, 2000);
                 return;
             }
 
@@ -1384,9 +1470,9 @@
                     else estadoJuego.ptsJ2 += ptsAbonados;
                     
                     const emisorEsYo = (soyJ1 && emisor === 'J1') || (!soyJ1 && emisor === 'J2');
-                    estadoJuego.mensajeEstado = `No se quiso el ${tipo}. Punto(s) para ${emisorEsYo ? 'YO' : 'ÉL'}. Repartiendo...`;
+                    estadoJuego.mensajeEstado = `No se quiso el ${tipo}. Punto(s) para ${emisorEsYo ? 'YO' : 'ÉL'}.`;
+                    estadoJuego.finMano = true;
                     await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
-                    setTimeout(() => { if (soyJ1) repartirNuevaMano(); }, 2000);
                     return;
                 }
             } else if (tipo.includes('Envido') || tipo.includes('envido')) {
@@ -1405,43 +1491,50 @@
 
                 if (acepta) {
                     const ptsGanados = estadoJuego.puntosEnvidoEnJuego;
+                    estadoJuego.cartasEnvidoMostrar = {
+                        J1: resJ1.cartasUsadas,
+                        J2: resJ2.cartasUsadas
+                    };
 
                     if (envJ1 > envJ2) {
                         estadoJuego.ptsJ1 += ptsGanados;
                         textoGloboJ1 = `${envJ1} son mejores`;
-                        textoGloboJ2 = `${envJ2}`;
+                        textoGloboJ2 = "Son buenas";
                         estadoJuego.mensajeEstado = `¡Tantos Queridos! Gana J1 (${envJ1}). +${ptsGanados}`;
                     } else if (envJ2 > envJ1) {
                         estadoJuego.ptsJ2 += ptsGanados;
-                        textoGloboJ1 = `${envJ1}`;
+                        textoGloboJ1 = "Son buenas";
                         textoGloboJ2 = `${envJ2} son mejores`;
                         estadoJuego.mensajeEstado = `¡Tantos Queridos! Gana J2 (${envJ2}). +${ptsGanados}`;
                     } else {
                         if (manoEsJ1) { 
                             estadoJuego.ptsJ1 += ptsGanados; 
+                            textoGloboJ1 = `${envJ1} son buenas`;
+                            textoGloboJ2 = "Son buenas";
                             estadoJuego.mensajeEstado = `Empate en ${envJ1}. Gana J1 por Mano (+${ptsGanados}).`; 
                         } else { 
                             estadoJuego.ptsJ2 += ptsGanados; 
+                            textoGloboJ1 = "Son buenas";
+                            textoGloboJ2 = `${envJ2} son buenas`;
                             estadoJuego.mensajeEstado = `Empate en ${envJ2}. Gana J2 por Mano (+${ptsGanados}).`; 
                         }
-                        textoGloboJ1 = `${envJ1} en mesa`;
-                        textoGloboJ2 = `${envJ2} en mesa`;
                     }
                 } else {
                     const ptsRechazo = estadoJuego.puntosEnvidoRechazo;
-                    if (emisor === 'J1') { estadoJuego.ptsJ1 += ptsRechazo; textoGloboJ1 = `${envJ1}`; textoGloboJ2 = "No muestra"; }
-                    else { estadoJuego.ptsJ2 += ptsRechazo; textoGloboJ1 = "No muestra"; textoGloboJ2 = `${envJ2}`; }
+                    if (emisor === 'J1') { estadoJuego.ptsJ1 += ptsRechazo; textoGloboJ1 = `${envJ1}`; textoGloboJ2 = "No se quiere"; }
+                    else { estadoJuego.ptsJ2 += ptsRechazo; textoGloboJ1 = "No se quiere"; textoGloboJ2 = `${envJ2}`; }
                     estadoJuego.mensajeEstado = `No se quiso el ${tipo}. +${ptsRechazo} pt(s).`;
                 }
 
                 mostrarGloboDialogo(true, soyJ1 ? textoGloboJ1 : textoGloboJ2);
                 mostrarGloboDialogo(false, soyJ1 ? textoGloboJ2 : textoGloboJ1);
 
-                setTimeout(() => {
+                setTimeout(async () => {
+                    estadoJuego.cartasEnvidoMostrar = null;
                     const esMiTurno = estadoJuego.turnoActual === miRol;
                     estadoJuego.mensajeEstado = esMiTurno ? '¡Es tu turno!' : 'Esperando a tu rival...';
-                    actualizarInterfaz();
-                }, 3000);
+                    await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
+                }, 3500);
             }
 
             await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
@@ -1473,6 +1566,7 @@
 
         window.cancelarSala = async function(esAbandonoVoluntario = false) {
             detenerTemporizador();
+            detenerTemporizadorRepartir();
             if (salaId) {
                 if (esAbandonoVoluntario) await enviarAccionSupabase('ABANDONO', {});
                 await supabaseClient.from('salas').delete().eq('id', salaId);
