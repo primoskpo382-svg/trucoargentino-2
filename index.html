@@ -268,7 +268,7 @@
                 <div class="flex justify-between items-start z-10 relative">
                     <div class="flex items-center gap-2 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full border border-amber-500/40 shadow-lg">
                         <div class="w-7 h-7 rounded-full bg-slate-800 border border-amber-400 flex items-center justify-center text-xs">🧔</div>
-                        <span id="nombre-rival" class="text-xs font-black text-slate-200">Jose20</span>
+                        <span id="nombre-rival" class="text-xs font-black text-slate-200">Rival</span>
                     </div>
                     <div id="globo-rival-container" class="absolute top-10 left-2 z-50"></div>
 
@@ -280,11 +280,11 @@
                 </div>
 
                 <!-- CARTAS DE ENVIDO REVELADAS EN MESA -->
-                <div id="panel-cartas-envido" class="hidden absolute inset-x-4 top-16 bg-slate-950/95 border-2 border-amber-400 rounded-2xl p-3 z-40 text-center space-y-2 shadow-2xl">
-                    <div class="text-xs font-black text-amber-400 uppercase">Tantos del Envido</div>
+                <div id="panel-cartas-envido" class="hidden absolute inset-x-4 top-14 bg-slate-950/95 border-2 border-amber-400 rounded-2xl p-3 z-40 text-center space-y-2 shadow-2xl">
+                    <div class="text-xs font-black text-amber-400 uppercase">Cartas del Envido</div>
                     <div class="flex justify-around items-center gap-2">
                         <div class="flex flex-col items-center">
-                            <span class="text-[10px] text-slate-300 font-bold mb-1">Mis Cartas</span>
+                            <span class="text-[10px] text-slate-300 font-bold mb-1">Yo</span>
                             <div id="envido-cartas-yo" class="flex gap-1 h-16"></div>
                         </div>
                         <div class="flex flex-col items-center">
@@ -561,6 +561,7 @@
             ultimoCantoGlobal: null,
             cartasEnvidoMostrar: null,
             finMano: false,
+            solicitudRepartir: false,
             mensajeEstado: 'Esperando conexiones...'
         };
 
@@ -990,6 +991,7 @@
             estadoJuego.ultimoCantoGlobal = null;
             estadoJuego.cartasEnvidoMostrar = null;
             estadoJuego.finMano = false;
+            estadoJuego.solicitudRepartir = false;
             estadoJuego.mensajeEstado = `¡Nueva mano repartida!`;
 
             await enviarAccionSupabase('NUEVA_MANO', estadoJuego);
@@ -1024,6 +1026,11 @@
         function procesarAccionRed(tipo, data) {
             if (tipo === 'ABANDONO') {
                 procesarAbandonoRival();
+                return;
+            }
+
+            if (tipo === 'SOLICITAR_REPARTIR' && soyJ1) {
+                repartirNuevaMano();
                 return;
             }
 
@@ -1215,7 +1222,7 @@
 
                 if (cuentaRepartir <= 0) {
                     detenerTemporizadorRepartir();
-                    if (soyJ1) repartirNuevaMano();
+                    window.solicitarNuevaMano();
                 }
             }, 1000);
         }
@@ -1498,25 +1505,26 @@
 
                     if (envJ1 > envJ2) {
                         estadoJuego.ptsJ1 += ptsGanados;
-                        textoGloboJ1 = `${envJ1} son mejores`;
+                        textoGloboJ1 = `${envJ1}`;
                         textoGloboJ2 = "Son buenas";
                         estadoJuego.mensajeEstado = `¡Tantos Queridos! Gana J1 (${envJ1}). +${ptsGanados}`;
                     } else if (envJ2 > envJ1) {
                         estadoJuego.ptsJ2 += ptsGanados;
                         textoGloboJ1 = "Son buenas";
-                        textoGloboJ2 = `${envJ2} son mejores`;
+                        textoGloboJ2 = `${envJ2}`;
                         estadoJuego.mensajeEstado = `¡Tantos Queridos! Gana J2 (${envJ2}). +${ptsGanados}`;
                     } else {
+                        // Regla Truco Argentino: Si empatan en tantos, gana quien sea Mano y el otro dice Son Buenas
                         if (manoEsJ1) { 
                             estadoJuego.ptsJ1 += ptsGanados; 
-                            textoGloboJ1 = `${envJ1} son buenas`;
+                            textoGloboJ1 = `${envJ1}`;
                             textoGloboJ2 = "Son buenas";
-                            estadoJuego.mensajeEstado = `Empate en ${envJ1}. Gana J1 por Mano (+${ptsGanados}).`; 
+                            estadoJuego.mensajeEstado = `Empate en ${envJ1}. Gana J1 por ser Mano (+${ptsGanados}).`; 
                         } else { 
                             estadoJuego.ptsJ2 += ptsGanados; 
                             textoGloboJ1 = "Son buenas";
-                            textoGloboJ2 = `${envJ2} son buenas`;
-                            estadoJuego.mensajeEstado = `Empate en ${envJ2}. Gana J2 por Mano (+${ptsGanados}).`; 
+                            textoGloboJ2 = `${envJ2}`;
+                            estadoJuego.mensajeEstado = `Empate en ${envJ2}. Gana J2 por ser Mano (+${ptsGanados}).`; 
                         }
                     }
                 } else {
