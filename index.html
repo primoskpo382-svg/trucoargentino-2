@@ -84,6 +84,15 @@
             border-radius: 8px;
             box-shadow: 2px 6px 12px rgba(0,0,0,0.5);
             background: transparent;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .carta-ganadora {
+            box-shadow: 0 0 22px #f59e0b, 0 0 10px #fbbf24 !important;
+            border: 2px solid #fbbf24 !important;
+            transform: scale(1.08) !important;
+            z-index: 25 !important;
         }
 
         .btn-canto-blyts {
@@ -177,8 +186,8 @@
                     💳 Comprar
                 </button>
                 
-                <div class="bg-amber-400 text-slate-950 border border-black px-3.5 py-1.5 rounded-xl shadow-md flex items-center gap-1.5 font-black">
-                    <span class="text-sm">🪙</span>
+                <div class="bg-amber-400 text-slate-950 border border-black px-3.5 py-1.5 rounded-xl shadow-md flex items-center gap-1 font-black">
+                    <span class="text-xs">$</span>
                     <span id="saldoFichas" class="text-sm tracking-wide">0</span>
                 </div>
 
@@ -316,8 +325,6 @@
                     </div>
 
                     <button id="btn-recantar-truco" onclick="window.recantarTruco()" class="bg-amber-600 hover:bg-amber-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer hidden shadow-md text-white">Quiero re truco</button>
-                    
-                    <button id="btn-son-buenas" onclick="window.cantarSonBuenas()" class="bg-sky-600 hover:bg-sky-500 text-xs font-black py-2.5 px-3 rounded-xl cursor-pointer hidden shadow-md text-white">Son buenas</button>
 
                     <button onclick="window.responder(false)" class="bg-slate-700 hover:bg-slate-600 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">No quiero</button>
                 </div>
@@ -354,10 +361,10 @@
     <!-- MODALES DE COMPRA Y RETIRO -->
     <div id="modalComprar" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 hidden">
         <div class="card-trucox p-6 rounded-3xl w-full max-w-sm text-center relative shadow-2xl">
-            <h2 class="text-lg font-black text-amber-400 mb-2">Comprar Fichas</h2>
-            <p class="text-xs text-slate-400 mb-4">1 Ficha = $1 ARS</p>
+            <h2 class="text-lg font-black text-amber-400 mb-2">Comprar Puntos / $</h2>
+            <p class="text-xs text-slate-400 mb-4">$1 ARS = 1 Puntos</p>
             <div class="mb-4 text-left">
-                <label class="text-xs text-slate-300 font-bold">Cantidad de Fichas</label>
+                <label class="text-xs text-slate-300 font-bold">Monto ($ ARS)</label>
                 <input type="number" id="cantidadComprar" min="1" value="500" class="w-full mt-1 p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm">
             </div>
             <button onclick="comprarFichasMP()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-xl text-sm transition cursor-pointer mb-2">
@@ -371,10 +378,10 @@
     <div id="modalRetirar" class="fixed inset-0 bg-black/80 flex items-center justify-center hidden p-4 z-50">
         <div class="card-trucox p-6 rounded-3xl w-full max-w-sm text-center relative shadow-2xl">
             <h2 class="text-lg font-black text-rose-400 mb-2">Solicitar Retiro</h2>
-            <p class="text-xs text-slate-400 mb-4">Envía tus fichas a tu CBU/Alias</p>
+            <p class="text-xs text-slate-400 mb-4">Envía tu saldo a tu CBU/Alias</p>
             <div class="space-y-3 mb-4 text-left">
                 <div>
-                    <label class="text-xs text-slate-300 font-bold">Fichas a retirar</label>
+                    <label class="text-xs text-slate-300 font-bold">Monto a retirar ($)</label>
                     <input type="number" id="cantidadRetirar" min="100" placeholder="Ej: 500" class="w-full mt-1 p-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm">
                 </div>
                 <div>
@@ -564,7 +571,7 @@
                         const cantidadComprada = Number(urlParams.get('cantidad') || 500);
                         const nuevoSaldoFinal = saldoFichasActual + cantidadComprada;
                         await actualizarSaldoBD(nuevoSaldoFinal);
-                        alert(`¡Pago acreditado con éxito! Se sumaron ${cantidadComprada} fichas a tu cuenta.`);
+                        alert(`¡Pago acreditado con éxito! Se sumaron $${cantidadComprada} a tu cuenta.`);
                         window.history.replaceState({}, document.title, window.location.pathname);
                     }
                 } else {
@@ -746,7 +753,7 @@
         async function comprarFichasMP() {
             const cant = Number(document.getElementById('cantidadComprar').value);
             if (!cant || cant <= 0) {
-                document.getElementById('msgComprar').innerText = "Ingresá una cantidad válida.";
+                document.getElementById('msgComprar').innerText = "Ingresá un monto válido.";
                 return;
             }
             document.getElementById('msgComprar').innerText = "Generando pago...";
@@ -773,12 +780,12 @@
             const msg = document.getElementById('msgRetirar');
 
             if (!cant || cant < 100) {
-                msg.innerText = "El retiro mínimo es de 100 fichas.";
+                msg.innerText = "El retiro mínimo es de $100.";
                 msg.className = "text-xs mt-2 text-rose-400";
                 return;
             }
             if (cant > saldoFichasActual) {
-                msg.innerText = "No tenés suficientes fichas para este retiro.";
+                msg.innerText = "No tenés suficiente saldo para este retiro.";
                 msg.className = "text-xs mt-2 text-rose-400";
                 return;
             }
@@ -833,7 +840,7 @@
 
             const { data, error } = await supabaseClient
                 .from('salas')
-                .select('id, estado, apuesta, meta')
+                .select('id, estado, apuesta, meta, jugador1')
                 .eq('estado', 'ESPERANDO_J2');
 
             const contenedor = document.getElementById('lista-salas');
@@ -845,6 +852,7 @@
 
             contenedor.innerHTML = '';
             data.forEach(s => {
+                const esMiMesa = (s.jugador1 === usuarioId) || (soyJ1 && s.id === salaId);
                 const item = document.createElement('div');
                 item.className = "card-trucox p-3.5 rounded-2xl flex justify-between items-center transition shadow-lg border border-slate-700/80";
                 item.innerHTML = `
@@ -860,9 +868,10 @@
                     </div>
                     <div class="text-right space-y-1">
                         <div class="text-sm font-black text-amber-400">$${s.apuesta || 0}</div>
-                        <button onclick="window.unirseADeterminadaSala(${s.id}, ${s.apuesta || 0}, ${s.meta || 30})" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-xs py-1.5 px-4 rounded-xl transition shadow-md uppercase cursor-pointer">
-                            UNIRSE
-                        </button>
+                        ${esMiMesa ? 
+                            `<span class="text-[10px] font-bold text-amber-400/80 bg-amber-400/10 border border-amber-400/30 px-2 py-1 rounded-xl">Tu Mesa</span>` :
+                            `<button onclick="window.unirseADeterminadaSala(${s.id}, ${s.apuesta || 0}, ${s.meta || 30})" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-xs py-1.5 px-4 rounded-xl transition shadow-md uppercase cursor-pointer">UNIRSE</button>`
+                        }
                     </div>
                 `;
                 contenedor.appendChild(item);
@@ -893,7 +902,7 @@
 
             const { data, error } = await supabaseClient
                 .from('salas')
-                .insert([{ id: idGen, estado: 'ESPERANDO_J2', jugador1: 'J1_CONECTADO', apuesta: montoApuesta, meta: metaPuntosPartida }])
+                .insert([{ id: idGen, estado: 'ESPERANDO_J2', jugador1: usuarioId || 'J1_CONECTADO', apuesta: montoApuesta, meta: metaPuntosPartida }])
                 .select().single();
 
             if (error) { alert("Error al crear mesa: " + error.message); return; }
@@ -1031,9 +1040,11 @@
             document.getElementById('pantalla-inicio').classList.remove('hidden');
         }
 
-        function renderizarCartaMesaHTML(cartaObj) {
+        function renderizarCartaMesaHTML(cartaObj, esGanadora = false) {
             if (!cartaObj) return '';
-            return `<img src="${cartaObj.img}" alt="${cartaObj.txt}" class="w-full h-full object-cover rounded-lg bg-transparent shadow-2xl" />`;
+            const claseGanadora = esGanadora ? 'carta-ganadora' : '';
+            const coronaBadge = esGanadora ? `<span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-slate-950 font-black text-[10px] px-1.5 py-0.2 rounded-full shadow-lg z-30">🏆</span>` : '';
+            return `${coronaBadge}<img src="${cartaObj.img}" alt="${cartaObj.txt}" class="w-full h-full object-cover rounded-lg bg-transparent shadow-2xl ${claseGanadora}" />`;
         }
 
         function actualizarInterfaz() {
@@ -1062,12 +1073,17 @@
                 detenerTemporizador();
             }
 
-            document.getElementById('r1-yo').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR1[miRol]);
-            document.getElementById('r1-el').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR1[rivalRol]);
-            document.getElementById('r2-yo').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR2[miRol]);
-            document.getElementById('r2-el').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR2[rivalRol]);
-            document.getElementById('r3-yo').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR3[miRol]);
-            document.getElementById('r3-el').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR3[rivalRol]);
+            // Calcular cartas ganadoras por baza
+            const gR1 = (estadoJuego.mesaR1.J1 && estadoJuego.mesaR1.J2) ? (estadoJuego.mesaR1.J1.poder > estadoJuego.mesaR1.J2.poder ? 'J1' : (estadoJuego.mesaR1.J2.poder > estadoJuego.mesaR1.J1.poder ? 'J2' : null)) : null;
+            const gR2 = (estadoJuego.mesaR2.J1 && estadoJuego.mesaR2.J2) ? (estadoJuego.mesaR2.J1.poder > estadoJuego.mesaR2.J2.poder ? 'J1' : (estadoJuego.mesaR2.J2.poder > estadoJuego.mesaR2.J1.poder ? 'J2' : null)) : null;
+            const gR3 = (estadoJuego.mesaR3.J1 && estadoJuego.mesaR3.J2) ? (estadoJuego.mesaR3.J1.poder > estadoJuego.mesaR3.J2.poder ? 'J1' : (estadoJuego.mesaR3.J2.poder > estadoJuego.mesaR3.J1.poder ? 'J2' : null)) : null;
+
+            document.getElementById('r1-yo').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR1[miRol], gR1 === miRol);
+            document.getElementById('r1-el').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR1[rivalRol], gR1 === rivalRol);
+            document.getElementById('r2-yo').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR2[miRol], gR2 === miRol);
+            document.getElementById('r2-el').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR2[rivalRol], gR2 === rivalRol);
+            document.getElementById('r3-yo').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR3[miRol], gR3 === miRol);
+            document.getElementById('r3-el').innerHTML = renderizarCartaMesaHTML(estadoJuego.mesaR3[rivalRol], gR3 === rivalRol);
 
             const misCartasActuales = soyJ1 ? estadoJuego.cartasJ1 : estadoJuego.cartasJ2;
             const contenedor = document.getElementById('contenedor-mano');
@@ -1114,21 +1130,17 @@
                     
                     const recantoEnvido = document.getElementById('botones-recanto-envido');
                     const recantoTruco = document.getElementById('btn-recantar-truco');
-                    const btnSonBuenas = document.getElementById('btn-son-buenas');
 
                     if (estadoJuego.cantosPendientes.tipo.includes('Envido') || estadoJuego.cantosPendientes.tipo.includes('envido')) {
                         recantoEnvido.classList.remove('hidden');
                         recantoTruco.classList.add('hidden');
-                        btnSonBuenas.classList.remove('hidden');
                     } else if (estadoJuego.cantosPendientes.tipo.includes('Truco')) {
                         recantoTruco.classList.remove('hidden');
                         recantoEnvido.classList.add('hidden');
-                        btnSonBuenas.classList.add('hidden');
                         recantoTruco.innerText = estadoJuego.cantosPendientes.tipo === 'Truco!' ? 'Quiero re truco' : 'Vale Cuatro!';
                     } else {
                         recantoEnvido.classList.add('hidden');
                         recantoTruco.classList.add('hidden');
-                        btnSonBuenas.classList.add('hidden');
                     }
                 } else {
                     document.getElementById('panel-respuesta').classList.add('hidden');
@@ -1341,32 +1353,6 @@
                 estadoJuego.ultimoQueCantoTruco = miRol;
             }
             await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
-        };
-
-        window.cantarSonBuenas = async function() {
-            const miRol = soyJ1 ? 'J1' : 'J2';
-            if (!estadoJuego.cantosPendientes || estadoJuego.cantosPendientes.para !== miRol) return;
-
-            detenerTemporizador();
-            const emisor = estadoJuego.cantosPendientes.de;
-
-            estadoJuego.cantosPendientes = null;
-            estadoJuego.envidoCantado = true;
-            estadoJuego.ultimoCantoGlobal = { jugador: miRol, texto: 'Son buenas' };
-
-            const ptsGanados = estadoJuego.puntosEnvidoEnJuego || 2;
-            if (emisor === 'J1') estadoJuego.ptsJ1 += ptsGanados;
-            else estadoJuego.ptsJ2 += ptsGanados;
-
-            estadoJuego.mensajeEstado = `Dijo "Son buenas". +${ptsGanados} punto(s) para el rival.`;
-
-            await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
-
-            setTimeout(() => {
-                const esMiTurno = estadoJuego.turnoActual === miRol;
-                estadoJuego.mensajeEstado = esMiTurno ? '¡Es tu turno!' : 'Esperando a tu rival...';
-                actualizarInterfaz();
-            }, 3000);
         };
 
         window.responder = async function(acepta) {
