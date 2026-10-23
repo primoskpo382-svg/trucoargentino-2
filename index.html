@@ -279,21 +279,6 @@
                     </div>
                 </div>
 
-                <!-- CARTAS DE ENVIDO REVELADAS EN MESA -->
-                <div id="panel-cartas-envido" class="hidden absolute inset-x-4 top-14 bg-slate-950/95 border-2 border-amber-400 rounded-2xl p-3 z-40 text-center space-y-2 shadow-2xl">
-                    <div class="text-xs font-black text-amber-400 uppercase">Cartas del Envido</div>
-                    <div class="flex justify-around items-center gap-2">
-                        <div class="flex flex-col items-center">
-                            <span class="text-[10px] text-slate-300 font-bold mb-1">Yo</span>
-                            <div id="envido-cartas-yo" class="flex gap-1 h-16"></div>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <span class="text-[10px] text-slate-300 font-bold mb-1">Rival</span>
-                            <div id="envido-cartas-el" class="flex gap-1 h-16"></div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="my-auto z-10 grid grid-cols-3 gap-2 px-2">
                     <div class="flex flex-col items-center justify-center min-h-[95px]">
                         <div id="r1-el" class="carta-mesa-blyts -mb-8 transform -rotate-3 flex items-center justify-center"></div>
@@ -324,9 +309,16 @@
                 </div>
             </div>
 
-            <!-- BOTÓN REPARTIR AL FINALIZAR MANO -->
-            <div id="panel-repartir" class="hidden absolute inset-x-6 top-1/2 -translate-y-1/2 card-trucox border-2 border-amber-400 p-4 rounded-2xl z-50 text-center space-y-2 shadow-2xl">
+            <!-- BOTÓN Y CARTEL REPARTIR AL FINALIZAR MANO -->
+            <div id="panel-repartir" class="hidden absolute inset-x-6 top-1/2 -translate-y-1/2 card-trucox border-2 border-amber-400 p-4 rounded-2xl z-50 text-center space-y-3 shadow-2xl">
                 <div id="txt-fin-mano" class="text-sm font-black text-amber-300">¡Mano Finalizada!</div>
+                
+                <!-- CARTAS DEL GANADOR DEL ENVIDO SOLO AL FINAL DE LA MANO -->
+                <div id="panel-envido-ganador" class="hidden bg-slate-950/90 border border-amber-500/40 rounded-xl p-2 space-y-1">
+                    <span id="txt-envido-ganador-titulo" class="text-[11px] font-black text-amber-400 uppercase tracking-wide">Cartas del Ganador del Envido</span>
+                    <div id="envido-cartas-ganador" class="flex justify-center gap-2 h-16 pt-1"></div>
+                </div>
+
                 <button onclick="window.solicitarNuevaMano()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl uppercase tracking-wider text-sm cursor-pointer shadow-lg animate-pulse">
                     🃏 Repartir (<span id="cuenta-repartir">5</span>s)
                 </button>
@@ -559,9 +551,8 @@
             envidoCantado: false,
             historialEnvido: [],
             ultimoCantoGlobal: null,
-            cartasEnvidoMostrar: null,
+            envidoGanadorInfo: null,
             finMano: false,
-            solicitudRepartir: false,
             mensajeEstado: 'Esperando conexiones...'
         };
 
@@ -591,14 +582,8 @@
                     modalAuth.classList.add('hidden');
                     await cargarSaldoUsuario();
 
-                    const urlParams = new URLSearchParams(window.location.search);
-                    if (urlParams.get('status') === 'approved' || urlParams.get('collection_status') === 'approved') {
-                        const cantidadComprada = Number(urlParams.get('cantidad') || 500);
-                        const nuevoSaldoFinal = saldoFichasActual + cantidadComprada;
-                        await actualizarSaldoBD(nuevoSaldoFinal);
-                        alert(`¡Pago acreditado con éxito! Se sumaron $${cantidadComprada} a tu cuenta.`);
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                    }
+                    // Intentar reconexión activa a partida previa
+                    await intentarReconexion();
                 } else {
                     modalAuth.classList.remove('hidden');
                 }
@@ -612,11 +597,52 @@
                     nombreUsuario = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email.split('@')[0];
                     modalAuth.classList.add('hidden');
                     await cargarSaldoUsuario();
+                    await intentarReconexion();
                 } else {
                     modalAuth.classList.remove('hidden');
                 }
             });
         };
+
+        async function intentarReconexion() {
+            const salaGuardada = localStorage.getItem('truco_salaId');
+            const esJ1Guardado = localStorage.getItem('truco_soyJ1');
+
+            if (salaGuardada && supabaseClient) {
+                const { data: salaBD } = await supabaseClient
+                    .from('salas')
+                    .select('*')
+                    .eq('id', Number(salaGuardada))
+                    .maybeSingle();
+
+                if (salaBD && salaBD.estado) {
+                    try {
+                        const paquete = JSON.parse(salaBD.estado);
+                        salaId = salaBD.id;
+                        soyJ1 = (esJ1Guardado === 'true');
+                        apuestaSalaActual = salaBD.apuesta || 100;
+                        metaPuntosPartida = salaBD.meta || 30;
+
+                        escucharCanalRealtime();
+                        document.getElementById('pantalla-inicio').classList.add('hidden');
+                        document.getElementById('menu-salas').classList.add('hidden');
+                        document.getElementById('panel-juego').classList.remove('hidden');
+                        document.getElementById('panel-juego').classList.add('flex');
+
+                        if (paquete.data) {
+                            estadoJuego = paquete.data;
+                            actualizarInterfaz();
+                        }
+                    } catch(e) {
+                        localStorage.removeItem('truco_salaId');
+                        localStorage.removeItem('truco_soyJ1');
+                    }
+                } else {
+                    localStorage.removeItem('truco_salaId');
+                    localStorage.removeItem('truco_soyJ1');
+                }
+            }
+        }
 
         function poblarSelectApuestas() {
             const select = document.getElementById('select-apuesta');
@@ -759,6 +785,7 @@
 
         async function cerrarSesion() {
             if (supabaseClient) await supabaseClient.auth.signOut();
+            localStorage.clear();
             location.reload();
         }
 
@@ -936,6 +963,9 @@
             soyJ1 = true;
             apuestaSalaActual = montoApuesta;
 
+            localStorage.setItem('truco_salaId', salaId);
+            localStorage.setItem('truco_soyJ1', 'true');
+
             document.getElementById('esperando-rival').classList.remove('hidden');
             document.getElementById('esperando-sala-info').innerText = `Mesa #${salaId} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual}`;
             escucharCanalRealtime();
@@ -951,6 +981,9 @@
             soyJ1 = false;
             apuestaSalaActual = montoApuesta;
             metaPuntosPartida = metaSala;
+
+            localStorage.setItem('truco_salaId', salaId);
+            localStorage.setItem('truco_soyJ1', 'false');
 
             document.getElementById('esperando-rival').classList.add('hidden');
             document.getElementById('esperando-rival').querySelector('div').innerText = '🃏 Conectando a la mesa…';
@@ -989,9 +1022,8 @@
             estadoJuego.historialEnvido = [];
             estadoJuego.cantosPendientes = null;
             estadoJuego.ultimoCantoGlobal = null;
-            estadoJuego.cartasEnvidoMostrar = null;
+            estadoJuego.envidoGanadorInfo = null;
             estadoJuego.finMano = false;
-            estadoJuego.solicitudRepartir = false;
             estadoJuego.mensajeEstado = `¡Nueva mano repartida!`;
 
             await enviarAccionSupabase('NUEVA_MANO', estadoJuego);
@@ -1079,7 +1111,7 @@
             if (!cartaObj) return '';
             const claseGanadora = esGanadora ? 'carta-ganadora' : '';
             const coronaBadge = esGanadora ? `<span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-slate-950 font-black text-[10px] px-1.5 py-0.2 rounded-full shadow-lg z-30">🏆</span>` : '';
-            return `${coronaBadge}<img src="${cartaObj.img}" alt="${cartaObj.txt}" class="w-full h-full object-cover rounded-lg bg-transparent shadow-2xl ${claseGanadora}" />`;
+            return `${coronaBadge}<img src="${cartaObj.img}" alt="${cartaObj.txt}" onerror="this.src='casrtas/IMG_7081.jpg'" class="w-full h-full object-cover rounded-lg bg-transparent shadow-2xl ${claseGanadora}" />`;
         }
 
         function actualizarInterfaz() {
@@ -1129,7 +1161,7 @@
                 btn.className = `carta-mano-blyts flex items-center justify-center p-0 cursor-pointer overflow-hidden ${miTurno && !estadoJuego.cantosPendientes && !estadoJuego.finMano ? 'opacity-100' : 'opacity-75 cursor-not-allowed'}`;
                 btn.disabled = !miTurno || estadoJuego.cantosPendientes !== null || estadoJuego.finMano;
                 btn.onclick = () => tirarcarta(carta);
-                btn.innerHTML = `<img src="${carta.img}" alt="${carta.txt}" class="w-full h-full object-cover rounded-xl bg-transparent" />`;
+                btn.innerHTML = `<img src="${carta.img}" alt="${carta.txt}" onerror="this.src='casrtas/IMG_7081.jpg'" class="w-full h-full object-cover rounded-xl bg-transparent" />`;
                 contenedor.appendChild(btn);
             });
 
@@ -1139,17 +1171,15 @@
                 mostrarGloboDialogo(esYo, texto);
             }
 
-            // Mostrar u ocultar cartas de Envido reveladas
-            const panelEnvido = document.getElementById('panel-cartas-envido');
-            if (estadoJuego.cartasEnvidoMostrar) {
-                panelEnvido.classList.remove('hidden');
-                const cartasYo = soyJ1 ? estadoJuego.cartasEnvidoMostrar.J1 : estadoJuego.cartasEnvidoMostrar.J2;
-                const cartasEl = soyJ1 ? estadoJuego.cartasEnvidoMostrar.J2 : estadoJuego.cartasEnvidoMostrar.J1;
-
-                document.getElementById('envido-cartas-yo').innerHTML = (cartasYo || []).map(c => `<img src="${c.img}" class="h-full rounded shadow" />`).join('');
-                document.getElementById('envido-cartas-el').innerHTML = (cartasEl || []).map(c => `<img src="${c.img}" class="h-full rounded shadow" />`).join('');
+            // Muestra de cartas del GANADOR del Envido al FINALIZAR LA MANO
+            const panelEnvidoGanador = document.getElementById('panel-envido-ganador');
+            if (estadoJuego.finMano && estadoJuego.envidoGanadorInfo) {
+                panelEnvidoGanador.classList.remove('hidden');
+                const esYoElGanador = estadoJuego.envidoGanadorInfo.ganador === miRol;
+                document.getElementById('txt-envido-ganador-titulo').innerText = `Envido: Cartas de ${esYoElGanador ? 'YO' : 'RIVAL'} (${estadoJuego.envidoGanadorInfo.puntos} pts)`;
+                document.getElementById('envido-cartas-ganador').innerHTML = (estadoJuego.envidoGanadorInfo.cartas || []).map(c => `<img src="${c.img}" class="h-full rounded shadow" />`).join('');
             } else {
-                panelEnvido.classList.add('hidden');
+                panelEnvidoGanador.classList.add('hidden');
             }
 
             // Panel Repartir al finalizar mano
@@ -1292,6 +1322,7 @@
                     actualizarSaldoBD(saldoFichasActual + (gananciaNetoPura - apuestaSalaActual));
                     alert("¡Ganaste la partida!");
                 } else {
+                    // Descuento exacto de fichas en derrota
                     actualizarSaldoBD(saldoFichasActual - apuestaSalaActual);
                     alert("Perdiste la partida");
                 }
@@ -1498,33 +1529,33 @@
 
                 if (acepta) {
                     const ptsGanados = estadoJuego.puntosEnvidoEnJuego;
-                    estadoJuego.cartasEnvidoMostrar = {
-                        J1: resJ1.cartasUsadas,
-                        J2: resJ2.cartasUsadas
-                    };
 
                     if (envJ1 > envJ2) {
                         estadoJuego.ptsJ1 += ptsGanados;
                         textoGloboJ1 = `${envJ1}`;
                         textoGloboJ2 = "Son buenas";
                         estadoJuego.mensajeEstado = `¡Tantos Queridos! Gana J1 (${envJ1}). +${ptsGanados}`;
+                        estadoJuego.envidoGanadorInfo = { ganador: 'J1', puntos: envJ1, cartas: resJ1.cartasUsadas };
                     } else if (envJ2 > envJ1) {
                         estadoJuego.ptsJ2 += ptsGanados;
                         textoGloboJ1 = "Son buenas";
                         textoGloboJ2 = `${envJ2}`;
                         estadoJuego.mensajeEstado = `¡Tantos Queridos! Gana J2 (${envJ2}). +${ptsGanados}`;
+                        estadoJuego.envidoGanadorInfo = { ganador: 'J2', puntos: envJ2, cartas: resJ2.cartasUsadas };
                     } else {
-                        // Regla Truco Argentino: Si empatan en tantos, gana quien sea Mano y el otro dice Son Buenas
+                        // En empate gana quien sea Mano y el perdedor dice Son Buenas
                         if (manoEsJ1) { 
                             estadoJuego.ptsJ1 += ptsGanados; 
                             textoGloboJ1 = `${envJ1}`;
                             textoGloboJ2 = "Son buenas";
                             estadoJuego.mensajeEstado = `Empate en ${envJ1}. Gana J1 por ser Mano (+${ptsGanados}).`; 
+                            estadoJuego.envidoGanadorInfo = { ganador: 'J1', puntos: envJ1, cartas: resJ1.cartasUsadas };
                         } else { 
                             estadoJuego.ptsJ2 += ptsGanados; 
                             textoGloboJ1 = "Son buenas";
                             textoGloboJ2 = `${envJ2}`;
                             estadoJuego.mensajeEstado = `Empate en ${envJ2}. Gana J2 por ser Mano (+${ptsGanados}).`; 
+                            estadoJuego.envidoGanadorInfo = { ganador: 'J2', puntos: envJ2, cartas: resJ2.cartasUsadas };
                         }
                     }
                 } else {
@@ -1538,11 +1569,10 @@
                 mostrarGloboDialogo(false, soyJ1 ? textoGloboJ2 : textoGloboJ1);
 
                 setTimeout(async () => {
-                    estadoJuego.cartasEnvidoMostrar = null;
                     const esMiTurno = estadoJuego.turnoActual === miRol;
                     estadoJuego.mensajeEstado = esMiTurno ? '¡Es tu turno!' : 'Esperando a tu rival...';
                     await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
-                }, 3500);
+                }, 3000);
             }
 
             await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
@@ -1590,6 +1620,8 @@
 
         function limpiarEstadoJuego() {
             if (canal) supabaseClient.removeChannel(canal);
+            localStorage.removeItem('truco_salaId');
+            localStorage.removeItem('truco_soyJ1');
             salaId = null;
             soyJ1 = false;
         }
