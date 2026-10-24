@@ -112,7 +112,6 @@
             border: 1px solid #1e3256;
         }
 
-        /* GLOBOS DE DIÁLOGO CORREGIDOS Y ADAPTADOS A MÓVIL */
         .globo-dialogo {
             background: #ffffff;
             color: #0b1426;
@@ -338,12 +337,10 @@
                     <div id="temporizador-turno" class="w-8 h-8 rounded-full bg-slate-950/90 border-2 border-amber-400 text-amber-300 text-xs font-black flex items-center justify-center shadow-lg">15</div>
                 </div>
 
-                <!-- CONTENEDOR RIVAL Y SU GLOBO DE DIÁLOGO CORREGIDO -->
                 <div class="flex justify-between items-start z-30 relative">
                     <div class="flex items-center gap-2 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full border border-amber-500/40 shadow-lg relative">
                         <div class="w-7 h-7 rounded-full bg-slate-800 border border-amber-400 flex items-center justify-center text-xs">🧔</div>
                         <span id="nombre-rival-perfil" class="text-xs font-black text-slate-200 truncate max-w-[120px]">Rival</span>
-                        <!-- Globo Rival Posicionado Aquí -->
                         <div id="globo-rival-container" class="absolute left-0 -bottom-10 z-50"></div>
                     </div>
 
@@ -373,7 +370,6 @@
                     Esperando jugador...
                 </div>
 
-                <!-- CONTENEDOR YO Y SU GLOBO DE DIÁLOGO CORREGIDO -->
                 <div class="relative z-40 flex justify-between items-end px-2">
                     <div id="globo-yo-container" class="absolute -top-10 left-3 z-50"></div>
                 </div>
@@ -1023,7 +1019,6 @@
             if (canalLobby) supabaseClient.removeChannel(canalLobby);
         }
 
-        /* CORRECCIÓN DE CARGA DE SALAS MÓVIL */
         window.cargarLobbySalas = async function() {
             if (!supabaseClient) return;
 
@@ -1120,18 +1115,22 @@
                 timestamp: Date.now()
             };
 
+            // Inserción limpia asegurando tipos básicos compatibles con Supabase
             const { data, error } = await supabaseClient
                 .from('salas')
                 .insert([{ 
-                    id: idGen, 
+                    id: Number(idGen), 
                     estado: JSON.stringify(payloadInicial), 
-                    jugador1: usuarioId || 'J1_CONECTADO', 
-                    apuesta: montoApuesta, 
-                    meta: metaPuntosPartida 
+                    jugador1: String(usuarioId || 'J1_CONECTADO'), 
+                    apuesta: Number(montoApuesta), 
+                    meta: Number(metaPuntosPartida) 
                 }])
                 .select().single();
 
-            if (error) { alert("Error al crear mesa: " + error.message); return; }
+            if (error) { 
+                alert("Error al crear mesa: " + error.message); 
+                return; 
+            }
 
             salaId = data.id;
             soyJ1 = true;
@@ -1218,7 +1217,7 @@
             payloadData.nombreJ2 = !soyJ1 ? nombreUsuario : (payloadData.nombreJ2 || payloadData.nombreJ2 || 'Rival');
             
             const dataString = JSON.stringify({ tipo, data: payloadData, timestamp: Date.now() });
-            await supabaseClient.from('salas').update({ estado: dataString }).eq('id', salaId);
+            await supabaseClient.from('salas').update({ estado: dataString }).eq('id', Number(salaId));
         }
 
         function escucharCanalRealtime() {
@@ -1569,7 +1568,7 @@
 
             if (salaId) {
                 await enviarAccionSupabase('ABANDONO', {});
-                await supabaseClient.from('salas').delete().eq('id', salaId);
+                await supabaseClient.from('salas').delete().eq('id', Number(salaId));
             }
 
             limpiarEstadoJuego();
