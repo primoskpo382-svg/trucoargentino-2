@@ -209,6 +209,23 @@
         </div>
     </div>
 
+    <!-- MODAL DE CONFIRMACIÓN DE CERRAR SESIÓN -->
+    <div id="modal-confirmar-cerrar-sesion" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="card-trucox rounded-3xl p-6 w-full max-w-sm border-2 border-amber-500/50 text-center space-y-4 shadow-2xl">
+            <div class="text-3xl">🔒</div>
+            <h2 class="text-base font-black text-amber-400 uppercase tracking-wide">¿Cerrar Sesión?</h2>
+            <p class="text-xs text-slate-300">Tendrás que volver a ingresar con tus datos para jugar.</p>
+            <div class="flex gap-2 pt-2">
+                <button onclick="toggleModal('modal-confirmar-cerrar-sesion')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs cursor-pointer transition">
+                    Cancelar
+                </button>
+                <button onclick="cerrarSesion()" class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs cursor-pointer transition shadow-lg">
+                    Cerrar Sesión
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- MARCO CONTENEDOR TIPO CELULAR -->
     <div id="contenedor-app">
 
@@ -233,7 +250,7 @@
                 <button onclick="mostrarLobbySalas()" class="w-full py-5 bg-amber-400 text-slate-950 border-2 border-black font-black rounded-2xl shadow-2xl uppercase tracking-wider text-lg cursor-pointer transition active:scale-95">
                     🎮 Jugar Partida
                 </button>
-                <button onclick="cerrarSesion()" class="w-56 py-2.5 bg-amber-400 text-slate-950 border border-black font-bold rounded-xl shadow-md text-xs cursor-pointer transition">
+                <button onclick="toggleModal('modal-confirmar-cerrar-sesion')" class="w-56 py-2.5 bg-amber-400 text-slate-950 border border-black font-bold rounded-xl shadow-md text-xs cursor-pointer transition">
                     Cerrar Sesión
                 </button>
             </div>
@@ -369,7 +386,7 @@
                     <div id="envido-cartas-ganador" class="flex justify-center gap-2 h-16 pt-1"></div>
                 </div>
 
-                <!-- BOTÓN EXCLUSIVO PARA QUIEN IS MANO EN LA PRÓXIMA RONDA -->
+                <!-- BOTÓN EXCLUSIVO PARA QUIEN ES MANO EN LA PRÓXIMA RONDA -->
                 <div id="bloque-btn-repartir">
                     <button onclick="window.solicitarNuevaMano()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl uppercase tracking-wider text-sm cursor-pointer shadow-lg animate-pulse">
                         🃏 Repartir (<span id="cuenta-repartir">5</span>s)
@@ -534,7 +551,7 @@
             '7O': 'casrtas/IMG_7067.JPG',
             '10O': 'casrtas/IMG_7068.JPG',
             '11O': 'casrtas/IMG_7069.JPG',
-            '12O': 'casrtas/IMG_7081.jpg'
+            '12O': 'casrtas/IMG_7081.JPG'
         };
 
         const MAZO = [
@@ -1013,7 +1030,7 @@
                     <div class="text-left space-y-1">
                         <div class="flex items-center gap-2">
                             <span class="w-6 h-6 rounded-full bg-slate-800 text-amber-400 font-bold text-xs flex items-center justify-center border border-amber-500/30">M</span>
-                            <span class="text-xs font-black text-slate-200">Mesa #${s.id}</span>
+                            <span class="text-xs font-black text-slate-200">Mesa de ${nombreUsuario}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 font-extrabold text-[10px] px-2 py-0.5 rounded-full">🟢 LIBRE</span>
@@ -1069,7 +1086,7 @@
             localStorage.setItem('truco_soyJ1', 'true');
 
             document.getElementById('esperando-rival').classList.remove('hidden');
-            document.getElementById('esperando-sala-info').innerText = `Mesa #${salaId} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
+            document.getElementById('esperando-sala-info').innerText = `Sala de ${nombreUsuario} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
             escucharCanalRealtime();
         };
 
@@ -1089,10 +1106,9 @@
 
             document.getElementById('esperando-rival').classList.add('hidden');
             document.getElementById('esperando-rival').querySelector('div').innerText = '🃏 Conectando a la mesa…';
-            document.getElementById('esperando-sala-info').innerText = `Mesa #${salaId} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
+            document.getElementById('esperando-sala-info').innerText = `Sala · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
             escucharCanalRealtime();
             
-            // Asignar nombres en estado de juego inicial
             estadoJuego.nombreJ2 = nombreUsuario;
             await enviarAccionSupabase('J2_UNIDO', estadoJuego);
         };
@@ -1222,7 +1238,7 @@
             if (!cartaObj) return '';
             const claseGanadora = esGanadora ? 'carta-ganadora' : '';
             const coronaBadge = esGanadora ? `<span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-400 text-slate-950 font-black text-[10px] px-1.5 py-0.2 rounded-full shadow-lg z-30">🏆</span>` : '';
-            return `${coronaBadge}<img src="${cartaObj.img}" alt="${cartaObj.txt}" onerror="this.src='casrtas/IMG_7081.jpg'" class="w-full h-full object-cover rounded-lg bg-transparent shadow-2xl ${claseGanadora}" />`;
+            return `${coronaBadge}<img src="${cartaObj.img}" alt="${cartaObj.txt}" onerror="this.src='casrtas/IMG_7081.JPG'" class="w-full h-full object-cover rounded-lg bg-transparent shadow-2xl ${claseGanadora}" />`;
         }
 
         function actualizarInterfaz() {
@@ -1276,7 +1292,7 @@
                 btn.className = `carta-mano-blyts flex items-center justify-center p-0 cursor-pointer overflow-hidden ${miTurno && !estadoJuego.cantosPendientes && !estadoJuego.finMano ? 'opacity-100' : 'opacity-75 cursor-not-allowed'}`;
                 btn.disabled = !miTurno || estadoJuego.cantosPendientes !== null || estadoJuego.finMano;
                 btn.onclick = () => tirarcarta(carta);
-                btn.innerHTML = `<img src="${carta.img}" alt="${carta.txt}" onerror="this.src='casrtas/IMG_7081.jpg'" class="w-full h-full object-cover rounded-xl bg-transparent" />`;
+                btn.innerHTML = `<img src="${carta.img}" alt="${carta.txt}" onerror="this.src='casrtas/IMG_7081.JPG'" class="w-full h-full object-cover rounded-xl bg-transparent" />`;
                 contenedor.appendChild(btn);
             });
 
