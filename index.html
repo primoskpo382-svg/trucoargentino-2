@@ -1078,12 +1078,21 @@
                         <div class="text-sm font-black text-amber-400">$${(s.apuesta || 0).toLocaleString('es-AR')}</div>
                         ${esMiMesa ? 
                             `<span class="text-[10px] font-bold text-amber-400/80 bg-amber-400/10 border border-amber-400/30 px-2 py-1 rounded-xl">Tu Mesa</span>` :
-                            `<button onclick="window.unirseADeterminadaSala(${s.id}, ${s.apuesta || 0}, ${s.meta || 30})" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-xs py-1.5 px-4 rounded-xl transition shadow-md uppercase cursor-pointer">UNIRSE</button>`
+                            `<button data-id="${s.id}" data-apuesta="${s.apuesta || 0}" data-meta="${s.meta || 30}" class="btn-unirse-sala bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-xs py-1.5 px-4 rounded-xl transition shadow-md uppercase cursor-pointer">UNIRSE</button>`
                         }
                     </div>
                 `;
                 contenedor.appendChild(item);
             }
+
+            document.querySelectorAll('.btn-unirse-sala').forEach(btn => {
+                btn.onclick = () => {
+                    const id = Number(btn.getAttribute('data-id'));
+                    const apuesta = Number(btn.getAttribute('data-apuesta'));
+                    const meta = Number(btn.getAttribute('data-meta'));
+                    window.unirseADeterminadaSala(id, apuesta, meta);
+                };
+            });
         };
 
         function escucharLobbyRealtime() {
