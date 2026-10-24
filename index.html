@@ -115,14 +115,16 @@
         .globo-dialogo {
             background: #ffffff;
             color: #0b1426;
-            padding: 6px 14px;
-            border-radius: 12px;
-            font-size: 13px;
+            padding: 5px 12px;
+            border-radius: 10px;
+            font-size: 12px;
             font-weight: 900;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.7);
             white-space: nowrap;
             border: 2px solid #d4af37;
             animation: popIn 0.2s ease-out;
+            position: relative;
+            z-index: 100;
         }
 
         @keyframes popIn {
@@ -302,7 +304,7 @@
                         </select>
                     </div>
                 </div>
-                <button onclick="window.crearSala()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl uppercase tracking-wide cursor-pointer text-sm shadow-lg">
+                <button onclick="crearSala()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl uppercase tracking-wide cursor-pointer text-sm shadow-lg">
                     + Crear Sala
                 </button>
             </div>
@@ -335,12 +337,12 @@
                     <div id="temporizador-turno" class="w-8 h-8 rounded-full bg-slate-950/90 border-2 border-amber-400 text-amber-300 text-xs font-black flex items-center justify-center shadow-lg">15</div>
                 </div>
 
-                <div class="flex justify-between items-start z-10 relative">
-                    <div class="flex items-center gap-2 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full border border-amber-500/40 shadow-lg">
+                <div class="flex justify-between items-start z-30 relative">
+                    <div class="flex items-center gap-2 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full border border-amber-500/40 shadow-lg relative">
                         <div class="w-7 h-7 rounded-full bg-slate-800 border border-amber-400 flex items-center justify-center text-xs">🧔</div>
                         <span id="nombre-rival-perfil" class="text-xs font-black text-slate-200 truncate max-w-[120px]">Rival</span>
+                        <div id="globo-rival-container" class="absolute left-0 -bottom-10 z-50"></div>
                     </div>
-                    <div id="globo-rival-container" class="absolute top-10 left-2 z-50"></div>
 
                     <div class="flex items-center gap-1">
                         <div class="w-3 h-3 rounded-full border border-slate-500 bg-slate-800"></div>
@@ -368,8 +370,8 @@
                     Esperando jugador...
                 </div>
 
-                <div class="absolute left-3 bottom-14 z-50">
-                    <div id="globo-yo-container"></div>
+                <div class="relative z-40 flex justify-between items-end px-2">
+                    <div id="globo-yo-container" class="absolute -top-10 left-3 z-50"></div>
                 </div>
 
                 <div class="relative z-20 flex justify-center items-end min-h-[145px] pb-1">
@@ -389,7 +391,7 @@
                 </div>
 
                 <div id="bloque-btn-repartir">
-                    <button onclick="window.solicitarNuevaMano()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl uppercase tracking-wider text-sm cursor-pointer shadow-lg animate-pulse">
+                    <button onclick="solicitarNuevaMano()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl uppercase tracking-wider text-sm cursor-pointer shadow-lg animate-pulse">
                         🃏 Repartir (<span id="cuenta-repartir">5</span>s)
                     </button>
                 </div>
@@ -402,37 +404,37 @@
             <div id="panel-respuesta" class="absolute inset-x-4 top-1/3 card-trucox border-2 border-amber-400 p-4 rounded-2xl hidden shadow-2xl z-40 text-center space-y-3">
                 <div id="texto-canto-rival" class="text-xs font-black text-amber-300 uppercase tracking-wider">¡Te cantaron!</div>
                 <div class="flex gap-2 justify-center flex-wrap">
-                    <button onclick="window.responder(true)" class="bg-emerald-600 hover:bg-emerald-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">Quiero</button>
+                    <button onclick="responder(true)" class="bg-emerald-600 hover:bg-emerald-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">Quiero</button>
                     
                     <div id="botones-recanto-envido" class="flex gap-1 hidden">
-                        <button onclick="window.cantar('Envido')" class="bg-amber-600 hover:bg-amber-500 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Envido</button>
-                        <button onclick="window.cantar('Real envido')" class="bg-amber-700 hover:bg-amber-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Real envido</button>
-                        <button onclick="window.cantar('Falta envido')" class="bg-rose-700 hover:bg-rose-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Falta envido</button>
+                        <button onclick="cantar('Envido')" class="bg-amber-600 hover:bg-amber-500 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Envido</button>
+                        <button onclick="cantar('Real envido')" class="bg-amber-700 hover:bg-amber-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Real envido</button>
+                        <button onclick="cantar('Falta envido')" class="bg-rose-700 hover:bg-rose-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Falta envido</button>
                     </div>
 
-                    <button id="btn-recantar-truco" onclick="window.recantarTruco()" class="bg-amber-600 hover:bg-amber-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer hidden shadow-md text-white">Quiero re truco</button>
+                    <button id="btn-recantar-truco" onclick="recantarTruco()" class="bg-amber-600 hover:bg-amber-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer hidden shadow-md text-white">Quiero re truco</button>
 
-                    <button onclick="window.responder(false)" class="bg-slate-700 hover:bg-slate-600 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">No quiero</button>
+                    <button onclick="responder(false)" class="bg-slate-700 hover:bg-slate-600 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">No quiero</button>
                 </div>
             </div>
 
             <!-- BARRA DE ACCIONES DINÁMICA -->
             <div id="barra-acciones" class="card-trucox p-2 rounded-2xl grid grid-cols-2 gap-2 z-30 shadow-2xl border-amber-500/30">
-                <button id="btn-truco" onclick="window.cantarTrucoDinamico()" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
+                <button id="btn-truco" onclick="cantarTrucoDinamico()" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
                     Truco!
                 </button>
                 <div id="bloque-envidos" class="contents">
-                    <button id="btn-envido" onclick="window.cantar('Envido')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
+                    <button id="btn-envido" onclick="cantar('Envido')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
                         Envido
                     </button>
-                    <button id="btn-real-envido" onclick="window.cantar('Real envido')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
+                    <button id="btn-real-envido" onclick="cantar('Real envido')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
                         Real envido
                     </button>
-                    <button id="btn-falta-envido" onclick="window.cantar('Falta envido')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
+                    <button id="btn-falta-envido" onclick="cantar('Falta envido')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
                         Falta envido
                     </button>
                 </div>
-                <button id="btn-mazo" onclick="window.cantar('Me voy al mazo')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer col-span-2 bg-rose-950/60 border-rose-800 text-rose-300">
+                <button id="btn-mazo" onclick="cantar('Me voy al mazo')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer col-span-2 bg-rose-950/60 border-rose-800 text-rose-300">
                     Me voy al mazo
                 </button>
             </div>
@@ -599,7 +601,9 @@
 
         try {
             if (window.supabase) {
-                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                    auth: { persistSession: true, autoRefreshToken: true }
+                });
             }
         } catch(e) {}
 
@@ -642,16 +646,7 @@
             }
 
             try {
-                const { data: sessionData } = await supabaseClient.auth.getSessionFromUrl({ storeSession: true });
-                if (sessionData && sessionData.session) {
-                    await supabaseClient.auth.setSession(sessionData.session);
-                }
-            } catch (err) {}
-
-            try {
                 const { data: { session }, error } = await supabaseClient.auth.getSession();
-                if (error) throw error;
-
                 if (session && session.user) {
                     usuarioId = session.user.id;
                     nombreUsuario = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email.split('@')[0];
@@ -683,13 +678,13 @@
             const esJ1Guardado = localStorage.getItem('truco_soyJ1');
 
             if (salaGuardada && supabaseClient) {
-                const { data: salaBD } = await supabaseClient
+                const { data: salaBD, error } = await supabaseClient
                     .from('salas')
                     .select('*')
-                    .eq('id', Number(salaGuardada))
+                    .eq('id', isNaN(salaGuardada) ? salaGuardada : Number(salaGuardada))
                     .maybeSingle();
 
-                if (salaBD && salaBD.estado) {
+                if (!error && salaBD && salaBD.estado) {
                     try {
                         const paquete = typeof salaBD.estado === 'string' ? JSON.parse(salaBD.estado) : salaBD.estado;
                         salaId = salaBD.id;
@@ -754,13 +749,6 @@
             }
 
             for (let v = 15000; v <= 100000; v += 5000) {
-                const opt = document.createElement('option');
-                opt.value = v;
-                opt.innerText = `$${v.toLocaleString('es-AR')} ARS`;
-                select.appendChild(opt);
-            }
-
-            for (let v = 150000; v <= 1000000; v += 50000) {
                 const opt = document.createElement('option');
                 opt.value = v;
                 opt.innerText = `$${v.toLocaleString('es-AR')} ARS`;
@@ -1006,7 +994,7 @@
             document.getElementById('menu-salas').classList.remove('hidden');
             document.getElementById('menu-salas').classList.add('flex');
             document.getElementById('display-nombre-usuario').innerText = nombreUsuario;
-            window.cargarLobbySalas();
+            cargarLobbySalas();
             escucharLobbyRealtime();
         }
 
@@ -1017,7 +1005,7 @@
             if (canalLobby) supabaseClient.removeChannel(canalLobby);
         }
 
-        window.cargarLobbySalas = async function() {
+        async function cargarLobbySalas() {
             if (!supabaseClient) return;
 
             const { data, error } = await supabaseClient
@@ -1027,7 +1015,7 @@
             const contenedor = document.getElementById('lista-salas');
             
             if (error || !data) {
-                contenedor.innerHTML = `<div class="text-xs text-slate-400 italic text-center py-4">No hay salas abiertas. ¡Creá una para empezar!</div>`;
+                contenedor.innerHTML = `<div class="text-xs text-slate-400 italic text-center py-4">Error al cargar salas o no hay abiertas.</div>`;
                 return;
             }
 
@@ -1047,7 +1035,7 @@
 
             contenedor.innerHTML = '';
             for (const s of salasFiltradas) {
-                const esMiMesa = (s.jugador1 === usuarioId) || (soyJ1 && s.id === salaId);
+                const esMiMesa = (s.jugador1 === usuarioId) || (soyJ1 && String(s.id) === String(salaId));
                 
                 let nombreCreador = 'Mesa';
                 try {
@@ -1061,6 +1049,9 @@
 
                 const item = document.createElement('div');
                 item.className = "card-trucox p-3.5 rounded-2xl flex justify-between items-center transition shadow-lg border border-slate-700/80";
+                
+                const idSalaParam = typeof s.id === 'string' ? `'${s.id}'` : s.id;
+
                 item.innerHTML = `
                     <div class="text-left space-y-1">
                         <div class="flex items-center gap-2">
@@ -1076,25 +1067,25 @@
                         <div class="text-sm font-black text-amber-400">$${(s.apuesta || 0).toLocaleString('es-AR')}</div>
                         ${esMiMesa ? 
                             `<span class="text-[10px] font-bold text-amber-400/80 bg-amber-400/10 border border-amber-400/30 px-2 py-1 rounded-xl">Tu Mesa</span>` :
-                            `<button onclick="window.unirseADeterminadaSala(${s.id}, ${s.apuesta || 0}, ${s.meta || 30})" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-xs py-1.5 px-4 rounded-xl transition shadow-md uppercase cursor-pointer">UNIRSE</button>`
+                            `<button onclick="unirseADeterminadaSala(${idSalaParam}, ${s.apuesta || 0}, ${s.meta || 30})" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-xs py-1.5 px-4 rounded-xl transition shadow-md uppercase cursor-pointer">UNIRSE</button>`
                         }
                     </div>
                 `;
                 contenedor.appendChild(item);
             }
-        };
+        }
 
         function escucharLobbyRealtime() {
             if (!supabaseClient) return;
             canalLobby = supabaseClient
                 .channel('public:lobby_salas')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
-                    window.cargarLobbySalas();
+                    cargarLobbySalas();
                 })
                 .subscribe();
         }
 
-        window.crearSala = async function() {
+        async function crearSala() {
             if (!supabaseClient) return;
             const montoApuesta = Number(document.getElementById('select-apuesta').value);
             metaPuntosPartida = Number(document.getElementById('select-puntos-partido').value);
@@ -1104,7 +1095,6 @@
                 return;
             }
 
-            const idGen = Math.floor(Math.random() * 89999) + 10000;
             estadoJuego.nombreJ1 = nombreUsuario;
 
             const payloadInicial = {
@@ -1113,18 +1103,22 @@
                 timestamp: Date.now()
             };
 
+            const insertObj = {
+                estado: JSON.stringify(payloadInicial),
+                jugador1: String(usuarioId || 'J1_CONECTADO'),
+                apuesta: Number(montoApuesta),
+                meta: Number(metaPuntosPartida)
+            };
+
             const { data, error } = await supabaseClient
                 .from('salas')
-                .insert([{ 
-                    id: idGen, 
-                    estado: JSON.stringify(payloadInicial), 
-                    jugador1: usuarioId || 'J1_CONECTADO', 
-                    apuesta: montoApuesta, 
-                    meta: metaPuntosPartida 
-                }])
+                .insert([insertObj])
                 .select().single();
 
-            if (error) { alert("Error al crear mesa: " + error.message); return; }
+            if (error) { 
+                alert("Error al crear mesa (verificá permisos en Supabase): " + error.message); 
+                return; 
+            }
 
             salaId = data.id;
             soyJ1 = true;
@@ -1135,26 +1129,26 @@
 
             document.getElementById('esperando-rival').classList.remove('hidden');
             document.getElementById('esperando-sala-info').innerText = `Mesa de ${nombreUsuario} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
-            window.cargarLobbySalas();
+            cargarLobbySalas();
             escucharCanalRealtime();
-        };
+        }
 
         async function cancelarCreacionSala() {
             if (salaId && supabaseClient) {
-                await supabaseClient.from('salas').delete().eq('id', salaId);
+                await supabaseClient.from('salas').delete().eq('id', isNaN(salaId) ? salaId : Number(salaId));
             }
             limpiarEstadoJuego();
             document.getElementById('esperando-rival').classList.add('hidden');
-            window.cargarLobbySalas();
+            cargarLobbySalas();
         }
 
-        window.unirseADeterminadaSala = async function(idElegida, montoApuesta, metaSala) {
+        async function unirseADeterminadaSala(idElegida, montoApuesta, metaSala) {
             if (montoApuesta > 0 && saldoFichasActual < montoApuesta) {
                 alert(`Saldo insuficiente. Necesitás $${montoApuesta.toLocaleString('es-AR')} para esta mesa.`);
                 return;
             }
 
-            salaId = idElegida;
+            salaId = isNaN(idElegida) ? idElegida : Number(idElegida);
             soyJ1 = false;
             apuestaSalaActual = montoApuesta;
             metaPuntosPartida = metaSala;
@@ -1167,7 +1161,7 @@
             
             estadoJuego.nombreJ2 = nombreUsuario;
             await enviarAccionSupabase('J2_UNIDO', estadoJuego);
-        };
+        }
 
         async function repartirNuevaMano(manoEspecifica) {
             if (!soyJ1) return;
@@ -1211,7 +1205,7 @@
             payloadData.nombreJ2 = !soyJ1 ? nombreUsuario : (payloadData.nombreJ2 || payloadData.nombreJ2 || 'Rival');
             
             const dataString = JSON.stringify({ tipo, data: payloadData, timestamp: Date.now() });
-            await supabaseClient.from('salas').update({ estado: dataString }).eq('id', salaId);
+            await supabaseClient.from('salas').update({ estado: dataString }).eq('id', isNaN(salaId) ? salaId : Number(salaId));
         }
 
         function escucharCanalRealtime() {
@@ -1462,7 +1456,7 @@
                     const proximaMano = estadoJuego.manoJugador === 'J1' ? 'J2' : 'J1';
                     const miRol = soyJ1 ? 'J1' : 'J2';
                     if (proximaMano === miRol) {
-                        window.solicitarNuevaMano();
+                        solicitarNuevaMano();
                     }
                 }
             }, 1000);
@@ -1475,14 +1469,14 @@
             }
         }
 
-        window.solicitarNuevaMano = function() {
+        function solicitarNuevaMano() {
             detenerTemporizadorRepartir();
             if (soyJ1) {
                 repartirNuevaMano();
             } else {
                 enviarAccionSupabase('SOLICITAR_REPARTIR', {});
             }
-        };
+        }
 
         function iniciarTemporizador() {
             if (temporizadorTurno) return;
@@ -1496,7 +1490,7 @@
 
                 if (segundosRestantes <= 0) {
                     detenerTemporizador();
-                    window.cantar('Me voy al mazo');
+                    cantar('Me voy al mazo');
                 }
             }, 1000);
         }
@@ -1562,7 +1556,7 @@
 
             if (salaId) {
                 await enviarAccionSupabase('ABANDONO', {});
-                await supabaseClient.from('salas').delete().eq('id', salaId);
+                await supabaseClient.from('salas').delete().eq('id', isNaN(salaId) ? salaId : Number(salaId));
             }
 
             limpiarEstadoJuego();
@@ -1653,27 +1647,27 @@
             const m = estadoJuego[`mesaR${numRonda}`];
             if (!m.J1 || !m.J2) return null;
             if (m.J1.poder > m.J2.poder) return 'J1';
-            if (m.J2.poder > m.J2.poder) return 'J2';
+            if (m.J2.poder > m.J1.poder) return 'J2';
             return 'PARDA';
         }
 
-        window.cantarTrucoDinamico = function() {
-            if (estadoJuego.nivelTruco === 1) window.cantar('Truco!');
-            else if (estadoJuego.nivelTruco === 2) window.cantar('Quiero re truco');
-            else if (estadoJuego.nivelTruco === 3) window.cantar('Vale Cuatro!');
-        };
+        function cantarTrucoDinamico() {
+            if (estadoJuego.nivelTruco === 1) cantar('Truco!');
+            else if (estadoJuego.nivelTruco === 2) cantar('Quiero re truco');
+            else if (estadoJuego.nivelTruco === 3) cantar('Vale Cuatro!');
+        }
 
-        window.recantarTruco = function() {
-            if (estadoJuego.cantosPendientes.tipo === 'Truco!') window.cantar('Quiero re truco');
-            else if (estadoJuego.cantosPendientes.tipo === 'Quiero re truco') window.cantar('Vale Cuatro!');
-        };
+        function recantarTruco() {
+            if (estadoJuego.cantosPendientes.tipo === 'Truco!') cantar('Quiero re truco');
+            else if (estadoJuego.cantosPendientes.tipo === 'Quiero re truco') cantar('Vale Cuatro!');
+        }
 
         function calcularValorFaltaEnvido() {
             const maxPts = Math.max(estadoJuego.ptsJ1, estadoJuego.ptsJ2);
             return Math.max(1, metaPuntosPartida - maxPts);
         }
 
-        window.cantar = async function(tipo) {
+        async function cantar(tipo) {
             const miRol = soyJ1 ? 'J1' : 'J2';
             if (estadoJuego.cantosPendientes && estadoJuego.cantosPendientes.para !== miRol) return;
 
@@ -1721,9 +1715,9 @@
                 estadoJuego.ultimoQueCantoTruco = miRol;
             }
             await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
-        };
+        }
 
-        window.responder = async function(acepta) {
+        async function responder(acepta) {
             const miRol = soyJ1 ? 'J1' : 'J2';
             if (!estadoJuego.cantosPendientes || estadoJuego.cantosPendientes.para !== miRol) return;
 
@@ -1819,7 +1813,7 @@
             }
 
             await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
-        };
+        }
 
         function calcularDetalleEnvido(cartas) {
             let max = 0;
