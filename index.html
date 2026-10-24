@@ -601,9 +601,7 @@
 
         try {
             if (window.supabase) {
-                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-                    auth: { persistSession: true, autoRefreshToken: true }
-                });
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             }
         } catch(e) {}
 
@@ -678,13 +676,13 @@
             const esJ1Guardado = localStorage.getItem('truco_soyJ1');
 
             if (salaGuardada && supabaseClient) {
-                const { data: salaBD, error } = await supabaseClient
+                const { data: salaBD } = await supabaseClient
                     .from('salas')
                     .select('*')
-                    .eq('id', isNaN(salaGuardada) ? salaGuardada : Number(salaGuardada))
+                    .eq('id', salaGuardada)
                     .maybeSingle();
 
-                if (!error && salaBD && salaBD.estado) {
+                if (salaBD && salaBD.estado) {
                     try {
                         const paquete = typeof salaBD.estado === 'string' ? JSON.parse(salaBD.estado) : salaBD.estado;
                         salaId = salaBD.id;
@@ -1015,7 +1013,7 @@
             const contenedor = document.getElementById('lista-salas');
             
             if (error || !data) {
-                contenedor.innerHTML = `<div class="text-xs text-slate-400 italic text-center py-4">Error al cargar salas o no hay abiertas.</div>`;
+                contenedor.innerHTML = `<div class="text-xs text-slate-400 italic text-center py-4">No hay salas abiertas. ¡Creá una para empezar!</div>`;
                 return;
             }
 
@@ -1116,7 +1114,7 @@
                 .select().single();
 
             if (error) { 
-                alert("Error al crear mesa (verificá permisos en Supabase): " + error.message); 
+                alert("Error al crear mesa: " + error.message); 
                 return; 
             }
 
@@ -1135,7 +1133,7 @@
 
         async function cancelarCreacionSala() {
             if (salaId && supabaseClient) {
-                await supabaseClient.from('salas').delete().eq('id', isNaN(salaId) ? salaId : Number(salaId));
+                await supabaseClient.from('salas').delete().eq('id', salaId);
             }
             limpiarEstadoJuego();
             document.getElementById('esperando-rival').classList.add('hidden');
@@ -1205,7 +1203,7 @@
             payloadData.nombreJ2 = !soyJ1 ? nombreUsuario : (payloadData.nombreJ2 || payloadData.nombreJ2 || 'Rival');
             
             const dataString = JSON.stringify({ tipo, data: payloadData, timestamp: Date.now() });
-            await supabaseClient.from('salas').update({ estado: dataString }).eq('id', isNaN(salaId) ? salaId : Number(salaId));
+            await supabaseClient.from('salas').update({ estado: dataString }).eq('id', salaId);
         }
 
         function escucharCanalRealtime() {
@@ -1556,7 +1554,7 @@
 
             if (salaId) {
                 await enviarAccionSupabase('ABANDONO', {});
-                await supabaseClient.from('salas').delete().eq('id', isNaN(salaId) ? salaId : Number(salaId));
+                await supabaseClient.from('salas').delete().eq('id', salaId);
             }
 
             limpiarEstadoJuego();
