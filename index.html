@@ -175,7 +175,7 @@
         </div>
     </div>
 
-    <!-- MODAL PARA CAMBIAR NOMBRE DESDE EL LOBBY DE SALAS -->
+    <!-- MODAL PARA CAMBIAR NOMBRE -->
     <div id="modal-cambiar-nombre" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="card-trucox rounded-3xl p-6 w-full max-w-sm border-2 border-amber-500/50 text-center space-y-4 shadow-2xl">
             <h2 class="text-base font-black text-amber-400 uppercase tracking-wide">Cambiar Nombre de Usuario</h2>
@@ -194,7 +194,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMACIÓN DE ABANDONO DE PARTIDA -->
+    <!-- MODAL DE ABANDONO -->
     <div id="modal-confirmar-abandono" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="card-trucox rounded-3xl p-6 w-full max-w-sm border-2 border-rose-500/50 text-center space-y-4 shadow-2xl">
             <div class="text-3xl">⚠️</div>
@@ -211,7 +211,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMACIÓN DE CERRAR SESIÓN -->
+    <!-- MODAL CERRAR SESIÓN -->
     <div id="modal-confirmar-cerrar-sesion" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="card-trucox rounded-3xl p-6 w-full max-w-sm border-2 border-amber-500/50 text-center space-y-4 shadow-2xl">
             <div class="text-3xl">🔒</div>
@@ -228,7 +228,7 @@
         </div>
     </div>
 
-    <!-- MARCO CONTENEDOR TIPO CELULAR -->
+    <!-- CONTENEDOR APP -->
     <div id="contenedor-app">
 
         <!-- LOBBY PRINCIPAL -->
@@ -266,7 +266,6 @@
                 <div class="w-8"></div>
             </div>
 
-            <!-- CARTEL SUPERIOR CON NOMBRE DE USUARIO Y BOTÓN CAMBIAR -->
             <div class="card-trucox p-3 rounded-2xl border border-amber-500/40 flex justify-between items-center shadow-lg">
                 <div class="flex items-center gap-2">
                     <span class="text-lg">👤</span>
@@ -280,7 +279,6 @@
                 </button>
             </div>
 
-            <!-- CARTEL ESPERANDO RIVAL AL CREAR SALA -->
             <div id="esperando-rival" class="hidden card-trucox p-4 rounded-2xl border-2 border-amber-500/80 text-center">
                 <div class="text-lg font-black text-amber-400">⏳ Buscando Oponente…</div>
                 <p id="esperando-sala-info" class="text-xs text-slate-300 mt-1"></p>
@@ -1146,7 +1144,7 @@
                 return;
             }
 
-            salaId = isNaN(idElegida) ? idElegida : Number(idElegida);
+            salaId = idElegida;
             soyJ1 = false;
             apuestaSalaActual = montoApuesta;
             metaPuntosPartida = metaSala;
