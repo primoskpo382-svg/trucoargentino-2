@@ -1106,7 +1106,6 @@
                 return;
             }
 
-            const idGen = Math.floor(Math.random() * 89999) + 10000;
             estadoJuego.nombreJ1 = nombreUsuario;
 
             const payloadInicial = {
@@ -1115,11 +1114,10 @@
                 timestamp: Date.now()
             };
 
-            // Inserción limpia asegurando tipos básicos compatibles con Supabase
+            // INSERT SIN MANDAR ID MANUAL (Dejamos que Supabase asigne el ID autoincremental)
             const { data, error } = await supabaseClient
                 .from('salas')
                 .insert([{ 
-                    id: Number(idGen), 
                     estado: JSON.stringify(payloadInicial), 
                     jugador1: String(usuarioId || 'J1_CONECTADO'), 
                     apuesta: Number(montoApuesta), 
