@@ -173,6 +173,23 @@
         </div>
     </div>
 
+    <!-- MODAL DE CONFIRMACIÓN DE ABANDONO -->
+    <div id="modal-confirmar-abandono" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="card-trucox rounded-3xl p-6 w-full max-w-sm border-2 border-rose-500/50 text-center space-y-4 shadow-2xl">
+            <div class="text-3xl">⚠️</div>
+            <h2 class="text-base font-black text-rose-400 uppercase tracking-wide">¿Seguro que quieres abandonar la partida?</h2>
+            <p class="text-xs text-slate-300">Perderás automáticamente y se te descontarán las fichas apostadas.</p>
+            <div class="flex gap-2 pt-2">
+                <button onclick="cerrarModalAbandono()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs cursor-pointer transition">
+                    Cancelar
+                </button>
+                <button onclick="confirmarAbandonoPartida()" class="flex-1 bg-rose-700 hover:bg-rose-600 text-white font-black py-2.5 rounded-xl text-xs cursor-pointer transition shadow-lg">
+                    Abandonar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- MARCO CONTENEDOR TIPO CELULAR -->
     <div id="contenedor-app">
 
@@ -214,7 +231,7 @@
             <div id="esperando-rival" class="hidden card-trucox p-4 rounded-2xl border-2 border-amber-500/80 text-center">
                 <div class="text-lg font-black text-amber-400">⏳ Buscando Oponente…</div>
                 <p id="esperando-sala-info" class="text-xs text-slate-300 mt-1"></p>
-                <button onclick="window.cancelarSala(false)" class="mt-3 bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer">Cancelar</button>
+                <button onclick="pedirConfirmacionAbandono()" class="mt-3 bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer">Cancelar</button>
             </div>
 
             <div class="card-trucox p-4 rounded-2xl border border-slate-700 space-y-3">
@@ -370,7 +387,7 @@
                 </button>
             </div>
 
-            <button onclick="window.cancelarSala(true)" class="w-full bg-slate-900/60 hover:bg-slate-800 text-slate-400 hover:text-white text-[11px] py-1 px-3 rounded-xl transition cursor-pointer">
+            <button onclick="pedirConfirmacionAbandono()" class="w-full bg-slate-900/60 hover:bg-slate-800 text-slate-400 hover:text-white text-[11px] py-1 px-3 rounded-xl transition cursor-pointer">
                 Salir de la Mesa
             </button>
         </div>
@@ -484,7 +501,7 @@
             '7O': 'casrtas/IMG_7067.JPG',
             '10O': 'casrtas/IMG_7068.JPG',
             '11O': 'casrtas/IMG_7069.JPG',
-            '12O': 'casrtas/IMG_7081.JPG'
+            '12O': 'casrtas/IMG_7081.jpg'
         };
 
         const MAZO = [
@@ -1280,8 +1297,11 @@
 
                 if (cuentaRepartir <= 0) {
                     detenerTemporizadorRepartir();
-                    // Auto-repartición cuando vence el tiempo
-                    window.solicitarNuevaMano();
+                    const proximaMano = estadoJuego.manoJugador === 'J1' ? 'J2' : 'J1';
+                    const miRol = soyJ1 ? 'J1' : 'J2';
+                    if (proximaMano === miRol) {
+                        window.solicitarNuevaMano();
+                    }
                 }
             }, 1000);
         }
@@ -1359,6 +1379,38 @@
             document.getElementById('panel-juego').classList.add('hidden');
             document.getElementById('panel-juego').classList.remove('flex');
             document.getElementById('pantalla-inicio').classList.remove('hidden');
+        }
+
+        function pedirConfirmacionAbandono() {
+            document.getElementById('modal-confirmar-abandono').classList.remove('hidden');
+        }
+
+        function cerrarModalAbandono() {
+            document.getElementById('modal-confirmar-abandono').classList.add('hidden');
+        }
+
+        async function confirmarAbandonoPartida() {
+            cerrarModalAbandono();
+            detenerTemporizador();
+            detenerTemporizadorRepartir();
+
+            if (apuestaSalaActual > 0) {
+                // Descuento automático de fichas al abandonar y perder
+                await actualizarSaldoBD(saldoFichasActual - apuestaSalaActual);
+            }
+
+            if (salaId) {
+                await enviarAccionSupabase('ABANDONO', {});
+                await supabaseClient.from('salas').delete().eq('id', salaId);
+            }
+
+            limpiarEstadoJuego();
+            document.getElementById('panel-juego').classList.add('hidden');
+            document.getElementById('panel-juego').classList.remove('flex');
+            document.getElementById('menu-salas').classList.add('hidden');
+            document.getElementById('menu-salas').classList.remove('flex');
+            document.getElementById('pantalla-inicio').classList.remove('hidden');
+            document.getElementById('esperando-rival').classList.add('hidden');
         }
 
         async function tirarcarta(carta) {
@@ -1628,22 +1680,6 @@
             }
             return { puntos: max, cartasUsadas };
         }
-
-        window.cancelarSala = async function(esAbandonoVoluntario = false) {
-            detenerTemporizador();
-            detenerTemporizadorRepartir();
-            if (salaId) {
-                if (esAbandonoVoluntario) await enviarAccionSupabase('ABANDONO', {});
-                await supabaseClient.from('salas').delete().eq('id', salaId);
-            }
-            limpiarEstadoJuego();
-            document.getElementById('panel-juego').classList.add('hidden');
-            document.getElementById('panel-juego').classList.remove('flex');
-            document.getElementById('menu-salas').classList.add('hidden');
-            document.getElementById('menu-salas').classList.remove('flex');
-            document.getElementById('pantalla-inicio').classList.remove('hidden');
-            document.getElementById('esperando-rival').classList.add('hidden');
-        };
 
         function limpiarEstadoJuego() {
             if (canal) supabaseClient.removeChannel(canal);
