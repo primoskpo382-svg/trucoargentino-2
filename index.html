@@ -1022,15 +1022,28 @@
             }
 
             contenedor.innerHTML = '';
-            data.forEach(s => {
+            for (const s of data) {
                 const esMiMesa = (s.jugador1 === usuarioId) || (soyJ1 && s.id === salaId);
+                
+                let nombreCreador = 'Mesa';
+                try {
+                    if (s.estado) {
+                        const paquete = JSON.parse(s.estado);
+                        if (paquete.data && paquete.data.nombreJ1) {
+                            nombreCreador = paquete.data.nombreJ1;
+                        }
+                    }
+                } catch(e) {}
+
+                if (esMiMesa) nombreCreador = nombreUsuario;
+
                 const item = document.createElement('div');
                 item.className = "card-trucox p-3.5 rounded-2xl flex justify-between items-center transition shadow-lg border border-slate-700/80";
                 item.innerHTML = `
                     <div class="text-left space-y-1">
                         <div class="flex items-center gap-2">
                             <span class="w-6 h-6 rounded-full bg-slate-800 text-amber-400 font-bold text-xs flex items-center justify-center border border-amber-500/30">M</span>
-                            <span class="text-xs font-black text-slate-200">Mesa de ${nombreUsuario}</span>
+                            <span class="text-xs font-black text-slate-200">Mesa de ${nombreCreador}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 font-extrabold text-[10px] px-2 py-0.5 rounded-full">🟢 LIBRE</span>
@@ -1046,7 +1059,7 @@
                     </div>
                 `;
                 contenedor.appendChild(item);
-            });
+            }
         };
 
         function escucharLobbyRealtime() {
@@ -1070,10 +1083,17 @@
             }
 
             const idGen = Math.floor(Math.random() * 89999) + 10000;
+            estadoJuego.nombreJ1 = nombreUsuario;
+
+            const payloadInicial = JSON.stringify({
+                tipo: 'ESPERANDO_J2',
+                data: { ...estadoJuego, nombreJ1: nombreUsuario },
+                timestamp: Date.now()
+            });
 
             const { data, error } = await supabaseClient
                 .from('salas')
-                .insert([{ id: idGen, estado: 'ESPERANDO_J2', jugador1: usuarioId || 'J1_CONECTADO', apuesta: montoApuesta, meta: metaPuntosPartida }])
+                .insert([{ id: idGen, estado: payloadInicial, jugador1: usuarioId || 'J1_CONECTADO', apuesta: montoApuesta, meta: metaPuntosPartida }])
                 .select().single();
 
             if (error) { alert("Error al crear mesa: " + error.message); return; }
@@ -1086,7 +1106,7 @@
             localStorage.setItem('truco_soyJ1', 'true');
 
             document.getElementById('esperando-rival').classList.remove('hidden');
-            document.getElementById('esperando-sala-info').innerText = `Sala de ${nombreUsuario} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
+            document.getElementById('esperando-sala-info').innerText = `Mesa de ${nombreUsuario} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
             escucharCanalRealtime();
         };
 
@@ -1106,7 +1126,7 @@
 
             document.getElementById('esperando-rival').classList.add('hidden');
             document.getElementById('esperando-rival').querySelector('div').innerText = '🃏 Conectando a la mesa…';
-            document.getElementById('esperando-sala-info').innerText = `Sala · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
+            document.getElementById('esperando-sala-info').innerText = `Mesa · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
             escucharCanalRealtime();
             
             estadoJuego.nombreJ2 = nombreUsuario;
