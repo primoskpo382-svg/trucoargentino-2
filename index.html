@@ -282,7 +282,6 @@
             <div id="esperando-rival" class="hidden card-trucox p-4 rounded-2xl border-2 border-amber-500/80 text-center">
                 <div class="text-lg font-black text-amber-400">⏳ Buscando Oponente…</div>
                 <p id="esperando-sala-info" class="text-xs text-slate-300 mt-1"></p>
-                <!-- Botón Cancelar que NO descuenta fichas y limpia la sala -->
                 <button onclick="cancelarCreacionSala()" class="mt-3 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/40 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer">
                     Cancelar Búsqueda
                 </button>
@@ -384,19 +383,16 @@
             <div id="panel-repartir" class="hidden absolute inset-x-6 top-1/2 -translate-y-1/2 card-trucox border-2 border-amber-400 p-4 rounded-2xl z-50 text-center space-y-3 shadow-2xl">
                 <div id="txt-fin-mano" class="text-sm font-black text-amber-300">¡Mano Finalizada!</div>
                 
-                <!-- CARTAS DEL GANADOR DEL ENVIDO -->
                 <div id="panel-envido-ganador" class="hidden bg-slate-950/90 border border-amber-500/40 rounded-xl p-2 space-y-1">
                     <span id="txt-envido-ganador-titulo" class="text-[11px] font-black text-amber-400 uppercase tracking-wide">Cartas del Ganador del Envido</span>
                     <div id="envido-cartas-ganador" class="flex justify-center gap-2 h-16 pt-1"></div>
                 </div>
 
-                <!-- BOTÓN EXCLUSIVO PARA QUIEN ES MANO EN LA PRÓXIMA RONDA -->
                 <div id="bloque-btn-repartir">
                     <button onclick="window.solicitarNuevaMano()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl uppercase tracking-wider text-sm cursor-pointer shadow-lg animate-pulse">
                         🃏 Repartir (<span id="cuenta-repartir">5</span>s)
                     </button>
                 </div>
-                <!-- CARTEL ESPERA PARA EL NO MANO -->
                 <div id="bloque-espera-repartir" class="hidden text-xs font-bold text-amber-300 py-2 italic bg-slate-900/80 rounded-xl border border-amber-500/30">
                     ⏳ Esperando que la Mano reparta (<span id="cuenta-repartir-espera">5</span>s)...
                 </div>
@@ -695,7 +691,7 @@
 
                 if (salaBD && salaBD.estado) {
                     try {
-                        const paquete = JSON.parse(salaBD.estado);
+                        const paquete = typeof salaBD.estado === 'string' ? JSON.parse(salaBD.estado) : salaBD.estado;
                         salaId = salaBD.id;
                         soyJ1 = (esJ1Guardado === 'true');
                         apuestaSalaActual = salaBD.apuesta || 100;
@@ -703,7 +699,9 @@
 
                         escucharCanalRealtime();
 
-                        if (salaBD.estado.includes('ESPERANDO_J2')) {
+                        const esEsperando = (typeof salaBD.estado === 'string') ? salaBD.estado.includes('ESPERANDO_J2') : paquete.tipo === 'ESPERANDO_J2';
+
+                        if (esEsperando) {
                             document.getElementById('pantalla-inicio').classList.add('hidden');
                             document.getElementById('menu-salas').classList.remove('hidden');
                             document.getElementById('menu-salas').classList.add('flex');
@@ -1024,7 +1022,7 @@
 
             const { data, error } = await supabaseClient
                 .from('salas')
-                .select('id, estado, apuesta, meta, jugador1');
+                .select('*');
 
             const contenedor = document.getElementById('lista-salas');
             
@@ -1033,13 +1031,12 @@
                 return;
             }
 
-            // Filtrar solo las que están esperando rival en el cliente de forma robusta
             const salasFiltradas = data.filter(s => {
                 try {
-                    const paquete = JSON.parse(s.estado);
-                    return paquete.tipo === 'ESPERANDO_J2';
+                    const paquete = typeof s.estado === 'string' ? JSON.parse(s.estado) : s.estado;
+                    return paquete && paquete.tipo === 'ESPERANDO_J2';
                 } catch(e) {
-                    return s.estado && s.estado.includes('ESPERANDO_J2');
+                    return s.estado && String(s.estado).includes('ESPERANDO_J2');
                 }
             });
 
@@ -1054,11 +1051,9 @@
                 
                 let nombreCreador = 'Mesa';
                 try {
-                    if (s.estado) {
-                        const paquete = JSON.parse(s.estado);
-                        if (paquete.data && paquete.data.nombreJ1) {
-                            nombreCreador = paquete.data.nombreJ1;
-                        }
+                    const paquete = typeof s.estado === 'string' ? JSON.parse(s.estado) : s.estado;
+                    if (paquete && paquete.data && paquete.data.nombreJ1) {
+                        nombreCreador = paquete.data.nombreJ1;
                     }
                 } catch(e) {}
 
@@ -1112,15 +1107,21 @@
             const idGen = Math.floor(Math.random() * 89999) + 10000;
             estadoJuego.nombreJ1 = nombreUsuario;
 
-            const payloadInicial = JSON.stringify({
+            const payloadInicial = {
                 tipo: 'ESPERANDO_J2',
                 data: { ...estadoJuego, nombreJ1: nombreUsuario },
                 timestamp: Date.now()
-            });
+            };
 
             const { data, error } = await supabaseClient
                 .from('salas')
-                .insert([{ id: idGen, estado: payloadInicial, jugador1: usuarioId || 'J1_CONECTADO', apuesta: montoApuesta, meta: metaPuntosPartida }])
+                .insert([{ 
+                    id: idGen, 
+                    estado: JSON.stringify(payloadInicial), 
+                    jugador1: usuarioId || 'J1_CONECTADO', 
+                    apuesta: montoApuesta, 
+                    meta: metaPuntosPartida 
+                }])
                 .select().single();
 
             if (error) { alert("Error al crear mesa: " + error.message); return; }
@@ -1138,7 +1139,6 @@
             escucharCanalRealtime();
         };
 
-        // CANCELAR SALA EN ESPERA (SIN DESCONTAR FICHAS Y BORRÁNDOLA DE SUPABASE)
         async function cancelarCreacionSala() {
             if (salaId && supabaseClient) {
                 await supabaseClient.from('salas').delete().eq('id', salaId);
@@ -1224,7 +1224,7 @@
                         try {
                             const raw = payload.new.estado;
                             if (!raw) return;
-                            const paquete = JSON.parse(raw);
+                            const paquete = typeof raw === 'string' ? JSON.parse(raw) : raw;
                             procesarAccionRed(paquete.tipo, paquete.data);
                         } catch(e) {}
                     }
@@ -1653,7 +1653,7 @@
             const m = estadoJuego[`mesaR${numRonda}`];
             if (!m.J1 || !m.J2) return null;
             if (m.J1.poder > m.J2.poder) return 'J1';
-            if (m.J2.poder > m.J1.poder) return 'J2';
+            if (m.J2.poder > m.J2.poder) return 'J2';
             return 'PARDA';
         }
 
