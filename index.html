@@ -304,7 +304,7 @@
                         </select>
                     </div>
                 </div>
-                <button onclick="window.crearSala()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl uppercase tracking-wide cursor-pointer text-sm shadow-lg">
+                <button onclick="crearSala()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl uppercase tracking-wide cursor-pointer text-sm shadow-lg">
                     + Crear Sala
                 </button>
             </div>
@@ -391,7 +391,7 @@
                 </div>
 
                 <div id="bloque-btn-repartir">
-                    <button onclick="window.solicitarNuevaMano()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl uppercase tracking-wider text-sm cursor-pointer shadow-lg animate-pulse">
+                    <button onclick="solicitarNuevaMano()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl uppercase tracking-wider text-sm cursor-pointer shadow-lg animate-pulse">
                         🃏 Repartir (<span id="cuenta-repartir">5</span>s)
                     </button>
                 </div>
@@ -404,37 +404,37 @@
             <div id="panel-respuesta" class="absolute inset-x-4 top-1/3 card-trucox border-2 border-amber-400 p-4 rounded-2xl hidden shadow-2xl z-40 text-center space-y-3">
                 <div id="texto-canto-rival" class="text-xs font-black text-amber-300 uppercase tracking-wider">¡Te cantaron!</div>
                 <div class="flex gap-2 justify-center flex-wrap">
-                    <button onclick="window.responder(true)" class="bg-emerald-600 hover:bg-emerald-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">Quiero</button>
+                    <button onclick="responder(true)" class="bg-emerald-600 hover:bg-emerald-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">Quiero</button>
                     
                     <div id="botones-recanto-envido" class="flex gap-1 hidden">
-                        <button onclick="window.cantar('Envido')" class="bg-amber-600 hover:bg-amber-500 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Envido</button>
-                        <button onclick="window.cantar('Real envido')" class="bg-amber-700 hover:bg-amber-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Real envido</button>
-                        <button onclick="window.cantar('Falta envido')" class="bg-rose-700 hover:bg-rose-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Falta envido</button>
+                        <button onclick="cantar('Envido')" class="bg-amber-600 hover:bg-amber-500 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Envido</button>
+                        <button onclick="cantar('Real envido')" class="bg-amber-700 hover:bg-amber-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Real envido</button>
+                        <button onclick="cantar('Falta envido')" class="bg-rose-700 hover:bg-rose-600 text-xs font-bold py-2 px-2 rounded-lg cursor-pointer">Falta envido</button>
                     </div>
 
-                    <button id="btn-recantar-truco" onclick="window.recantarTruco()" class="bg-amber-600 hover:bg-amber-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer hidden shadow-md text-white">Quiero re truco</button>
+                    <button id="btn-recantar-truco" onclick="recantarTruco()" class="bg-amber-600 hover:bg-amber-500 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer hidden shadow-md text-white">Quiero re truco</button>
 
-                    <button onclick="window.responder(false)" class="bg-slate-700 hover:bg-slate-600 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">No quiero</button>
+                    <button onclick="responder(false)" class="bg-slate-700 hover:bg-slate-600 text-xs font-black py-2.5 px-4 rounded-xl cursor-pointer shadow-md text-white">No quiero</button>
                 </div>
             </div>
 
             <!-- BARRA DE ACCIONES DINÁMICA -->
             <div id="barra-acciones" class="card-trucox p-2 rounded-2xl grid grid-cols-2 gap-2 z-30 shadow-2xl border-amber-500/30">
-                <button id="btn-truco" onclick="window.cantarTrucoDinamico()" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
+                <button id="btn-truco" onclick="cantarTrucoDinamico()" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
                     Truco!
                 </button>
                 <div id="bloque-envidos" class="contents">
-                    <button id="btn-envido" onclick="window.cantar('Envido')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
+                    <button id="btn-envido" onclick="cantar('Envido')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
                         Envido
                     </button>
-                    <button id="btn-real-envido" onclick="window.cantar('Real envido')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
+                    <button id="btn-real-envido" onclick="cantar('Real envido')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
                         Real envido
                     </button>
-                    <button id="btn-falta-envido" onclick="window.cantar('Falta envido')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
+                    <button id="btn-falta-envido" onclick="cantar('Falta envido')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer">
                         Falta envido
                     </button>
                 </div>
-                <button id="btn-mazo" onclick="window.cantar('Me voy al mazo')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer col-span-2 bg-rose-950/60 border-rose-800 text-rose-300">
+                <button id="btn-mazo" onclick="cantar('Me voy al mazo')" class="btn-canto-blyts text-xs py-2.5 rounded-xl uppercase tracking-wide cursor-pointer col-span-2 bg-rose-950/60 border-rose-800 text-rose-300">
                     Me voy al mazo
                 </button>
             </div>
@@ -1008,7 +1008,7 @@
             document.getElementById('menu-salas').classList.remove('hidden');
             document.getElementById('menu-salas').classList.add('flex');
             document.getElementById('display-nombre-usuario').innerText = nombreUsuario;
-            window.cargarLobbySalas();
+            cargarLobbySalas();
             escucharLobbyRealtime();
         }
 
@@ -1019,7 +1019,7 @@
             if (canalLobby) supabaseClient.removeChannel(canalLobby);
         }
 
-        window.cargarLobbySalas = async function() {
+        async function cargarLobbySalas() {
             if (!supabaseClient) return;
 
             const { data, error } = await supabaseClient
@@ -1078,34 +1078,25 @@
                         <div class="text-sm font-black text-amber-400">$${(s.apuesta || 0).toLocaleString('es-AR')}</div>
                         ${esMiMesa ? 
                             `<span class="text-[10px] font-bold text-amber-400/80 bg-amber-400/10 border border-amber-400/30 px-2 py-1 rounded-xl">Tu Mesa</span>` :
-                            `<button data-id="${s.id}" data-apuesta="${s.apuesta || 0}" data-meta="${s.meta || 30}" class="btn-unirse-sala bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-xs py-1.5 px-4 rounded-xl transition shadow-md uppercase cursor-pointer">UNIRSE</button>`
+                            `<button onclick="unirseADeterminadaSala(${s.id}, ${s.apuesta || 0}, ${s.meta || 30})" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-xs py-1.5 px-4 rounded-xl transition shadow-md uppercase cursor-pointer">UNIRSE</button>`
                         }
                     </div>
                 `;
                 contenedor.appendChild(item);
             }
-
-            document.querySelectorAll('.btn-unirse-sala').forEach(btn => {
-                btn.onclick = () => {
-                    const id = Number(btn.getAttribute('data-id'));
-                    const apuesta = Number(btn.getAttribute('data-apuesta'));
-                    const meta = Number(btn.getAttribute('data-meta'));
-                    window.unirseADeterminadaSala(id, apuesta, meta);
-                };
-            });
-        };
+        }
 
         function escucharLobbyRealtime() {
             if (!supabaseClient) return;
             canalLobby = supabaseClient
                 .channel('public:lobby_salas')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
-                    window.cargarLobbySalas();
+                    cargarLobbySalas();
                 })
                 .subscribe();
         }
 
-        window.crearSala = async function() {
+        async function crearSala() {
             if (!supabaseClient) return;
             const montoApuesta = Number(document.getElementById('select-apuesta').value);
             metaPuntosPartida = Number(document.getElementById('select-puntos-partido').value);
@@ -1147,9 +1138,9 @@
 
             document.getElementById('esperando-rival').classList.remove('hidden');
             document.getElementById('esperando-sala-info').innerText = `Mesa de ${nombreUsuario} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
-            window.cargarLobbySalas();
+            cargarLobbySalas();
             escucharCanalRealtime();
-        };
+        }
 
         async function cancelarCreacionSala() {
             if (salaId && supabaseClient) {
@@ -1157,10 +1148,10 @@
             }
             limpiarEstadoJuego();
             document.getElementById('esperando-rival').classList.add('hidden');
-            window.cargarLobbySalas();
+            cargarLobbySalas();
         }
 
-        window.unirseADeterminadaSala = async function(idElegida, montoApuesta, metaSala) {
+        async function unirseADeterminadaSala(idElegida, montoApuesta, metaSala) {
             if (montoApuesta > 0 && saldoFichasActual < montoApuesta) {
                 alert(`Saldo insuficiente. Necesitás $${montoApuesta.toLocaleString('es-AR')} para esta mesa.`);
                 return;
@@ -1179,7 +1170,7 @@
             
             estadoJuego.nombreJ2 = nombreUsuario;
             await enviarAccionSupabase('J2_UNIDO', estadoJuego);
-        };
+        }
 
         async function repartirNuevaMano(manoEspecifica) {
             if (!soyJ1) return;
@@ -1474,7 +1465,7 @@
                     const proximaMano = estadoJuego.manoJugador === 'J1' ? 'J2' : 'J1';
                     const miRol = soyJ1 ? 'J1' : 'J2';
                     if (proximaMano === miRol) {
-                        window.solicitarNuevaMano();
+                        solicitarNuevaMano();
                     }
                 }
             }, 1000);
@@ -1487,14 +1478,14 @@
             }
         }
 
-        window.solicitarNuevaMano = function() {
+        function solicitarNuevaMano() {
             detenerTemporizadorRepartir();
             if (soyJ1) {
                 repartirNuevaMano();
             } else {
                 enviarAccionSupabase('SOLICITAR_REPARTIR', {});
             }
-        };
+        }
 
         function iniciarTemporizador() {
             if (temporizadorTurno) return;
@@ -1508,7 +1499,7 @@
 
                 if (segundosRestantes <= 0) {
                     detenerTemporizador();
-                    window.cantar('Me voy al mazo');
+                    cantar('Me voy al mazo');
                 }
             }, 1000);
         }
@@ -1669,23 +1660,23 @@
             return 'PARDA';
         }
 
-        window.cantarTrucoDinamico = function() {
-            if (estadoJuego.nivelTruco === 1) window.cantar('Truco!');
-            else if (estadoJuego.nivelTruco === 2) window.cantar('Quiero re truco');
-            else if (estadoJuego.nivelTruco === 3) window.cantar('Vale Cuatro!');
-        };
+        function cantarTrucoDinamico() {
+            if (estadoJuego.nivelTruco === 1) cantar('Truco!');
+            else if (estadoJuego.nivelTruco === 2) cantar('Quiero re truco');
+            else if (estadoJuego.nivelTruco === 3) cantar('Vale Cuatro!');
+        }
 
-        window.recantarTruco = function() {
-            if (estadoJuego.cantosPendientes.tipo === 'Truco!') window.cantar('Quiero re truco');
-            else if (estadoJuego.cantosPendientes.tipo === 'Quiero re truco') window.cantar('Vale Cuatro!');
-        };
+        function recantarTruco() {
+            if (estadoJuego.cantosPendientes.tipo === 'Truco!') cantar('Quiero re truco');
+            else if (estadoJuego.cantosPendientes.tipo === 'Quiero re truco') cantar('Vale Cuatro!');
+        }
 
         function calcularValorFaltaEnvido() {
             const maxPts = Math.max(estadoJuego.ptsJ1, estadoJuego.ptsJ2);
             return Math.max(1, metaPuntosPartida - maxPts);
         }
 
-        window.cantar = async function(tipo) {
+        async function cantar(tipo) {
             const miRol = soyJ1 ? 'J1' : 'J2';
             if (estadoJuego.cantosPendientes && estadoJuego.cantosPendientes.para !== miRol) return;
 
@@ -1733,9 +1724,9 @@
                 estadoJuego.ultimoQueCantoTruco = miRol;
             }
             await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
-        };
+        }
 
-        window.responder = async function(acepta) {
+        async function responder(acepta) {
             const miRol = soyJ1 ? 'J1' : 'J2';
             if (!estadoJuego.cantosPendientes || estadoJuego.cantosPendientes.para !== miRol) return;
 
@@ -1831,7 +1822,7 @@
             }
 
             await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
-        };
+        }
 
         function calcularDetalleEnvido(cartas) {
             let max = 0;
