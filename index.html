@@ -1114,7 +1114,6 @@
                 timestamp: Date.now()
             };
 
-            // INSERT SIN MANDAR ID MANUAL (Dejamos que Supabase asigne el ID autoincremental)
             const { data, error } = await supabaseClient
                 .from('salas')
                 .insert([{ 
