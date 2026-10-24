@@ -309,19 +309,26 @@
                 </div>
             </div>
 
-            <!-- BOTÓN Y CARTEL REPARTIR AL FINALIZAR MANO -->
+            <!-- PANEL DE REPARTIR AL FINALIZAR MANO -->
             <div id="panel-repartir" class="hidden absolute inset-x-6 top-1/2 -translate-y-1/2 card-trucox border-2 border-amber-400 p-4 rounded-2xl z-50 text-center space-y-3 shadow-2xl">
                 <div id="txt-fin-mano" class="text-sm font-black text-amber-300">¡Mano Finalizada!</div>
                 
-                <!-- CARTAS DEL GANADOR DEL ENVIDO SOLO AL FINAL DE LA MANO -->
+                <!-- CARTAS DEL GANADOR DEL ENVIDO -->
                 <div id="panel-envido-ganador" class="hidden bg-slate-950/90 border border-amber-500/40 rounded-xl p-2 space-y-1">
                     <span id="txt-envido-ganador-titulo" class="text-[11px] font-black text-amber-400 uppercase tracking-wide">Cartas del Ganador del Envido</span>
                     <div id="envido-cartas-ganador" class="flex justify-center gap-2 h-16 pt-1"></div>
                 </div>
 
-                <button onclick="window.solicitarNuevaMano()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl uppercase tracking-wider text-sm cursor-pointer shadow-lg animate-pulse">
-                    🃏 Repartir (<span id="cuenta-repartir">5</span>s)
-                </button>
+                <!-- BOTÓN EXCLUSIVO PARA QUIEN ES MANO EN LA PRÓXIMA RONDA -->
+                <div id="bloque-btn-repartir">
+                    <button onclick="window.solicitarNuevaMano()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl uppercase tracking-wider text-sm cursor-pointer shadow-lg animate-pulse">
+                        🃏 Repartir (<span id="cuenta-repartir">5</span>s)
+                    </button>
+                </div>
+                <!-- CARTEL ESPERA PARA EL NO MANO -->
+                <div id="bloque-espera-repartir" class="hidden text-xs font-bold text-amber-300 py-2 italic bg-slate-900/80 rounded-xl border border-amber-500/30">
+                    ⏳ Esperando que la Mano reparta (<span id="cuenta-repartir-espera">5</span>s)...
+                </div>
             </div>
 
             <!-- PANEL DE RESPUESTAS A CANTOS -->
@@ -581,8 +588,6 @@
                     nombreUsuario = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email.split('@')[0];
                     modalAuth.classList.add('hidden');
                     await cargarSaldoUsuario();
-
-                    // Intentar reconexión activa a partida previa
                     await intentarReconexion();
                 } else {
                     modalAuth.classList.remove('hidden');
@@ -1171,7 +1176,7 @@
                 mostrarGloboDialogo(esYo, texto);
             }
 
-            // Muestra de cartas del GANADOR del Envido al FINALIZAR LA MANO
+            // Cartas del Ganador del Envido en el modal final
             const panelEnvidoGanador = document.getElementById('panel-envido-ganador');
             if (estadoJuego.finMano && estadoJuego.envidoGanadorInfo) {
                 panelEnvidoGanador.classList.remove('hidden');
@@ -1184,9 +1189,25 @@
 
             // Panel Repartir al finalizar mano
             const panelRepartir = document.getElementById('panel-repartir');
+            const bloqueBtnRepartir = document.getElementById('bloque-btn-repartir');
+            const bloqueEsperaRepartir = document.getElementById('bloque-espera-repartir');
+
             if (estadoJuego.finMano) {
                 panelRepartir.classList.remove('hidden');
                 document.getElementById('txt-fin-mano').innerText = estadoJuego.mensajeEstado;
+
+                // Determinar la próxima mano (el jugador al que le toca repartir)
+                const proximaMano = estadoJuego.manoJugador === 'J1' ? 'J2' : 'J1';
+                const esMiTurnoDeRepartir = proximaMano === miRol;
+
+                if (esMiTurnoDeRepartir) {
+                    bloqueBtnRepartir.classList.remove('hidden');
+                    bloqueEsperaRepartir.classList.add('hidden');
+                } else {
+                    bloqueBtnRepartir.classList.add('hidden');
+                    bloqueEsperaRepartir.classList.remove('hidden');
+                }
+
                 iniciarTemporizadorRepartir();
             } else {
                 panelRepartir.classList.add('hidden');
@@ -1243,15 +1264,23 @@
         function iniciarTemporizadorRepartir() {
             if (temporizadorRepartir) return;
             cuentaRepartir = 5;
-            const elCuenta = document.getElementById('cuenta-repartir');
-            if (elCuenta) elCuenta.innerText = cuentaRepartir;
+            
+            const updateCuentas = () => {
+                const elCuenta = document.getElementById('cuenta-repartir');
+                const elCuentaEspera = document.getElementById('cuenta-repartir-espera');
+                if (elCuenta) elCuenta.innerText = cuentaRepartir;
+                if (elCuentaEspera) elCuentaEspera.innerText = cuentaRepartir;
+            };
+
+            updateCuentas();
 
             temporizadorRepartir = setInterval(() => {
                 cuentaRepartir--;
-                if (elCuenta) elCuenta.innerText = cuentaRepartir;
+                updateCuentas();
 
                 if (cuentaRepartir <= 0) {
                     detenerTemporizadorRepartir();
+                    // Auto-repartición cuando vence el tiempo
                     window.solicitarNuevaMano();
                 }
             }, 1000);
@@ -1322,7 +1351,6 @@
                     actualizarSaldoBD(saldoFichasActual + (gananciaNetoPura - apuestaSalaActual));
                     alert("¡Ganaste la partida!");
                 } else {
-                    // Descuento exacto de fichas en derrota
                     actualizarSaldoBD(saldoFichasActual - apuestaSalaActual);
                     alert("Perdiste la partida");
                 }
@@ -1543,7 +1571,6 @@
                         estadoJuego.mensajeEstado = `¡Tantos Queridos! Gana J2 (${envJ2}). +${ptsGanados}`;
                         estadoJuego.envidoGanadorInfo = { ganador: 'J2', puntos: envJ2, cartas: resJ2.cartasUsadas };
                     } else {
-                        // En empate gana quien sea Mano y el perdedor dice Son Buenas
                         if (manoEsJ1) { 
                             estadoJuego.ptsJ1 += ptsGanados; 
                             textoGloboJ1 = `${envJ1}`;
