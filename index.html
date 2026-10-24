@@ -155,8 +155,8 @@
 
             <form onsubmit="procesarAuth(event)" class="space-y-3 text-left">
                 <div>
-                    <label class="block text-xs font-bold text-amber-300 mb-1">Nombre de Usuario</label>
-                    <input type="text" id="user-name" placeholder="Ej: CampeónTruco" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
+                    <label class="block text-xs font-bold text-amber-300 mb-1">Nombre de Usuario (Obligatorio)</label>
+                    <input type="text" id="user-name" required placeholder="Ej: CampeónTruco" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-400 mb-1">Correo electrónico</label>
@@ -170,6 +170,25 @@
                     Entrar / Registrarse
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- MODAL PARA CAMBIAR NOMBRE DESDE EL LOBBY DE SALAS -->
+    <div id="modal-cambiar-nombre" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="card-trucox rounded-3xl p-6 w-full max-w-sm border-2 border-amber-500/50 text-center space-y-4 shadow-2xl">
+            <h2 class="text-base font-black text-amber-400 uppercase tracking-wide">Cambiar Nombre de Usuario</h2>
+            <div class="text-left space-y-1">
+                <label class="text-[10px] font-bold text-slate-300 uppercase">Nuevo Nombre (Obligatorio)</label>
+                <input type="text" id="input-nuevo-nombre" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400 font-bold">
+            </div>
+            <div class="flex gap-2 pt-2">
+                <button onclick="toggleModal('modal-cambiar-nombre')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs cursor-pointer transition">
+                    Cancelar
+                </button>
+                <button onclick="guardarNuevoNombreLobby()" class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs cursor-pointer transition shadow-lg">
+                    Guardar
+                </button>
+            </div>
         </div>
     </div>
 
@@ -221,11 +240,25 @@
         </div>
 
         <!-- LOBBY DE SALAS MULTIJUGADOR -->
-        <div id="menu-salas" class="w-full h-full bg-slate-950 p-4 space-y-4 hidden flex-col justify-between">
+        <div id="menu-salas" class="w-full h-full bg-slate-950 p-4 space-y-3 hidden flex-col justify-between">
             <div class="flex justify-between items-center px-1">
                 <button onclick="volverAInicio()" class="text-xs text-amber-400 hover:underline font-bold cursor-pointer">⬅ Inicio</button>
-                <h2 class="text-lg font-black text-amber-400 uppercase tracking-wider">Salas Disponibles</h2>
+                <h2 class="text-base font-black text-amber-400 uppercase tracking-wider">Salas Disponibles</h2>
                 <div class="w-8"></div>
+            </div>
+
+            <!-- CARTEL SUPERIOR CON NOMBRE DE USUARIO Y BOTÓN CAMBIAR -->
+            <div class="card-trucox p-3 rounded-2xl border border-amber-500/40 flex justify-between items-center shadow-lg">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">👤</span>
+                    <div class="text-left">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase">Jugador</div>
+                        <div id="display-nombre-usuario" class="text-sm font-black text-amber-300 truncate max-w-[180px]">-</div>
+                    </div>
+                </div>
+                <button onclick="abrirModalCambiarNombre()" class="bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-300 font-bold text-xs py-1.5 px-3 rounded-xl transition cursor-pointer">
+                    Cambiar
+                </button>
             </div>
 
             <div id="esperando-rival" class="hidden card-trucox p-4 rounded-2xl border-2 border-amber-500/80 text-center">
@@ -263,7 +296,7 @@
         <div id="panel-juego" class="hidden flex-1 flex-col justify-between w-full h-full relative space-y-1 p-2 bg-slate-950">
             <div class="card-trucox px-3 py-1.5 rounded-2xl flex justify-between items-center text-xs shadow-xl border-amber-500/40 z-20">
                 <div class="flex items-center gap-2">
-                    <span id="nombre-yo-txt" class="font-black text-amber-400 text-xs uppercase">Yo:</span>
+                    <span id="nombre-yo-txt" class="font-black text-amber-400 text-xs uppercase truncate max-w-[110px]">Yo:</span>
                     <span id="pts-yo" class="font-mono text-xl font-black text-amber-300">0</span>
                 </div>
                 <div class="flex flex-col items-center">
@@ -273,7 +306,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <span id="pts-el" class="font-mono text-xl font-black text-slate-300">0</span>
-                    <span id="nombre-el-txt" class="font-black text-slate-400 text-xs uppercase">Él:</span>
+                    <span id="nombre-el-txt" class="font-black text-slate-400 text-xs uppercase truncate max-w-[110px]">Él:</span>
                 </div>
             </div>
 
@@ -285,7 +318,7 @@
                 <div class="flex justify-between items-start z-10 relative">
                     <div class="flex items-center gap-2 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full border border-amber-500/40 shadow-lg">
                         <div class="w-7 h-7 rounded-full bg-slate-800 border border-amber-400 flex items-center justify-center text-xs">🧔</div>
-                        <span id="nombre-rival" class="text-xs font-black text-slate-200">Rival</span>
+                        <span id="nombre-rival-perfil" class="text-xs font-black text-slate-200 truncate max-w-[120px]">Rival</span>
                     </div>
                     <div id="globo-rival-container" class="absolute top-10 left-2 z-50"></div>
 
@@ -336,7 +369,7 @@
                     <div id="envido-cartas-ganador" class="flex justify-center gap-2 h-16 pt-1"></div>
                 </div>
 
-                <!-- BOTÓN EXCLUSIVO PARA QUIEN ES MANO EN LA PRÓXIMA RONDA -->
+                <!-- BOTÓN EXCLUSIVO PARA QUIEN IS MANO EN LA PRÓXIMA RONDA -->
                 <div id="bloque-btn-repartir">
                     <button onclick="window.solicitarNuevaMano()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl uppercase tracking-wider text-sm cursor-pointer shadow-lg animate-pulse">
                         🃏 Repartir (<span id="cuenta-repartir">5</span>s)
@@ -559,6 +592,8 @@
             rondaActual: 1,
             manoJugador: 'J1',
             turnoActual: 'J1',
+            nombreJ1: 'Jugador 1',
+            nombreJ2: 'Jugador 2',
             cartasJ1: [],
             cartasJ2: [],
             cartasInicialesJ1: [],
@@ -679,14 +714,35 @@
             for (let v = 100; v <= 2000; v += 100) {
                 const opt = document.createElement('option');
                 opt.value = v;
-                opt.innerText = `$${v} ARS`;
+                opt.innerText = `$${v.toLocaleString('es-AR')} ARS`;
+                select.appendChild(opt);
+            }
+
+            for (let v = 3000; v <= 10000; v += 1000) {
+                const opt = document.createElement('option');
+                opt.value = v;
+                opt.innerText = `$${v.toLocaleString('es-AR')} ARS`;
+                select.appendChild(opt);
+            }
+
+            for (let v = 15000; v <= 100000; v += 5000) {
+                const opt = document.createElement('option');
+                opt.value = v;
+                opt.innerText = `$${v.toLocaleString('es-AR')} ARS`;
+                select.appendChild(opt);
+            }
+
+            for (let v = 150000; v <= 1000000; v += 50000) {
+                const opt = document.createElement('option');
+                opt.value = v;
+                opt.innerText = `$${v.toLocaleString('es-AR')} ARS`;
                 select.appendChild(opt);
             }
         }
 
         async function cargarSaldoUsuario() {
             if (!usuarioId) {
-                document.getElementById('saldoFichas').innerText = saldoFichasActual;
+                document.getElementById('saldoFichas').innerText = saldoFichasActual.toLocaleString('es-AR');
                 return;
             }
             try {
@@ -699,28 +755,31 @@
                 if (!perfil) {
                     const { data: nuevoPerfil } = await supabaseClient
                         .from('perfiles')
-                        .insert([{ usuarios: usuarioId, nombre: nombreUsuario || 'Jugador', fichas: 1000 }])
+                        .insert([{ usuarios: usuarioId, nombre: nombreUsuario || 'Jugador', fichas: 0 }])
                         .select()
                         .single();
                     perfil = nuevoPerfil;
                 }
 
                 if (perfil) {
-                    saldoFichasActual = (perfil.fichas !== undefined && perfil.fichas !== null) ? perfil.fichas : 1000;
+                    saldoFichasActual = (perfil.fichas !== undefined && perfil.fichas !== null) ? perfil.fichas : 0;
                     nombreUsuario = perfil.nombre || nombreUsuario || 'Jugador';
                 } else {
-                    saldoFichasActual = 1000;
+                    saldoFichasActual = 0;
                 }
 
                 const spanSaldo = document.getElementById('saldoFichas');
-                if (spanSaldo) spanSaldo.innerText = saldoFichasActual;
+                if (spanSaldo) spanSaldo.innerText = saldoFichasActual.toLocaleString('es-AR');
 
                 const inputName = document.getElementById('user-name');
                 if (inputName) inputName.value = nombreUsuario;
 
+                const displayNombre = document.getElementById('display-nombre-usuario');
+                if (displayNombre) displayNombre.innerText = nombreUsuario;
+
             } catch (err) {
-                saldoFichasActual = 1000;
-                document.getElementById('saldoFichas').innerText = saldoFichasActual;
+                saldoFichasActual = 0;
+                document.getElementById('saldoFichas').innerText = saldoFichasActual.toLocaleString('es-AR');
             }
         }
 
@@ -728,14 +787,12 @@
             saldoFichasActual = Math.max(0, nuevoSaldo);
             
             const spanSaldo = document.getElementById('saldoFichas');
-            if (spanSaldo) spanSaldo.innerText = saldoFichasActual;
+            if (spanSaldo) spanSaldo.innerText = saldoFichasActual.toLocaleString('es-AR');
 
             if (supabaseClient && usuarioId) {
                 try {
                     await supabaseClient.from('perfiles').update({ fichas: saldoFichasActual }).eq('usuarios', usuarioId);
-                } catch (e) {
-                    console.error("Error al actualizar Supabase:", e);
-                }
+                } catch (e) {}
             }
         }
 
@@ -757,7 +814,12 @@
             const email = document.getElementById('user-email').value;
             const password = document.getElementById('user-password').value;
 
-            nombreUsuario = nombreIngresado || email.split('@')[0];
+            if (!nombreIngresado) {
+                mostrarAlertaAuth("El nombre de usuario es obligatorio.", true);
+                return;
+            }
+
+            nombreUsuario = nombreIngresado;
 
             const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (error) {
@@ -797,12 +859,29 @@
 
                 if (!perfil) {
                     await supabaseClient.from('perfiles').insert([
-                        { usuarios: usuarioId, nombre: nombre, fichas: 1000 }
+                        { usuarios: usuarioId, nombre: nombre, fichas: 0 }
                     ]);
                 } else {
                     await supabaseClient.from('perfiles').update({ nombre: nombre }).eq('usuarios', usuarioId);
                 }
             } catch (e) {}
+        }
+
+        function abrirModalCambiarNombre() {
+            document.getElementById('input-nuevo-nombre').value = nombreUsuario;
+            toggleModal('modal-cambiar-nombre');
+        }
+
+        async function guardarNuevoNombreLobby() {
+            const nuevoNom = document.getElementById('input-nuevo-nombre').value.trim();
+            if (!nuevoNom) {
+                alert("El nombre de usuario es obligatorio.");
+                return;
+            }
+            nombreUsuario = nuevoNom;
+            await guardarNombreEnBD(nombreUsuario);
+            document.getElementById('display-nombre-usuario').innerText = nombreUsuario;
+            toggleModal('modal-cambiar-nombre');
         }
 
         async function cerrarSesion() {
@@ -898,6 +977,7 @@
             document.getElementById('pantalla-inicio').classList.add('hidden');
             document.getElementById('menu-salas').classList.remove('hidden');
             document.getElementById('menu-salas').classList.add('flex');
+            document.getElementById('display-nombre-usuario').innerText = nombreUsuario;
             window.cargarLobbySalas();
             escucharLobbyRealtime();
         }
@@ -941,7 +1021,7 @@
                         </div>
                     </div>
                     <div class="text-right space-y-1">
-                        <div class="text-sm font-black text-amber-400">$${s.apuesta || 0}</div>
+                        <div class="text-sm font-black text-amber-400">$${(s.apuesta || 0).toLocaleString('es-AR')}</div>
                         ${esMiMesa ? 
                             `<span class="text-[10px] font-bold text-amber-400/80 bg-amber-400/10 border border-amber-400/30 px-2 py-1 rounded-xl">Tu Mesa</span>` :
                             `<button onclick="window.unirseADeterminadaSala(${s.id}, ${s.apuesta || 0}, ${s.meta || 30})" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-xs py-1.5 px-4 rounded-xl transition shadow-md uppercase cursor-pointer">UNIRSE</button>`
@@ -968,7 +1048,7 @@
             metaPuntosPartida = Number(document.getElementById('select-puntos-partido').value);
 
             if (montoApuesta > 0 && saldoFichasActual < montoApuesta) {
-                alert(`Saldo insuficiente. Necesitás $${montoApuesta} para esta mesa.`);
+                alert(`Saldo insuficiente. Necesitás $${montoApuesta.toLocaleString('es-AR')} para esta mesa.`);
                 return;
             }
 
@@ -989,13 +1069,13 @@
             localStorage.setItem('truco_soyJ1', 'true');
 
             document.getElementById('esperando-rival').classList.remove('hidden');
-            document.getElementById('esperando-sala-info').innerText = `Mesa #${salaId} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual}`;
+            document.getElementById('esperando-sala-info').innerText = `Mesa #${salaId} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
             escucharCanalRealtime();
         };
 
         window.unirseADeterminadaSala = async function(idElegida, montoApuesta, metaSala) {
             if (montoApuesta > 0 && saldoFichasActual < montoApuesta) {
-                alert(`Saldo insuficiente. Necesitás $${montoApuesta} para esta mesa.`);
+                alert(`Saldo insuficiente. Necesitás $${montoApuesta.toLocaleString('es-AR')} para esta mesa.`);
                 return;
             }
 
@@ -1009,9 +1089,12 @@
 
             document.getElementById('esperando-rival').classList.add('hidden');
             document.getElementById('esperando-rival').querySelector('div').innerText = '🃏 Conectando a la mesa…';
-            document.getElementById('esperando-sala-info').innerText = `Mesa #${salaId} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual}`;
+            document.getElementById('esperando-sala-info').innerText = `Mesa #${salaId} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
             escucharCanalRealtime();
-            await enviarAccionSupabase('J2_UNIDO', {});
+            
+            // Asignar nombres en estado de juego inicial
+            estadoJuego.nombreJ2 = nombreUsuario;
+            await enviarAccionSupabase('J2_UNIDO', estadoJuego);
         };
 
         async function repartirNuevaMano(manoEspecifica) {
@@ -1052,6 +1135,9 @@
         }
 
         async function enviarAccionSupabase(tipo, payloadData) {
+            payloadData.nombreJ1 = soyJ1 ? nombreUsuario : (payloadData.nombreJ1 || nombreUsuario);
+            payloadData.nombreJ2 = !soyJ1 ? nombreUsuario : (payloadData.nombreJ2 || payloadData.nombreJ2 || 'Rival');
+            
             const dataString = JSON.stringify({ tipo, data: payloadData, timestamp: Date.now() });
             await supabaseClient.from('salas').update({ estado: dataString }).eq('id', salaId);
         }
@@ -1095,6 +1181,9 @@
                 document.getElementById('pantalla-inicio').classList.add('hidden');
                 document.getElementById('panel-juego').classList.remove('hidden');
                 document.getElementById('panel-juego').classList.add('flex');
+                
+                estadoJuego = data;
+                estadoJuego.nombreJ1 = nombreUsuario;
                 repartirNuevaMano('J1');
                 return;
             }
@@ -1143,9 +1232,14 @@
             const misPts = soyJ1 ? estadoJuego.ptsJ1 : estadoJuego.ptsJ2;
             const rivalPts = soyJ1 ? estadoJuego.ptsJ2 : estadoJuego.ptsJ1;
 
+            const miNombreReal = soyJ1 ? (estadoJuego.nombreJ1 || nombreUsuario) : (estadoJuego.nombreJ2 || nombreUsuario);
+            const rivalNombreReal = soyJ1 ? (estadoJuego.nombreJ2 || 'Rival') : (estadoJuego.nombreJ1 || 'Rival');
+
             document.getElementById('pts-yo').innerText = misPts;
             document.getElementById('pts-el').innerText = rivalPts;
-            document.getElementById('nombre-yo-txt').innerText = nombreUsuario || 'Yo';
+            document.getElementById('nombre-yo-txt').innerText = miNombreReal;
+            document.getElementById('nombre-el-txt').innerText = rivalNombreReal;
+            document.getElementById('nombre-rival-perfil').innerText = rivalNombreReal;
 
             if (misPts >= metaPuntosPartida || rivalPts >= metaPuntosPartida) {
                 evaluarFinDePartida(misPts >= metaPuntosPartida);
@@ -1162,7 +1256,6 @@
                 detenerTemporizador();
             }
 
-            // Cartas en la mesa y resaltado de ganadora
             const gR1 = (estadoJuego.mesaR1.J1 && estadoJuego.mesaR1.J2) ? (estadoJuego.mesaR1.J1.poder > estadoJuego.mesaR1.J2.poder ? 'J1' : (estadoJuego.mesaR1.J2.poder > estadoJuego.mesaR1.J1.poder ? 'J2' : null)) : null;
             const gR2 = (estadoJuego.mesaR2.J1 && estadoJuego.mesaR2.J2) ? (estadoJuego.mesaR2.J1.poder > estadoJuego.mesaR2.J2.poder ? 'J1' : (estadoJuego.mesaR2.J2.poder > estadoJuego.mesaR2.J1.poder ? 'J2' : null)) : null;
             const gR3 = (estadoJuego.mesaR3.J1 && estadoJuego.mesaR3.J2) ? (estadoJuego.mesaR3.J1.poder > estadoJuego.mesaR3.J2.poder ? 'J1' : (estadoJuego.mesaR3.J2.poder > estadoJuego.mesaR3.J1.poder ? 'J2' : null)) : null;
@@ -1193,18 +1286,16 @@
                 mostrarGloboDialogo(esYo, texto);
             }
 
-            // Cartas del Ganador del Envido en el modal final
             const panelEnvidoGanador = document.getElementById('panel-envido-ganador');
             if (estadoJuego.finMano && estadoJuego.envidoGanadorInfo) {
                 panelEnvidoGanador.classList.remove('hidden');
                 const esYoElGanador = estadoJuego.envidoGanadorInfo.ganador === miRol;
-                document.getElementById('txt-envido-ganador-titulo').innerText = `Envido: Cartas de ${esYoElGanador ? 'YO' : 'RIVAL'} (${estadoJuego.envidoGanadorInfo.puntos} pts)`;
+                document.getElementById('txt-envido-ganador-titulo').innerText = `Envido: Cartas de ${esYoElGanador ? miNombreReal : rivalNombreReal} (${estadoJuego.envidoGanadorInfo.puntos} pts)`;
                 document.getElementById('envido-cartas-ganador').innerHTML = (estadoJuego.envidoGanadorInfo.cartas || []).map(c => `<img src="${c.img}" class="h-full rounded shadow" />`).join('');
             } else {
                 panelEnvidoGanador.classList.add('hidden');
             }
 
-            // Panel Repartir al finalizar mano
             const panelRepartir = document.getElementById('panel-repartir');
             const bloqueBtnRepartir = document.getElementById('bloque-btn-repartir');
             const bloqueEsperaRepartir = document.getElementById('bloque-espera-repartir');
@@ -1213,7 +1304,6 @@
                 panelRepartir.classList.remove('hidden');
                 document.getElementById('txt-fin-mano').innerText = estadoJuego.mensajeEstado;
 
-                // Determinar la próxima mano (el jugador al que le toca repartir)
                 const proximaMano = estadoJuego.manoJugador === 'J1' ? 'J2' : 'J1';
                 const esMiTurnoDeRepartir = proximaMano === miRol;
 
@@ -1395,7 +1485,6 @@
             detenerTemporizadorRepartir();
 
             if (apuestaSalaActual > 0) {
-                // Descuento automático de fichas al abandonar y perder
                 await actualizarSaldoBD(saldoFichasActual - apuestaSalaActual);
             }
 
@@ -1474,8 +1563,11 @@
                 if (ganadorMano === 'J1') estadoJuego.ptsJ1 += ptsAOtorgar;
                 else estadoJuego.ptsJ2 += ptsAOtorgar;
 
+                const miNombreReal = soyJ1 ? estadoJuego.nombreJ1 : estadoJuego.nombreJ2;
+                const rivalNombreReal = soyJ1 ? estadoJuego.nombreJ2 : estadoJuego.nombreJ1;
                 const soyGanador = (soyJ1 && ganadorMano === 'J1') || (!soyJ1 && ganadorMano === 'J2');
-                estadoJuego.mensajeEstado = `¡Ganó la mano ${soyGanador ? 'YO' : 'ÉL'}! (+${ptsAOtorgar} pts)`;
+                
+                estadoJuego.mensajeEstado = `¡Ganó la mano ${soyGanador ? miNombreReal : rivalNombreReal}! (+${ptsAOtorgar} pts)`;
                 estadoJuego.finMano = true;
 
                 enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
@@ -1523,7 +1615,7 @@
                 if (miRol === 'J1') estadoJuego.ptsJ2 += ptsNoQuiero;
                 else estadoJuego.ptsJ1 += ptsNoQuiero;
 
-                estadoJuego.mensajeEstado = `¡Me voy al mazo! Punto(s) para él.`;
+                estadoJuego.mensajeEstado = `¡Me voy al mazo! Punto(s) para el rival.`;
                 estadoJuego.finMano = true;
                 
                 await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
@@ -1587,8 +1679,8 @@
                     if (emisor === 'J1') estadoJuego.ptsJ1 += ptsAbonados;
                     else estadoJuego.ptsJ2 += ptsAbonados;
                     
-                    const emisorEsYo = (soyJ1 && emisor === 'J1') || (!soyJ1 && emisor === 'J2');
-                    estadoJuego.mensajeEstado = `No se quiso el ${tipo}. Punto(s) para ${emisorEsYo ? 'YO' : 'ÉL'}.`;
+                    const emisorNombre = emisor === 'J1' ? estadoJuego.nombreJ1 : estadoJuego.nombreJ2;
+                    estadoJuego.mensajeEstado = `No se quiso el ${tipo}. Punto(s) para ${emisorNombre}.`;
                     estadoJuego.finMano = true;
                     await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
                     return;
@@ -1614,26 +1706,26 @@
                         estadoJuego.ptsJ1 += ptsGanados;
                         textoGloboJ1 = `${envJ1}`;
                         textoGloboJ2 = "Son buenas";
-                        estadoJuego.mensajeEstado = `¡Tantos Queridos! Gana J1 (${envJ1}). +${ptsGanados}`;
+                        estadoJuego.mensajeEstado = `¡Tantos Queridos! Gana ${estadoJuego.nombreJ1} (${envJ1}). +${ptsGanados}`;
                         estadoJuego.envidoGanadorInfo = { ganador: 'J1', puntos: envJ1, cartas: resJ1.cartasUsadas };
                     } else if (envJ2 > envJ1) {
                         estadoJuego.ptsJ2 += ptsGanados;
                         textoGloboJ1 = "Son buenas";
                         textoGloboJ2 = `${envJ2}`;
-                        estadoJuego.mensajeEstado = `¡Tantos Queridos! Gana J2 (${envJ2}). +${ptsGanados}`;
+                        estadoJuego.mensajeEstado = `¡Tantos Queridos! Gana ${estadoJuego.nombreJ2} (${envJ2}). +${ptsGanados}`;
                         estadoJuego.envidoGanadorInfo = { ganador: 'J2', puntos: envJ2, cartas: resJ2.cartasUsadas };
                     } else {
                         if (manoEsJ1) { 
                             estadoJuego.ptsJ1 += ptsGanados; 
                             textoGloboJ1 = `${envJ1}`;
                             textoGloboJ2 = "Son buenas";
-                            estadoJuego.mensajeEstado = `Empate en ${envJ1}. Gana J1 por ser Mano (+${ptsGanados}).`; 
+                            estadoJuego.mensajeEstado = `Empate en ${envJ1}. Gana ${estadoJuego.nombreJ1} por ser Mano (+${ptsGanados}).`; 
                             estadoJuego.envidoGanadorInfo = { ganador: 'J1', puntos: envJ1, cartas: resJ1.cartasUsadas };
                         } else { 
                             estadoJuego.ptsJ2 += ptsGanados; 
                             textoGloboJ1 = "Son buenas";
                             textoGloboJ2 = `${envJ2}`;
-                            estadoJuego.mensajeEstado = `Empate en ${envJ2}. Gana J2 por ser Mano (+${ptsGanados}).`; 
+                            estadoJuego.mensajeEstado = `Empate en ${envJ2}. Gana ${estadoJuego.nombreJ2} por ser Mano (+${ptsGanados}).`; 
                             estadoJuego.envidoGanadorInfo = { ganador: 'J2', puntos: envJ2, cartas: resJ2.cartasUsadas };
                         }
                     }
