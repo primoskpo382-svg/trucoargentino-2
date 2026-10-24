@@ -192,18 +192,18 @@
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMACIÓN DE ABANDONO -->
+    <!-- MODAL DE CONFIRMACIÓN DE ABANDONO DE PARTIDA -->
     <div id="modal-confirmar-abandono" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="card-trucox rounded-3xl p-6 w-full max-w-sm border-2 border-rose-500/50 text-center space-y-4 shadow-2xl">
             <div class="text-3xl">⚠️</div>
-            <h2 class="text-base font-black text-rose-400 uppercase tracking-wide">¿Seguro que quieres abandonar la partida?</h2>
-            <p class="text-xs text-slate-300">Perderás automáticamente y se te descontarán las fichas apostadas.</p>
+            <h2 class="text-base font-black text-rose-400 uppercase tracking-wide">¿Abandonar la partida?</h2>
+            <p class="text-xs text-slate-300">La partida ya está en curso. Al salir perderás automáticamente y se descontarán las fichas apostadas.</p>
             <div class="flex gap-2 pt-2">
                 <button onclick="cerrarModalAbandono()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs cursor-pointer transition">
-                    Cancelar
+                    Volver a Jugar
                 </button>
                 <button onclick="confirmarAbandonoPartida()" class="flex-1 bg-rose-700 hover:bg-rose-600 text-white font-black py-2.5 rounded-xl text-xs cursor-pointer transition shadow-lg">
-                    Abandonar
+                    Abandonar (-Fichas)
                 </button>
             </div>
         </div>
@@ -278,10 +278,14 @@
                 </button>
             </div>
 
+            <!-- CARTEL ESPERANDO RIVAL AL CREAR SALA -->
             <div id="esperando-rival" class="hidden card-trucox p-4 rounded-2xl border-2 border-amber-500/80 text-center">
                 <div class="text-lg font-black text-amber-400">⏳ Buscando Oponente…</div>
                 <p id="esperando-sala-info" class="text-xs text-slate-300 mt-1"></p>
-                <button onclick="pedirConfirmacionAbandono()" class="mt-3 bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer">Cancelar</button>
+                <!-- Botón Cancelar que NO descuenta fichas y limpia la sala -->
+                <button onclick="cancelarCreacionSala()" class="mt-3 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/40 px-4 py-2 rounded-xl text-xs font-bold cursor-pointer">
+                    Cancelar Búsqueda
+                </button>
             </div>
 
             <div class="card-trucox p-4 rounded-2xl border border-slate-700 space-y-3">
@@ -698,14 +702,23 @@
                         metaPuntosPartida = salaBD.meta || 30;
 
                         escucharCanalRealtime();
-                        document.getElementById('pantalla-inicio').classList.add('hidden');
-                        document.getElementById('menu-salas').classList.add('hidden');
-                        document.getElementById('panel-juego').classList.remove('hidden');
-                        document.getElementById('panel-juego').classList.add('flex');
 
-                        if (paquete.data) {
-                            estadoJuego = paquete.data;
-                            actualizarInterfaz();
+                        if (salaBD.estado.includes('ESPERANDO_J2')) {
+                            document.getElementById('pantalla-inicio').classList.add('hidden');
+                            document.getElementById('menu-salas').classList.remove('hidden');
+                            document.getElementById('menu-salas').classList.add('flex');
+                            document.getElementById('esperando-rival').classList.remove('hidden');
+                            document.getElementById('esperando-sala-info').innerText = `Mesa de ${nombreUsuario} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
+                        } else {
+                            document.getElementById('pantalla-inicio').classList.add('hidden');
+                            document.getElementById('menu-salas').classList.add('hidden');
+                            document.getElementById('panel-juego').classList.remove('hidden');
+                            document.getElementById('panel-juego').classList.add('flex');
+
+                            if (paquete.data) {
+                                estadoJuego = paquete.data;
+                                actualizarInterfaz();
+                            }
                         }
                     } catch(e) {
                         localStorage.removeItem('truco_salaId');
@@ -1011,18 +1024,32 @@
 
             const { data, error } = await supabaseClient
                 .from('salas')
-                .select('id, estado, apuesta, meta, jugador1')
-                .eq('estado', 'ESPERANDO_J2');
+                .select('id, estado, apuesta, meta, jugador1');
 
             const contenedor = document.getElementById('lista-salas');
             
-            if (error || !data || data.length === 0) {
+            if (error || !data) {
+                contenedor.innerHTML = `<div class="text-xs text-slate-400 italic text-center py-4">No hay salas abiertas. ¡Creá una para empezar!</div>`;
+                return;
+            }
+
+            // Filtrar solo las que están esperando rival en el cliente de forma robusta
+            const salasFiltradas = data.filter(s => {
+                try {
+                    const paquete = JSON.parse(s.estado);
+                    return paquete.tipo === 'ESPERANDO_J2';
+                } catch(e) {
+                    return s.estado && s.estado.includes('ESPERANDO_J2');
+                }
+            });
+
+            if (salasFiltradas.length === 0) {
                 contenedor.innerHTML = `<div class="text-xs text-slate-400 italic text-center py-4">No hay salas abiertas. ¡Creá una para empezar!</div>`;
                 return;
             }
 
             contenedor.innerHTML = '';
-            for (const s of data) {
+            for (const s of salasFiltradas) {
                 const esMiMesa = (s.jugador1 === usuarioId) || (soyJ1 && s.id === salaId);
                 
                 let nombreCreador = 'Mesa';
@@ -1107,8 +1134,19 @@
 
             document.getElementById('esperando-rival').classList.remove('hidden');
             document.getElementById('esperando-sala-info').innerText = `Mesa de ${nombreUsuario} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
+            window.cargarLobbySalas();
             escucharCanalRealtime();
         };
+
+        // CANCELAR SALA EN ESPERA (SIN DESCONTAR FICHAS Y BORRÁNDOLA DE SUPABASE)
+        async function cancelarCreacionSala() {
+            if (salaId && supabaseClient) {
+                await supabaseClient.from('salas').delete().eq('id', salaId);
+            }
+            limpiarEstadoJuego();
+            document.getElementById('esperando-rival').classList.add('hidden');
+            window.cargarLobbySalas();
+        }
 
         window.unirseADeterminadaSala = async function(idElegida, montoApuesta, metaSala) {
             if (montoApuesta > 0 && saldoFichasActual < montoApuesta) {
@@ -1125,8 +1163,6 @@
             localStorage.setItem('truco_soyJ1', 'false');
 
             document.getElementById('esperando-rival').classList.add('hidden');
-            document.getElementById('esperando-rival').querySelector('div').innerText = '🃏 Conectando a la mesa…';
-            document.getElementById('esperando-sala-info').innerText = `Mesa · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
             escucharCanalRealtime();
             
             estadoJuego.nombreJ2 = nombreUsuario;
