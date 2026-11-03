@@ -679,43 +679,9 @@
         };
 
         async function intentarReconexion() {
-            const salaGuardada = localStorage.getItem('truco_salaId');
-            const esJ1Guardado = localStorage.getItem('truco_soyJ1');
-
-            if (salaGuardada && supabaseClient) {
-                const { data: salaBD } = await supabaseClient
-                    .from('salas')
-                    .select('*')
-                    .eq('id', Number(salaGuardada))
-                    .maybeSingle();
-
-                if (salaBD && salaBD.estado) {
-                    try {
-                        const paquete = JSON.parse(salaBD.estado);
-                        salaId = salaBD.id;
-                        soyJ1 = (esJ1Guardado === 'true');
-                        apuestaSalaActual = salaBD.apuesta || 100;
-                        metaPuntosPartida = salaBD.meta || 30;
-
-                        escucharCanalRealtime();
-                        document.getElementById('pantalla-inicio').classList.add('hidden');
-                        document.getElementById('menu-salas').classList.add('hidden');
-                        document.getElementById('panel-juego').classList.remove('hidden');
-                        document.getElementById('panel-juego').classList.add('flex');
-
-                        if (paquete.data) {
-                            estadoJuego = paquete.data;
-                            actualizarInterfaz();
-                        }
-                    } catch(e) {
-                        localStorage.removeItem('truco_salaId');
-                        localStorage.removeItem('truco_soyJ1');
-                    }
-                } else {
-                    localStorage.removeItem('truco_salaId');
-                    localStorage.removeItem('truco_soyJ1');
-                }
-            }
+            // Evitamos la reconexión automática invasiva para permitir elegir sala manualmente
+            localStorage.removeItem('truco_salaId');
+            localStorage.removeItem('truco_soyJ1');
         }
 
         function poblarSelectApuestas() {
@@ -1010,7 +976,6 @@
         window.cargarLobbySalas = async function() {
             if (!supabaseClient) return;
 
-            // Traemos todas las salas creadas para filtrarlas correctamente en JS
             const { data, error } = await supabaseClient
                 .from('salas')
                 .select('*');
@@ -1022,7 +987,6 @@
                 return;
             }
 
-            // Filtramos las salas que estén abiertas esperando al Jugador 2
             const salasDisponibles = data.filter(s => {
                 try {
                     const paquete = JSON.parse(s.estado);
@@ -1119,6 +1083,7 @@
             localStorage.setItem('truco_salaId', salaId);
             localStorage.setItem('truco_soyJ1', 'true');
 
+            // Nos quedamos en el lobby mostrando el estado de espera sin entrar a la partida todavía
             document.getElementById('esperando-rival').classList.remove('hidden');
             document.getElementById('esperando-sala-info').innerText = `Mesa de ${nombreUsuario} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
             escucharCanalRealtime();
@@ -1138,9 +1103,6 @@
             localStorage.setItem('truco_salaId', salaId);
             localStorage.setItem('truco_soyJ1', 'false');
 
-            document.getElementById('esperando-rival').classList.add('hidden');
-            document.getElementById('esperando-rival').querySelector('div').innerText = '🃏 Conectando a la mesa…';
-            document.getElementById('esperando-sala-info').innerText = `Mesa · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
             escucharCanalRealtime();
             
             estadoJuego.nombreJ2 = nombreUsuario;
