@@ -1006,32 +1006,46 @@
             if (canalLobby) supabaseClient.removeChannel(canalLobby);
         }
 
+        // LOBBY DE SALAS MULTIJUGADOR CORREGIDO
         window.cargarLobbySalas = async function() {
             if (!supabaseClient) return;
 
+            // Traemos todas las salas creadas para filtrarlas correctamente en JS
             const { data, error } = await supabaseClient
                 .from('salas')
-                .select('id, estado, apuesta, meta, jugador1')
-                .eq('estado', 'ESPERANDO_J2');
+                .select('*');
 
             const contenedor = document.getElementById('lista-salas');
             
-            if (error || !data || data.length === 0) {
+            if (error || !data) {
+                contenedor.innerHTML = `<div class="text-xs text-slate-400 italic text-center py-4">No hay salas abiertas. ¡Creá una para empezar!</div>`;
+                return;
+            }
+
+            // Filtramos las salas que estén abiertas esperando al Jugador 2
+            const salasDisponibles = data.filter(s => {
+                try {
+                    const paquete = JSON.parse(s.estado);
+                    return paquete.tipo === 'ESPERANDO_J2';
+                } catch(e) {
+                    return false;
+                }
+            });
+
+            if (salasDisponibles.length === 0) {
                 contenedor.innerHTML = `<div class="text-xs text-slate-400 italic text-center py-4">No hay salas abiertas. ¡Creá una para empezar!</div>`;
                 return;
             }
 
             contenedor.innerHTML = '';
-            for (const s of data) {
+            for (const s of salasDisponibles) {
                 const esMiMesa = (s.jugador1 === usuarioId) || (soyJ1 && s.id === salaId);
                 
                 let nombreCreador = 'Mesa';
                 try {
-                    if (s.estado) {
-                        const paquete = JSON.parse(s.estado);
-                        if (paquete.data && paquete.data.nombreJ1) {
-                            nombreCreador = paquete.data.nombreJ1;
-                        }
+                    const paquete = JSON.parse(s.estado);
+                    if (paquete.data && paquete.data.nombreJ1) {
+                        nombreCreador = paquete.data.nombreJ1;
                     }
                 } catch(e) {}
 
