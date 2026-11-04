@@ -679,7 +679,6 @@
         };
 
         async function intentarReconexion() {
-            // Evitamos la reconexión automática invasiva para permitir elegir sala manualmente
             localStorage.removeItem('truco_salaId');
             localStorage.removeItem('truco_soyJ1');
         }
@@ -972,7 +971,6 @@
             if (canalLobby) supabaseClient.removeChannel(canalLobby);
         }
 
-        // LOBBY DE SALAS MULTIJUGADOR CORREGIDO
         window.cargarLobbySalas = async function() {
             if (!supabaseClient) return;
 
@@ -1083,7 +1081,6 @@
             localStorage.setItem('truco_salaId', salaId);
             localStorage.setItem('truco_soyJ1', 'true');
 
-            // Nos quedamos en el lobby mostrando el estado de espera sin entrar a la partida todavía
             document.getElementById('esperando-rival').classList.remove('hidden');
             document.getElementById('esperando-sala-info').innerText = `Mesa de ${nombreUsuario} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
             escucharCanalRealtime();

@@ -1,6 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
+const { createconst express = require('express');
+const cors = require('cors');
+const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
@@ -72,7 +75,6 @@ async function mantenerSalasBotActivas() {
             }
         });
 
-        // Mantener al menos 4 salas de bots activas en el lobby con diferentes apuestas
         if (salasBotEsperando.length < 4) {
             const idGen = Math.floor(Math.random() * 89999) + 10000;
             const nombreBot = NOMBRES_BOTS[Math.floor(Math.random() * NOMBRES_BOTS.length)];
@@ -111,236 +113,213 @@ async function mantenerSalasBotActivas() {
     }
 }
 
-// Ejecutar el creador automático cada 15 segundos
 setInterval(mantenerSalasBotActivas, 15000);
 
-// Lógica de Inteligencia del Bot (Gana siempre analizando las cartas de ambos)
-async function procesarJugadaBot(salaId, estado) {
-    if (!estado.esBot || estado.turnoActual !== 'J1' || estado.finMano) return;
+// Endpoint para unirse a una sala de bot y repartir cartas automáticamente
+app.post('/unirse-sala-bot', async (req, res) => {
+    try {
+        const { salaId, usuarioId, nombreUsuario } = req.body;
+        if (!salaId) return res.status(400).json({ error: 'Falta salaId' });
 
-    // Simular tiempo de pensamiento humano (entre 2 y 4 segundos)
-    setTimeout(async () => {
-        try {
-            const { data: salaActual } = await supabase.from('salas').select('*').eq('id', salaId).single();
-            if (!salaActual) return;
-            let est = JSON.parse(salaActual.estado);
-            if (est.turnoActual !== 'J1' || est.finMano) return;
+        const { data: sala, error } = await supabase.from('salas').select('*').eq('id', salaId).single();
+        if (error || !sala) return res.status(404).json({ error: 'Sala no encontrada' });
 
-            // El bot ve las cartas del jugador humano (J2) y las suyas (J1) para asegurar la victoria
-            const cartasBot = est.cartasJ1;
-            if (!cartasBot || cartasBot.length === 0) return;
+        let estado = JSON.parse(sala.estado);
+        if (!estado.esBot) return res.status(400).json({ error: 'No es una sala de bot' });
 
-            const ronda = est.rondaActual;
-            const mesaRonda = est[`mesaR${ronda}`];
+        const mazoMezclado = [...MAZO_BOT].sort(() => Math.random() - 0.5);
+        const cJ1 = [mazoMezclado[0], mazoMezclado[1], mazoMezclado[2]];
+        const cJ2 = [mazoMezclado[3], mazoMezclado[4], mazoMezclado[5]];
 
-            let cartaAElegir = cartasBot[0];
+        estado.tipo = 'EN_PARTIDA';
+        estado.nombreJ2 = nombreUsuario || 'Jugador';
+        estado.cartasJ1 = cJ1;
+        estado.cartasJ2 = cJ2;
+        estado.cartasInicialesJ1 = [...cJ1];
+        estado.cartasInicialesJ2 = [...cJ2];
+        estado.rondaActual = 1;
+        estado.manoJugador = 'J1';
+        estado.turnoActual = 'J1';
+        estado.mesaR1 = { J1: null, J2: null };
+        estado.mesaR2 = { J1: null, J2: null };
+        estado.mesaR3 = { J1: null, J2: null };
+        estado.finMano = false;
+        estado.mensajeEstado = '¡Partida iniciada contra el bot!';
 
-            if (mesaRonda && mesaRonda.J2) {
-                // Si el humano ya tiró, el bot busca la carta justa para ganarle o la menor si no puede
-                const poderHumano = mesaRonda.J2.poder;
-                const mayores = cartasBot.filter(c => c.poder > poderHumano).sort((a, b) => a.poder - b.poder);
-                cartaAElegir = mayores.length > 0 ? mayores[0] : cartasBot.sort((a, b) => a.poder - b.poder)[0];
-            } else {
-                // Si sale el bot, tira una carta estratégica
-                cartaAElegir = cartasBot.sort((a, b) => b.poder - a.poder)[0];
-            }
+        await supabase.from('salas').update({ 
+            estado: JSON.stringify(estado),
+            jugador2: usuarioId 
+        }).eq('id', salaId);
 
-            // Remover carta de la mano del bot
-            est.cartasJ1 = est.cartasJ1.filter(c => c.id !== cartaAElegir.id);
-            if (ronda === 1) est.mesaR1.J1 = cartaAElegir;
-            else if (ronda === 2) est.mesaR2.J1 = cartaAElegir;
-            else if (ronda === 3) est.mesaR3.J1 = cartaAElegir;
+        setTimeout(() => procesarJugadaBot(salaId), 2000);
 
-            // Cambiar turno al jugador humano
-            est.turnoActual = 'J2';
-            est.mensajeEstado = '¡Tu turno!';
+        res.json({ ok: true, estado });
+    } catch (err) {
+        console.error("Error en /unirse-sala-bot:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
 
-            await supabase.from('salas').update({ estado: JSON.stringify(est) }).eq('id', salaId);
-        } catch (e) {
-            console.error("Error en jugada de bot:", e);
+// Función interna para que el bot juegue de forma inteligente
+async function procesarJugadaBot(salaId) {
+    try {
+        const { data: sala } = await supabase.from('salas').select('*').eq('id', salaId).single();
+        if (!sala) return;
+
+        let est = JSON.parse(sala.estado);
+        if (!est.esBot || est.turnoActual !== 'J1' || est.finMano) return;
+
+        const cartasBot = est.cartasJ1;
+        if (!cartasBot || cartasBot.length === 0) return;
+
+        const ronda = est.rondaActual;
+        const mesaRonda = est[`mesaR${ronda}`];
+        let cartaAElegir = cartasBot[0];
+
+        if (mesaRonda && mesaRonda.J2) {
+            const poderHumano = mesaRonda.J2.poder;
+            const mayores = cartasBot.filter(c => c.poder > poderHumano).sort((a, b) => a.poder - b.poder);
+            cartaAElegir = mayores.length > 0 ? mayores[0] : cartasBot.sort((a, b) => a.poder - b.poder)[0];
+        } else {
+            cartaAElegir = cartasBot.sort((a, b) => b.poder - a.poder)[0];
         }
-    }, 2500);
+
+        est.cartasJ1 = est.cartasJ1.filter(c => c.id !== cartaAElegir.id);
+        if (ronda === 1) est.mesaR1.J1 = cartaAElegir;
+        else if (ronda === 2) est.mesaR2.J1 = cartaAElegir;
+        else if (ronda === 3) est.mesaR3.J1 = cartaAElegir;
+
+        est.turnoActual = 'J2';
+        est.mensajeEstado = '¡Tu turno!';
+
+        await supabase.from('salas').update({ estado: JSON.stringify(est) }).eq('id', salaId);
+    } catch (e) {
+        console.error("Error en procesarJugadaBot:", e);
+    }
 }
 
-// Endpoint para consultar saldo u obtener usuario con fichas iniciales si es nuevo
+// Endpoint para procesar la jugada del bot luego de que tira el usuario humano
+app.post('/jugada-bot', async (req, res) => {
+    try {
+        const { salaId } = req.body;
+        const { data: sala } = await supabase.from('salas').select('*').eq('id', salaId).single();
+        if (!sala) return res.status(404).json({ error: 'Sala no encontrada' });
+
+        let est = JSON.parse(sala.estado);
+        if (!est.esBot || est.turnoActual !== 'J1' || est.finMano) {
+            return res.json({ ok: false });
+        }
+
+        const cartasBot = est.cartasJ1;
+        if (!cartasBot || cartasBot.length === 0) return res.json({ ok: false });
+
+        const ronda = est.rondaActual;
+        const mesaRonda = est[`mesaR${ronda}`];
+        let cartaAElegir = cartasBot[0];
+
+        if (mesaRonda && mesaRonda.J2) {
+            const poderHumano = mesaRonda.J2.poder;
+            const mayores = cartasBot.filter(c => c.poder > poderHumano).sort((a, b) => a.poder - b.poder);
+            cartaAElegir = mayores.length > 0 ? mayores[0] : cartasBot.sort((a, b) => a.poder - b.poder)[0];
+        } else {
+            cartaAElegir = cartasBot.sort((a, b) => b.poder - a.poder)[0];
+        }
+
+        est.cartasJ1 = est.cartasJ1.filter(c => c.id !== cartaAElegir.id);
+        if (ronda === 1) est.mesaR1.J1 = cartaAElegir;
+        else if (ronda === 2) est.mesaR2.J1 = cartaAElegir;
+        else if (ronda === 3) est.mesaR3.J1 = cartaAElegir;
+
+        const c1 = est[`mesaR${est.rondaActual}`].J1;
+        const c2 = est[`mesaR${est.rondaActual}`].J2;
+
+        if (c1 && c2) {
+            let ganadorRonda = null;
+            if (c1.poder > c2.poder) ganadorRonda = 'J1';
+            else if (c2.poder > c1.poder) ganadorRonda = 'J2';
+            else ganadorRonda = 'PARDA';
+
+            est.turnoActual = ganadorRonda !== 'PARDA' ? ganadorRonda : est.manoJugador;
+            
+            const g1 = (est.mesaR1.J1 && est.mesaR1.J2) ? (est.mesaR1.J1.poder > est.mesaR1.J2.poder ? 'J1' : (est.mesaR1.J2.poder > est.mesaR1.J1.poder ? 'J2' : 'PARDA')) : null;
+            const g2 = est.rondaActual >= 2 && est.mesaR2.J1 && est.mesaR2.J2 ? (est.mesaR2.J1.poder > est.mesaR2.J2.poder ? 'J1' : (est.mesaR2.J2.poder > est.mesaR2.J1.poder ? 'J2' : 'PARDA')) : null;
+            
+            let ganadorMano = null;
+            if (est.rondaActual === 2) {
+                if (g1 === 'J1' && g2 === 'J1') ganadorMano = 'J1';
+                else if (g1 === 'J2' && g2 === 'J2') ganadorMano = 'J2';
+                else if (g1 === 'J1' && g2 === 'PARDA') ganadorMano = 'J1';
+                else if (g1 === 'J2' && g2 === 'PARDA') ganadorMano = 'J2';
+                else if (g1 === 'PARDA' && g2 !== 'PARDA') ganadorMano = g2;
+            } else if (est.rondaActual === 3) {
+                const g3 = (est.mesaR3.J1 && est.mesaR3.J2) ? (est.mesaR3.J1.poder > est.mesaR3.J2.poder ? 'J1' : (est.mesaR3.J2.poder > est.mesaR3.J1.poder ? 'J2' : 'PARDA')) : null;
+                if (g3 !== 'PARDA') ganadorMano = g3;
+                else ganadorMano = g1 !== 'PARDA' ? g1 : est.manoJugador;
+            }
+
+            if (ganadorMano) {
+                const ptsAOtorgar = est.puntosTrucoAceptado || 1;
+                if (ganadorMano === 'J1') est.ptsJ1 += ptsAOtorgar;
+                else est.ptsJ2 += ptsAOtorgar;
+                est.mensajeEstado = `¡Ganó la mano ${ganadorMano === 'J1' ? est.nombreJ1 : est.nombreJ2}! (+${ptsAOtorgar} pts)`;
+                est.finMano = true;
+            } else if (est.rondaActual < 3) {
+                est.rondaActual += 1;
+            }
+        } else {
+            est.turnoActual = 'J2';
+            est.mensajeEstado = '¡Tu turno!';
+        }
+
+        await supabase.from('salas').update({ estado: JSON.stringify(est) }).eq('id', salaId);
+        res.json({ ok: true });
+    } catch (e) {
+        console.error("Error en /jugada-bot:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Endpoints básicos de control de usuario y pagos
 app.post('/obtener-usuario', async (req, res) => {
     try {
         const { usuarioId, email } = req.body;
         if (!usuarioId) return res.status(400).json({ error: 'Falta usuarioId' });
 
-        const { data: userData } = await supabase
-            .from('perfiles')
-            .select('*')
-            .eq('usuarios', usuarioId)
-            .single();
+        const { data: userData } = await supabase.from('perfiles').select('*').eq('usuarios', usuarioId).single();
+        if (userData) return res.json(userData);
 
-        if (userData) {
-            return res.json(userData);
-        } else {
-            const { data: nuevoUsuario, error: createError } = await supabase
-                .from('perfiles')
-                .upsert([{ 
-                    usuarios: usuarioId, 
-                    email: email || `${usuarioId}@jugador.com`, 
-                    fichas: FICHAS_INICIALES 
-                }])
-                .select()
-                .single();
-
-            if (createError) {
-                console.error("Error al crear perfil nuevo:", createError);
-                return res.status(500).json({ error: createError.message });
-            }
-            return res.json(nuevoUsuario);
-        }
+        const { data: nuevoUsuario } = await supabase.from('perfiles').upsert([{ 
+            usuarios: usuarioId, email: email || `${usuarioId}@jugador.com`, fichas: FICHAS_INICIALES 
+        }]).select().single();
+        return res.json(nuevoUsuario);
     } catch (err) {
-        console.error("Error en /obtener-usuario:", err);
         res.status(500).json({ error: err.message });
     }
 });
 
-// Endpoint para partidas de 0 fichas o modo gratuito
-const jugarGratisHandler = async (req, res) => {
+app.post('/jugar-gratis', async (req, res) => {
+    res.json({ exito: true, costo: 0 });
+});
+
+app.post('/crear-preferencia-mp', async (req, res) => {
     try {
-        const { usuarioId } = req.body;
-        if (!usuarioId) return res.status(400).json({ error: 'Falta usuarioId' });
-
-        const { data: userData } = await supabase
-            .from('perfiles')
-            .select('*')
-            .eq('usuarios', usuarioId)
-            .single();
-
-        if (!userData) {
-            await supabase.from('perfiles').upsert([{ usuarios: usuarioId, fichas: FICHAS_INICIALES }]);
-        }
-
-        return res.json({ 
-            exito: true, 
-            mensaje: 'Partida iniciada por 0 fichas (Modo gratuito)',
-            costo: 0 
-        });
-    } catch (err) {
-        console.error("Error en /jugar-gratis:", err);
-        res.status(500).json({ error: err.message });
-    }
-};
-
-app.post('/jugar-gratis', jugarGratisHandler);
-app.post('/api/jugar-gratis', jugarGratisHandler);
-
-const crearPreferenciaHandler = async (req, res) => {
-    try {
-        const cantidad = Number(req.body.cantidad || req.body.fichas || 500);
-        const PRECIO_POR_FICHA = 1; 
-        const precioTotal = cantidad * PRECIO_POR_FICHA;
-        const usuarioId = req.body.usuarioId || req.body.user || 'demo_user';
-
+        const cantidad = Number(req.body.cantidad || 500);
         const preference = new Preference(client);
-
         const resultado = await preference.create({
             body: {
-                items: [
-                    {
-                        title: `${cantidad} Ficha(s) de Truco Argentino`,
-                        quantity: 1,
-                        unit_price: precioTotal,
-                        currency_id: 'ARS'
-                    }
-                ],
-                back_urls: {
-                    success: `https://trucoargentino.site/?status=approved&cantidad=${cantidad}`,
-                    failure: 'https://trucoargentino.site/?status=failure',
-                    pending: 'https://trucoargentino.site/?status=pending'
-                },
+                items: [{ title: `${cantidad} Fichas Truco`, quantity: 1, unit_price: cantidad, currency_id: 'ARS' }],
+                back_urls: { success: 'https://trucoargentino.site/?status=approved', failure: 'https://trucoargentino.site/?status=failure', pending: 'https://trucoargentino.site/?status=pending' },
                 auto_return: 'approved',
-                external_reference: String(usuarioId)
+                external_reference: String(req.body.usuarioId || 'demo')
             }
         });
-
         res.json({ init_point: resultado.init_point });
-
     } catch (error) {
-        console.error('Error al crear preferencia de Mercado Pago:', error);
-        res.status(500).json({ error: error.message || 'Error interno del servidor' });
+        res.status(500).json({ error: error.message });
     }
-};
-
-app.post('/crear-preferencia', crearPreferenciaHandler);
-app.post('/api/crear-preferencia', crearPreferenciaHandler);
-app.post('/crear-preferencia-mp', crearPreferenciaHandler);
-app.post('/api/crear-preferencia-mp', crearPreferenciaHandler);
-
-// WEBHOOK DE MERCADO PAGO
-const webhookHandler = async (req, res) => {
-    try {
-        const body = req.body;
-        let paymentId = null;
-        if (body.type === 'payment' && body.data && body.data.id) {
-            paymentId = body.data.id;
-        } else if (body.id && body.topic === 'payment') {
-            paymentId = body.id;
-        } else if (req.query && req.query['data.id']) {
-            paymentId = req.query['data.id'];
-        }
-
-        if (paymentId) {
-            const payment = new Payment(client);
-            const paymentData = await payment.get({ id: paymentId });
-
-            if (paymentData.status === 'approved') {
-                const usuarioId = paymentData.external_reference;
-                
-                let fichasCompradas = 0;
-                if (paymentData.additional_info && paymentData.additional_info.items && paymentData.additional_info.items.length > 0) {
-                    const title = paymentData.additional_info.items[0].title;
-                    const match = title.match(/(\d+)/);
-                    if (match) fichasCompradas = Number(match[1]);
-                }
-                
-                if (!fichasCompradas || fichasCompradas <= 0) {
-                    const montoPagado = Number(paymentData.transaction_amount || 0);
-                    fichasCompradas = montoPagado > 0 ? montoPagado : 500;
-                }
-
-                if (usuarioId && usuarioId !== 'demo_user' && fichasCompradas > 0) {
-                    const { data: userData } = await supabase
-                        .from('perfiles')
-                        .select('fichas')
-                        .eq('usuarios', usuarioId)
-                        .single();
-
-                    let saldoActual = userData ? (userData.fichas !== undefined ? userData.fichas : FICHAS_INICIALES) : FICHAS_INICIALES;
-                    const nuevoSaldo = saldoActual + fichasCompradas;
-
-                    const { error: updateError } = await supabase
-                        .from('perfiles')
-                        .upsert([{ usuarios: usuarioId, fichas: nuevoSaldo }]);
-
-                    if (updateError) {
-                        console.error("Error al actualizar fichas en Supabase:", updateError);
-                    } else {
-                        console.log(`¡Éxito! Se acreditaron ${fichasCompradas} fichas al usuario ${usuarioId}. Nuevo saldo: ${nuevoSaldo}`);
-                    }
-                }
-            }
-        }
-
-        return res.status(200).send('OK');
-    } catch (error) {
-        console.error('Error procesando webhook de MP:', error);
-        return res.status(200).send('OK');
-    }
-};
-
-app.post('/webhook', webhookHandler);
-app.post('/api/webhook', webhookHandler);
-
-app.get('/webhook', (req, res) => {
-    res.status(200).send('Endpoint de Webhook activo y operativo');
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Servidor de Truco corriendo en el puerto ${PORT}`);
+    console.log(`Servidor de Truco corriendo en puerto ${PORT}`);
 });
