@@ -50,7 +50,7 @@ const IMAGENES_OROS = {
     '7O': `${BASE_URL}/IMG_7067.JPG`,
     '10O': `${BASE_URL}/IMG_7068.JPG`,
     '11O': `${BASE_URL}/IMG_7069.JPG`,
-    '12O': `${BASE_URL}/IMG_7081(1).JPG`
+    '12O': `${BASE_URL}/IMG_7081.JPG`
 };
 
 const MAZO = [
