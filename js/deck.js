@@ -1,54 +1,56 @@
 // js/deck.js
+const BASE_URL = '/casrtas';
+
 const IMAGENES_ESPADAS = {
-    '1E': '/casrtas/3B9CB9AE-9416-4AEE-9D93-DF7E2B5D25D8.png',
-    '2E': '/casrtas/280DF667-8528-4D10-BAC1-3D3BEE723E21.png',
-    '3E': '/casrtas/78E4021C-B66A-461F-9C0E-5A2735538D67.png',
-    '4E': '/casrtas/757A2F70-FE42-4A1E-86BB-BBB4A48BF042.png',
-    '5E': '/casrtas/32688BF2-F484-4EC5-8A1A-0BACFFC419C2.png',
-    '6E': '/casrtas/F6EB3C3A-FF6B-4A16-A897-066D2EA5D252.png',
-    '7E': '/casrtas/889FDC04-602F-4609-856C-466B356DDFF0.png',
-    '10E': '/casrtas/D922D71F-DDE0-4F93-9A48-13C2C25BAE0A.png',
-    '11E': '/casrtas/56CFB2BF-287E-427A-99F0-F70A20B2238A.png',
-    '12E': '/casrtas/IMG_5814.JPG'
+    '1E': `${BASE_URL}/3B9CB9AE-9416-4AEE-9D93-DF7E2B5D25D8.png`,
+    '2E': `${BASE_URL}/280DF667-8528-4D10-BAC1-3D3BEE723E21.png`,
+    '3E': `${BASE_URL}/78E4021C-B66A-461F-9C0E-5A2735538D67.png`,
+    '4E': `${BASE_URL}/757A2F70-FE42-4A1E-86BB-BBB4A48BF042.png`,
+    '5E': `${BASE_URL}/32688BF2-F484-4EC5-8A1A-0BACFFC419C2.png`,
+    '6E': `${BASE_URL}/F6EB3C3A-FF6B-4A16-A897-066D2EA5D252.png`,
+    '7E': `${BASE_URL}/889FDC04-602F-4609-856C-466B356DDFF0.png`,
+    '10E': `${BASE_URL}/D922D71F-DDE0-4F93-9A48-13C2C25BAE0A.png`,
+    '11E': `${BASE_URL}/56CFB2BF-287E-427A-99F0-F70A20B2238A.png`,
+    '12E': `${BASE_URL}/IMG_5814.JPG`
 };
 
 const IMAGENES_COPAS = {
-    '1C': '/casrtas/0A6E7B15-5DF8-490D-95E6-6876FDF4C6EE.png',
-    '2C': '/casrtas/65D989B8-48D9-4ED0-A9E9-39F4F07D2B1C.png',
-    '3C': '/casrtas/D8876D6B-A6B0-4388-8B1C-7FD7E772843C.png',
-    '4C': '/casrtas/45539003-D55D-4ED9-A77C-9CF91A986DBF.png',
-    '5C': '/casrtas/F636396C-5FCA-408D-BE11-F5555E57F457.png',
-    '6C': '/casrtas/D253ABD0-8E05-4E98-A868-D248C7B5F81D.png',
-    '7C': '/casrtas/C090B8F3-4D08-43DD-AFBD-A54B336DF712.png',
-    '10C': '/casrtas/D90F1F7A-8238-43D1-A6D2-564040C3D3E8.png',
-    '11C': '/casrtas/C26265A6-680F-40B9-B25B-DAC0BDF3ADA1.png',
-    '12C': '/casrtas/7F7C1D19-F1D2-4DC8-813C-FD9FD595167A.png'
+    '1C': `${BASE_URL}/0A6E7B15-5DF8-490D-95E6-6876FDF4C6EE.png`,
+    '2C': `${BASE_URL}/65D989B8-48D9-4ED0-A9E9-39F4F07D2B1C.png`,
+    '3C': `${BASE_URL}/D8876D6B-A6B0-4388-8B1C-7FD7E772843C.png`,
+    '4C': `${BASE_URL}/45539003-D55D-4ED9-A77C-9CF91A986DBF.png`,
+    '5C': `${BASE_URL}/F636396C-5FCA-408D-BE11-F5555E57F457.png`,
+    '6C': `${BASE_URL}/D253ABD0-8E05-4E98-A868-D248C7B5F81D.png`,
+    '7C': `${BASE_URL}/C090B8F3-4D08-43DD-AFBD-A54B336DF712.png`,
+    '10C': `${BASE_URL}/D90F1F7A-8238-43D1-A6D2-564040C3D3E8.png`,
+    '11C': `${BASE_URL}/C26265A6-680F-40B9-B25B-DAC0BDF3ADA1.png`,
+    '12C': `${BASE_URL}/7F7C1D19-F1D2-4DC8-813C-FD9FD595167A.png`
 };
 
 const IMAGENES_BASTOS = {
-    '1B': '/casrtas/IMG_7083.JPG',
-    '2B': '/casrtas/IMG_7084.JPG',
-    '3B': '/casrtas/IMG_7085.JPG',
-    '4B': '/casrtas/IMG_7086.JPG',
-    '5B': '/casrtas/IMG_7087.JPG',
-    '6B': '/casrtas/IMG_7088.JPG',
-    '7B': '/casrtas/IMG_7089.JPG',
-    '10B': '/casrtas/IMG_7090.JPG',
-    '11B': '/casrtas/IMG_7091.JPG',
-    '12B': '/casrtas/IMG_7092.JPG'
+    '1B': `${BASE_URL}/IMG_7083.JPG`,
+    '2B': `${BASE_URL}/IMG_7084.JPG`,
+    '3B': `${BASE_URL}/IMG_7085.JPG`,
+    '4B': `${BASE_URL}/IMG_7086.JPG`,
+    '5B': `${BASE_URL}/IMG_7087.JPG`,
+    '6B': `${BASE_URL}/IMG_7088.JPG`,
+    '7B': `${BASE_URL}/IMG_7089.JPG`,
+    '10B': `${BASE_URL}/IMG_7090.JPG`,
+    '11B': `${BASE_URL}/IMG_7091.JPG`,
+    '12B': `${BASE_URL}/IMG_7092.JPG`
 };
 
 const IMAGENES_OROS = {
-    '1O': '/casrtas/IMG_7061.JPG',
-    '2O': '/casrtas/IMG_7062.JPG',
-    '3O': '/casrtas/IMG_7063.JPG',
-    '4O': '/casrtas/IMG_7064.JPG',
-    '5O': '/casrtas/IMG_7065.JPG',
-    '6O': '/casrtas/IMG_7066.JPG',
-    '7O': '/casrtas/IMG_7067.JPG',
-    '10O': '/casrtas/IMG_7068.JPG',
-    '11O': '/casrtas/IMG_7069.JPG',
-    '12O': '/casrtas/IMG_7081.JPG'
+    '1O': `${BASE_URL}/IMG_7061.JPG`,
+    '2O': `${BASE_URL}/IMG_7062.JPG`,
+    '3O': `${BASE_URL}/IMG_7063.JPG`,
+    '4O': `${BASE_URL}/IMG_7064.JPG`,
+    '5O': `${BASE_URL}/IMG_7065.JPG`,
+    '6O': `${BASE_URL}/IMG_7066.JPG`,
+    '7O': `${BASE_URL}/IMG_7067.JPG`,
+    '10O': `${BASE_URL}/IMG_7068.JPG`,
+    '11O': `${BASE_URL}/IMG_7069.JPG`,
+    '12O': `${BASE_URL}/IMG_7081(1).JPG`
 };
 
 const MAZO = [
@@ -89,7 +91,7 @@ const MAZO = [
     { id: '5C', txt: '5 Copa', num: '5', poder: 2, envido: 5, palo: 'C', img: IMAGENES_COPAS['5C'] },
     { id: '5O', txt: '5 Oro', num: '5', poder: 2, envido: 5, palo: 'O', img: IMAGENES_OROS['5O'] },
     { id: '4E', txt: '4 Espada', num: '4', poder: 1, envido: 4, palo: 'E', img: IMAGENES_ESPADAS['4E'] },
-    { id: '4B', txt: '4 Basto', num: '4', poder: 1, envido: 4, palo: 'B', img: IMAGENES_BASTOS['4B'] },
+    { id: '4B', num: '4 Basto', num: '4', poder: 1, envido: 4, palo: 'B', img: IMAGENES_BASTOS['4B'] },
     { id: '4C', txt: '4 Copa', num: '4', poder: 1, envido: 4, palo: 'C', img: IMAGENES_COPAS['4C'] },
     { id: '4O', txt: '4 Oro', num: '4', poder: 1, envido: 4, palo: 'O', img: IMAGENES_OROS['4O'] }
 ];
