@@ -115,14 +115,16 @@
         .globo-dialogo {
             background: #ffffff;
             color: #0b1426;
-            padding: 6px 14px;
-            border-radius: 12px;
-            font-size: 13px;
+            padding: 5px 12px;
+            border-radius: 10px;
+            font-size: 12px;
             font-weight: 900;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.7);
             white-space: nowrap;
             border: 2px solid #d4af37;
             animation: popIn 0.2s ease-out;
+            position: relative;
+            z-index: 100;
         }
 
         @keyframes popIn {
@@ -642,16 +644,7 @@
             }
 
             try {
-                const { data: sessionData } = await supabaseClient.auth.getSessionFromUrl({ storeSession: true });
-                if (sessionData && sessionData.session) {
-                    await supabaseClient.auth.setSession(sessionData.session);
-                }
-            } catch (err) {}
-
-            try {
                 const { data: { session }, error } = await supabaseClient.auth.getSession();
-                if (error) throw error;
-
                 if (session && session.user) {
                     usuarioId = session.user.id;
                     nombreUsuario = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email.split('@')[0];
@@ -679,8 +672,54 @@
         };
 
         async function intentarReconexion() {
-            localStorage.removeItem('truco_salaId');
-            localStorage.removeItem('truco_soyJ1');
+            const salaGuardada = localStorage.getItem('truco_salaId');
+            const esJ1Guardado = localStorage.getItem('truco_soyJ1');
+
+            if (salaGuardada && supabaseClient) {
+                const { data: salaBD } = await supabaseClient
+                    .from('salas')
+                    .select('*')
+                    .eq('id', salaGuardada)
+                    .maybeSingle();
+
+                if (salaBD && salaBD.estado) {
+                    try {
+                        const paquete = typeof salaBD.estado === 'string' ? JSON.parse(salaBD.estado) : salaBD.estado;
+                        salaId = salaBD.id;
+                        soyJ1 = (esJ1Guardado === 'true');
+                        apuestaSalaActual = salaBD.apuesta || 100;
+                        metaPuntosPartida = salaBD.meta || 30;
+
+                        escucharCanalRealtime();
+
+                        const esEsperando = (typeof salaBD.estado === 'string') ? salaBD.estado.includes('ESPERANDO_J2') : paquete.tipo === 'ESPERANDO_J2';
+
+                        if (esEsperando) {
+                            document.getElementById('pantalla-inicio').classList.add('hidden');
+                            document.getElementById('menu-salas').classList.remove('hidden');
+                            document.getElementById('menu-salas').classList.add('flex');
+                            document.getElementById('esperando-rival').classList.remove('hidden');
+                            document.getElementById('esperando-sala-info').innerText = `Mesa de ${nombreUsuario} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
+                        } else {
+                            document.getElementById('pantalla-inicio').classList.add('hidden');
+                            document.getElementById('menu-salas').classList.add('hidden');
+                            document.getElementById('panel-juego').classList.remove('hidden');
+                            document.getElementById('panel-juego').classList.add('flex');
+
+                            if (paquete.data) {
+                                estadoJuego = paquete.data;
+                                actualizarInterfaz();
+                            }
+                        }
+                    } catch(e) {
+                        localStorage.removeItem('truco_salaId');
+                        localStorage.removeItem('truco_soyJ1');
+                    }
+                } else {
+                    localStorage.removeItem('truco_salaId');
+                    localStorage.removeItem('truco_soyJ1');
+                }
+            }
         }
 
         function poblarSelectApuestas() {
@@ -708,13 +747,6 @@
             }
 
             for (let v = 15000; v <= 100000; v += 5000) {
-                const opt = document.createElement('option');
-                opt.value = v;
-                opt.innerText = `$${v.toLocaleString('es-AR')} ARS`;
-                select.appendChild(opt);
-            }
-
-            for (let v = 150000; v <= 1000000; v += 50000) {
                 const opt = document.createElement('option');
                 opt.value = v;
                 opt.innerText = `$${v.toLocaleString('es-AR')} ARS`;
@@ -960,7 +992,7 @@
             document.getElementById('menu-salas').classList.remove('hidden');
             document.getElementById('menu-salas').classList.add('flex');
             document.getElementById('display-nombre-usuario').innerText = nombreUsuario;
-            window.cargarLobbySalas();
+            cargarLobbySalas();
             escucharLobbyRealtime();
         }
 
@@ -971,7 +1003,7 @@
             if (canalLobby) supabaseClient.removeChannel(canalLobby);
         }
 
-        window.cargarLobbySalas = async function() {
+        async function cargarLobbySalas() {
             if (!supabaseClient) return;
 
             const { data, error } = await supabaseClient
@@ -985,28 +1017,28 @@
                 return;
             }
 
-            const salasDisponibles = data.filter(s => {
+            const salasFiltradas = data.filter(s => {
                 try {
-                    const paquete = JSON.parse(s.estado);
-                    return paquete.tipo === 'ESPERANDO_J2';
+                    const paquete = typeof s.estado === 'string' ? JSON.parse(s.estado) : s.estado;
+                    return paquete && paquete.tipo === 'ESPERANDO_J2';
                 } catch(e) {
-                    return false;
+                    return s.estado && String(s.estado).includes('ESPERANDO_J2');
                 }
             });
 
-            if (salasDisponibles.length === 0) {
+            if (salasFiltradas.length === 0) {
                 contenedor.innerHTML = `<div class="text-xs text-slate-400 italic text-center py-4">No hay salas abiertas. ¡Creá una para empezar!</div>`;
                 return;
             }
 
             contenedor.innerHTML = '';
-            for (const s of salasDisponibles) {
-                const esMiMesa = (s.jugador1 === usuarioId) || (soyJ1 && s.id === salaId);
+            for (const s of salasFiltradas) {
+                const esMiMesa = (s.jugador1 === usuarioId) || (soyJ1 && String(s.id) === String(salaId));
                 
                 let nombreCreador = 'Mesa';
                 try {
-                    const paquete = JSON.parse(s.estado);
-                    if (paquete.data && paquete.data.nombreJ1) {
+                    const paquete = typeof s.estado === 'string' ? JSON.parse(s.estado) : s.estado;
+                    if (paquete && paquete.data && paquete.data.nombreJ1) {
                         nombreCreador = paquete.data.nombreJ1;
                     }
                 } catch(e) {}
@@ -1015,6 +1047,9 @@
 
                 const item = document.createElement('div');
                 item.className = "card-trucox p-3.5 rounded-2xl flex justify-between items-center transition shadow-lg border border-slate-700/80";
+                
+                const idSalaParam = typeof s.id === 'string' ? `'${s.id}'` : s.id;
+
                 item.innerHTML = `
                     <div class="text-left space-y-1">
                         <div class="flex items-center gap-2">
@@ -1030,27 +1065,25 @@
                         <div class="text-sm font-black text-amber-400">$${(s.apuesta || 0).toLocaleString('es-AR')}</div>
                         ${esMiMesa ? 
                             `<span class="text-[10px] font-bold text-amber-400/80 bg-amber-400/10 border border-amber-400/30 px-2 py-1 rounded-xl">Tu Mesa</span>` :
-                            `<button onclick="window.unirseADeterminadaSala(${s.id}, ${s.apuesta || 0}, ${s.meta || 30})" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-xs py-1.5 px-4 rounded-xl transition shadow-md uppercase cursor-pointer">UNIRSE</button>`
+                            `<button onclick="unirseADeterminadaSala(${idSalaParam}, ${s.apuesta || 0}, ${s.meta || 30})" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-xs py-1.5 px-4 rounded-xl transition shadow-md uppercase cursor-pointer">UNIRSE</button>`
                         }
                     </div>
                 `;
                 contenedor.appendChild(item);
             }
-        };
+        }
 
         function escucharLobbyRealtime() {
             if (!supabaseClient) return;
-            if (canalLobby) supabaseClient.removeChannel(canalLobby);
-
             canalLobby = supabaseClient
                 .channel('public:lobby_salas')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
-                    window.cargarLobbySalas();
+                    cargarLobbySalas();
                 })
                 .subscribe();
         }
 
-        window.crearSala = async function() {
+        async function crearSala() {
             if (!supabaseClient) return;
             const montoApuesta = Number(document.getElementById('select-apuesta').value);
             metaPuntosPartida = Number(document.getElementById('select-puntos-partido').value);
@@ -1060,21 +1093,30 @@
                 return;
             }
 
-            const idGen = Math.floor(Math.random() * 89999) + 10000;
             estadoJuego.nombreJ1 = nombreUsuario;
 
-            const payloadInicial = JSON.stringify({
+            const payloadInicial = {
                 tipo: 'ESPERANDO_J2',
                 data: { ...estadoJuego, nombreJ1: nombreUsuario },
                 timestamp: Date.now()
-            });
+            };
+
+            const insertObj = {
+                estado: JSON.stringify(payloadInicial),
+                jugador1: String(usuarioId || 'J1_CONECTADO'),
+                apuesta: Number(montoApuesta),
+                meta: Number(metaPuntosPartida)
+            };
 
             const { data, error } = await supabaseClient
                 .from('salas')
-                .insert([{ id: idGen, estado: payloadInicial, jugador1: usuarioId || 'J1_CONECTADO', apuesta: montoApuesta, meta: metaPuntosPartida }])
+                .insert([insertObj])
                 .select().single();
 
-            if (error) { alert("Error al crear mesa: " + error.message); return; }
+            if (error) { 
+                alert("Error al crear mesa: " + error.message); 
+                return; 
+            }
 
             salaId = data.id;
             soyJ1 = true;
@@ -1085,10 +1127,20 @@
 
             document.getElementById('esperando-rival').classList.remove('hidden');
             document.getElementById('esperando-sala-info').innerText = `Mesa de ${nombreUsuario} · ${metaPuntosPartida} pts · Apuesta $${apuestaSalaActual.toLocaleString('es-AR')}`;
+            cargarLobbySalas();
             escucharCanalRealtime();
-        };
+        }
 
-        window.unirseADeterminadaSala = async function(idElegida, montoApuesta, metaSala) {
+        async function cancelarCreacionSala() {
+            if (salaId && supabaseClient) {
+                await supabaseClient.from('salas').delete().eq('id', salaId);
+            }
+            limpiarEstadoJuego();
+            document.getElementById('esperando-rival').classList.add('hidden');
+            cargarLobbySalas();
+        }
+
+        async function unirseADeterminadaSala(idElegida, montoApuesta, metaSala) {
             if (montoApuesta > 0 && saldoFichasActual < montoApuesta) {
                 alert(`Saldo insuficiente. Necesitás $${montoApuesta.toLocaleString('es-AR')} para esta mesa.`);
                 return;
@@ -1102,11 +1154,12 @@
             localStorage.setItem('truco_salaId', salaId);
             localStorage.setItem('truco_soyJ1', 'false');
 
+            document.getElementById('esperando-rival').classList.add('hidden');
             escucharCanalRealtime();
             
             estadoJuego.nombreJ2 = nombreUsuario;
             await enviarAccionSupabase('J2_UNIDO', estadoJuego);
-        };
+        }
 
         async function repartirNuevaMano(manoEspecifica) {
             if (!soyJ1) return;
@@ -1163,7 +1216,7 @@
                         try {
                             const raw = payload.new.estado;
                             if (!raw) return;
-                            const paquete = JSON.parse(raw);
+                            const paquete = typeof raw === 'string' ? JSON.parse(raw) : raw;
                             procesarAccionRed(paquete.tipo, paquete.data);
                         } catch(e) {}
                     }
@@ -1401,7 +1454,7 @@
                     const proximaMano = estadoJuego.manoJugador === 'J1' ? 'J2' : 'J1';
                     const miRol = soyJ1 ? 'J1' : 'J2';
                     if (proximaMano === miRol) {
-                        window.solicitarNuevaMano();
+                        solicitarNuevaMano();
                     }
                 }
             }, 1000);
@@ -1414,14 +1467,14 @@
             }
         }
 
-        window.solicitarNuevaMano = function() {
+        function solicitarNuevaMano() {
             detenerTemporizadorRepartir();
             if (soyJ1) {
                 repartirNuevaMano();
             } else {
                 enviarAccionSupabase('SOLICITAR_REPARTIR', {});
             }
-        };
+        }
 
         function iniciarTemporizador() {
             if (temporizadorTurno) return;
@@ -1435,7 +1488,7 @@
 
                 if (segundosRestantes <= 0) {
                     detenerTemporizador();
-                    window.cantar('Me voy al mazo');
+                    cantar('Me voy al mazo');
                 }
             }, 1000);
         }
@@ -1596,23 +1649,23 @@
             return 'PARDA';
         }
 
-        window.cantarTrucoDinamico = function() {
-            if (estadoJuego.nivelTruco === 1) window.cantar('Truco!');
-            else if (estadoJuego.nivelTruco === 2) window.cantar('Quiero re truco');
-            else if (estadoJuego.nivelTruco === 3) window.cantar('Vale Cuatro!');
-        };
+        function cantarTrucoDinamico() {
+            if (estadoJuego.nivelTruco === 1) cantar('Truco!');
+            else if (estadoJuego.nivelTruco === 2) cantar('Quiero re truco');
+            else if (estadoJuego.nivelTruco === 3) cantar('Vale Cuatro!');
+        }
 
-        window.recantarTruco = function() {
-            if (estadoJuego.cantosPendientes.tipo === 'Truco!') window.cantar('Quiero re truco');
-            else if (estadoJuego.cantosPendientes.tipo === 'Quiero re truco') window.cantar('Vale Cuatro!');
-        };
+        function recantarTruco() {
+            if (estadoJuego.cantosPendientes.tipo === 'Truco!') cantar('Quiero re truco');
+            else if (estadoJuego.cantosPendientes.tipo === 'Quiero re truco') cantar('Vale Cuatro!');
+        }
 
         function calcularValorFaltaEnvido() {
             const maxPts = Math.max(estadoJuego.ptsJ1, estadoJuego.ptsJ2);
             return Math.max(1, metaPuntosPartida - maxPts);
         }
 
-        window.cantar = async function(tipo) {
+        async function cantar(tipo) {
             const miRol = soyJ1 ? 'J1' : 'J2';
             if (estadoJuego.cantosPendientes && estadoJuego.cantosPendientes.para !== miRol) return;
 
@@ -1660,9 +1713,9 @@
                 estadoJuego.ultimoQueCantoTruco = miRol;
             }
             await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
-        };
+        }
 
-        window.responder = async function(acepta) {
+        async function responder(acepta) {
             const miRol = soyJ1 ? 'J1' : 'J2';
             if (!estadoJuego.cantosPendientes || estadoJuego.cantosPendientes.para !== miRol) return;
 
@@ -1758,7 +1811,7 @@
             }
 
             await enviarAccionSupabase('ACTUALIZAR_ESTADO', estadoJuego);
-        };
+        }
 
         function calcularDetalleEnvido(cartas) {
             let max = 0;
